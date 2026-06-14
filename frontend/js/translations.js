@@ -63,6 +63,12 @@ export const tmsTitleTemplates = {
         vorlauf: "Pre-Carriage",
         hauptlauf: "Main Freight",
         nachlauf: "On-Carriage",
+        default_payment_terms: [
+           {"id": "adv_100", text: "100% Advance Payment"},
+           {"id": "bank_3", text: "Within 3 banking days upon delivery"},
+           {"id": "bank_5", text: "Within 5 banking days upon CMR receipt"},
+           {"id": "net_30", text: "Net 30 days after invoice date"}
+        ]
     },
     de: {
         transport: { 'road': 'LKW', 'air': 'Luftfracht', 'sea': 'Seefracht' },
@@ -127,6 +133,12 @@ export const tmsTitleTemplates = {
         vorlauf: "Vorlauf",
         hauptlauf: "Hauptlauf",
         nachlauf: " Nachlauf",
+        default_payment_terms: [
+           {"id": "adv_100", text: "100% Vorkasse"},
+           {"id": "bank_3", text: "Innerhalb von 3 Bankarbeitstagen nach Lieferung"},
+           {"id": "bank_5", text: "Innerhalb von 5 Bankarbeitstagen nach CMR-Empfang"},
+           {"id": "net_30", text: "30 Tage netto nach Rechnungsdatum"}
+        ]
     },
     uk: {
         transport: { 'road': 'Авто', 'air': 'Авіа', 'sea': 'Морська' },
@@ -191,5 +203,10 @@ export const tmsTitleTemplates = {
         vorlauf: "Попередній транспорт",
         hauptlauf: "Основний транспорт",
         nachlauf: "Післятранспорт",
-    }
-};
+        default_payment_terms: [
+           {"id": "adv_100", text: "100% Авансовий платіж"},
+           {"id": "bank_3", text: "Протягом 3 банківських днів після доставки"},
+           {"id": "bank_5", text: "Протягом 5 банківських днів після отримання CMR"},
+           {"id": "net_30", text: "30 днів з дати виставлення рахунку"}
+        ]
+    }}

@@ -198,23 +198,29 @@ function initEventListeners() {
 
 // --- 2. ЗАГРУЗКА ДАННЫХ ---
 async function loadTmsPrices() {
+    let prices = null;
+    let cities = null;
+
     try {
-        const [prices, cities] = await Promise.all([api.fetchPrices(), api.fetchCities()]);
+        [prices, cities] = await Promise.all([api.fetchPrices(), api.fetchCities()]);
         
         window.tmsPricesData = prices;
         window.tmsCitiesData = cities;
-        
-        initAdditionalServicesDropdown(prices);
-        initPaymentTermsDropdown(prices);
-        
-        initTmsBlankDateTime();
-
-        const currentTransport = document.getElementById('configTransport')?.getAttribute('data-selected') || 'road';
-        UIController.filterIncotermsOptions(currentTransport);
-        
-        console.log("TMS инициализирована успешно");
+        console.log("TMS: Справочники с бэкенда загружены успешно");
     } catch (error) {
-        console.error("Ошибка инициализации TMS:", error);
+        console.warn("TMS: Бэкенд недоступен. Переход на автономный режим (фолбэк).", error.message);
+        window.tmsPricesData = null;
+        window.tmsCitiesData = null;
+    } finally {
+        // Блок finally выполняется ВСЕГДА. 
+        // Если prices === null, функции сами возьмут переводы из translations.js
+        if (typeof initAdditionalServicesDropdown === 'function') initAdditionalServicesDropdown(prices);
+        if (typeof initPaymentTermsDropdown === 'function') initPaymentTermsDropdown(prices);
+        
+        const currentTransport = document.getElementById('configTransport')?.getAttribute('data-selected') || 'road';
+        if (window.UIController && typeof window.UIController.filterIncotermsOptions === 'function') {
+            window.UIController.filterIncotermsOptions(currentTransport);
+        }
     }
 }
 

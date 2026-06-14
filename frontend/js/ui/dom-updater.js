@@ -513,17 +513,38 @@ const UIController = {
 
     initPaymentTermsDropdown(pricesData) {
         const paymentDropdown = document.querySelector('.tms-payment-dropdown');
-        if (!paymentDropdown || !pricesData || !pricesData.payment_terms) return;
+        if (!paymentDropdown) return;
 
         const currentLang = document.getElementById('configLanguage')?.getAttribute('data-selected') || 'en';
         paymentDropdown.innerHTML = '';
 
-        pricesData.payment_terms.forEach(term => {
+        let termsList = [];
+
+        // 1. Пытаемся взять данные из бэкенда (prices.json)
+        if (pricesData && Array.isArray(pricesData.payment_terms) && pricesData.payment_terms.length > 0) {
+            termsList = pricesData.payment_terms.map(term => ({
+                id: term.id || term.key || term['text_' + currentLang],
+                text: term['text_' + currentLang] || term.text_en
+            }));
+        } 
+        // 2. Если бэкенд пустой — строго берем фолбэк из центрального файла переводов
+        else {
+            const dict = tmsTitleTemplates[currentLang] || tmsTitleTemplates.en;
+            if (dict && Array.isArray(dict.default_payment_terms)) {
+                termsList = dict.default_payment_terms;
+            }
+        }
+
+        // Рендерим элементы. Менеджер выбирает полностью самостоятельно.
+        termsList.forEach(term => {
             const optionDiv = document.createElement('div');
             optionDiv.className = 'tms-payment-option tms-option';
             optionDiv.style.cssText = 'padding: 6px 12px; font-size: 11px; font-weight: 700; color: #1e293b; cursor: pointer; text-align: left; transition: background 0.15s;';
-            optionDiv.innerText = term['text_' + currentLang] || term['text_en'] || 'Payment Term Error';
-            optionDiv.setAttribute('data-term-id', term.id);
+            
+            optionDiv.innerText = term.text;
+            // В data-value уходит инвариантный ID (например "advance_100"), а не локализованный текст
+            optionDiv.setAttribute('data-value', term.id); 
+            
             paymentDropdown.appendChild(optionDiv);
         });
     },
