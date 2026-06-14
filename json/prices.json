@@ -1,0 +1,678 @@
+{
+  "meta": {
+    "version": "2026.2",
+    "currency": "EUR",
+    "per_km_rate": 1.20,
+    "status_labels": {
+      "sender": {
+        "label_en": "Via Sender",
+        "label_ru": "Через отправителя",
+        "label_uk": "Через відправника",
+        "label_de": "Frei Versender"
+      },
+      "receiver": {
+        "label_en": "Via Receiver",
+        "label_ru": "Через получателя",
+        "label_uk": "Через одержувача",
+        "label_de": "Frei Empfänger"
+      },
+      "included": {
+        "label_en": "Included in Freight",
+        "label_ru": "Включено во фрахт",
+        "label_uk": "Включено у фрахт",
+        "label_de": "In Fracht enthalten"
+      }
+    },
+    "incoterms_by_transport": {
+      "road": ["EXW", "FCA", "CPT", "CIP", "DAP", "DPU", "DDP"],
+      "air": ["EXW", "FCA", "CPT", "CIP", "DAP", "DPU", "DDP"],
+      "sea": ["EXW", "FCA", "FAS", "FOB", "CFR", "CIF", "CPT", "CIP", "DAP", "DPU", "DDP"]
+    }
+  },
+  "base_rates": {
+    "road": {
+      "ftl_international": {
+        "vorlauf": {
+          "name_en": "Pre-Carriage Road Freight (FTL Vorlauf)",
+          "name_ru": "Предварительная автодоставка (FTL Vorlauf)",
+          "name_uk": "Попередня автодоставка (FTL Vorlauf)",
+          "name_de": "Vorlauf Lkw-Transport (FTL)",
+          "rate_per_km": 1.20,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "sender" },
+            "CPT": { "status": "sender" },
+            "CIP": { "status": "sender" },
+            "DAP": { "status": "sender" },
+            "DPU": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        },
+        "hauptlauf": {
+          "name_en": "Line-Haul Road Freight (FTL Hauptlauf {from} - {to})",
+          "name_ru": "Международный автофрахт (FTL Hauptlauf {from} - {to})",
+          "name_uk": "Міжнародний автофрахт (FTL Hauptlauf {from} - {to})",
+          "name_de": "Hauptlauf Lkw-Frachtverkehr (FTL {from} - {to})",
+          "rate_per_km": 1.35,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "tms_provider" },
+            "CPT": { "status": "sender" },
+            "CIP": { "status": "sender" },
+            "DAP": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        },
+        "nachlauf": {
+          "name_en": "On-Carriage Road Freight (FTL Nachlauf)",
+          "name_ru": "Финальная автодоставка (FTL Nachlauf)",
+          "name_uk": "Фінальна автодоставка (FTL Nachlauf)",
+          "name_de": "Nachlauf Lkw-Transport (FTL)",
+          "rate_per_km": 1.20,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "tms_provider" },
+            "CPT": { "status": "tms_provider" },
+            "CIP": { "status": "tms_provider" },
+            "DAP": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        }
+      },
+      "ltl_international": {
+        "vorlauf": {
+          "name_en": "Pre-Carriage Road Freight (LTL Vorlauf)",
+          "name_ru": "Предварительная автодоставка (LTL Vorlauf)",
+          "name_uk": "Попередня автодоставка (LTL Vorlauf)",
+          "name_de": "Vorlauf Lkw-Transport (LTL)",
+          "default_rate": 150.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "sender" },
+            "CPT": { "status": "sender" },
+            "CIP": { "status": "sender" },
+            "DAP": { "status": "sender" },
+            "DPU": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        },
+        "hauptlauf": {
+          "name_en": "Line-Haul Road Freight (LTL Hauptlauf {from} - {to})",
+          "name_ru": "Международный автофрахт (LTL Hauptlauf {from} - {to})",
+          "name_uk": "Міжнародний автофрахт (LTL Hauptlauf {from} - {to})",
+          "name_de": "Hauptlauf Lkw-Frachtverkehr (LTL {from} - {to})",
+          "default_rate": 0.50,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "tms_provider" },
+            "CPT": { "status": "sender" },
+            "CIP": { "status": "sender" },
+            "DAP": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        },
+        "nachlauf": {
+          "name_en": "On-Carriage Road Freight (LTL Nachlauf)",
+          "name_ru": "Финальная автодоставка (LTL Nachlauf)",
+          "name_uk": "Фінальна автодоставка (LTL Nachlauf)",
+          "name_de": "Nachlauf Lkw-Transport (LTL)",
+          "default_rate": 150.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "tms_provider" },
+            "CPT": { "status": "tms_provider" },
+            "CIP": { "status": "tms_provider" },
+            "DAP": { "status": "sender" },
+            "DDP": { "sender": "sender" }
+          }
+        }
+      },
+      "ftl_domestic": {
+        "vorlauf": {
+          "name_en": "Domestic Pick-up (Vorlauf)",
+          "name_ru": "Внутренняя подача/забор груза (Vorlauf)",
+          "name_uk": "Внутрішня подача/забір вантажу (Vorlauf)",
+          "name_de": "Inländischer Vorlauf (FTL)",
+          "rate_per_km": 1.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "sender" },
+            "CPT": { "status": "sender" },
+            "CIP": { "status": "sender" },
+            "DAP": { "status": "sender" },
+            "DPU": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        },
+        "hauptlauf": {
+          "name_en": "Domestic Road Freight (FTL Hauptlauf)",
+          "name_ru": "Внутренний автофрахт (FTL Hauptlauf {from} - {to})",
+          "name_uk": "Внутрішній автофрахт (FTL Hauptlauf {from} - {to})",
+          "name_de": "Inländischer Lkw-Frachtverkehr (FTL Hauptlauf {from} - {to})",
+          "rate_per_km": 1.10,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "tms_provider" },
+            "CPT": { "status": "sender" },
+            "CIP": { "status": "sender" },
+            "DAP": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        },
+        "nachlauf": {
+          "name_en": "Domestic Delivery (Nachlauf)",
+          "name_ru": "Внутренняя финальная доставка (Nachlauf)",
+          "name_uk": "Внутрішня фінальна доставка (Nachlauf)",
+          "name_de": "Inländischer Nachlauf (FTL)",
+          "rate_per_km": 1.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "tms_provider" },
+            "CPT": { "status": "tms_provider" },
+            "CIP": { "status": "tms_provider" },
+            "DAP": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        }
+      }
+    },
+    "air": {
+      "pax": {
+        "vorlauf": {
+          "name_en": "Airport Pick-up & Delivery to Terminal",
+          "name_ru": "Автодоставка груза в аэропорт отправления",
+          "name_uk": "Автодоставка вантажу в аеропорт відправлення",
+          "name_de": "Anlieferung zum Flughafen (Vorlauf)",
+          "default_rate": 120.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "sender" },
+            "CPT": { "status": "sender" },
+            "CIP": { "status": "sender" },
+            "DAP": { "status": "sender" },
+            "DPU": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        },
+        "hauptlauf": {
+          "name_en": "Air Freight via Passenger Aircraft (PAX Hauptlauf)",
+          "name_ru": "Авиафрахт - Пассажирский борт (PAX Hauptlauf)",
+          "name_uk": "Авіафрахт - Пасажирський борт (PAX Hauptlauf)",
+          "name_de": "Luftfracht via Passagierflugzeug (PAX Hauptlauf)",
+          "default_rate": 2.50,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "tms_provider" },
+            "CPT": { "status": "sender" },
+            "CIP": { "status": "sender" },
+            "DAP": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        },
+        "nachlauf": {
+          "name_en": "Airport Destination Delivery to Door",
+          "name_ru": "Автодоставка из аэропорта назначения до дверей",
+          "name_uk": "Автодоставка з аеропорту призначення до дверей",
+          "name_de": "Auslieferung vom Flughafen (Nachlauf)",
+          "default_rate": 120.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "tms_provider" },
+            "CPT": { "status": "tms_provider" },
+            "CIP": { "status": "tms_provider" },
+            "DAP": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        }
+      },
+      "cao": {
+        "vorlauf": {
+          "name_en": "Airport Pick-up & Delivery to Terminal (Cargo)",
+          "name_ru": "Автодоставка груза в аэропорт отправления (Грузовой)",
+          "name_uk": "Автодоставка вантажу в аеропорт відправлення (Вантажний)",
+          "name_de": "Anlieferung zum Flughafen (Vorlauf Cargo)",
+          "default_rate": 180.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "sender" },
+            "CPT": { "status": "sender" },
+            "CIP": { "status": "sender" },
+            "DAP": { "status": "sender" },
+            "DPU": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        },
+        "hauptlauf": {
+          "name_en": "Air Freight via Cargo Aircraft Only (CAO Hauptlauf)",
+          "name_ru": "Авиафрахт - Вантажний борт (CAO Hauptlauf)",
+          "name_uk": "Авіафрахт - Вантажний борт (CAO Hauptlauf)",
+          "name_de": "Luftfracht via Frachtflugzeug (CAO Hauptlauf)",
+          "default_rate": 4.20,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "tms_provider" },
+            "CPT": { "status": "sender" },
+            "CIP": { "status": "sender" },
+            "DAP": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        },
+        "nachlauf": {
+          "name_en": "Airport Destination Delivery to Door (Cargo)",
+          "name_ru": "Автодоставка из аэропорта назначения до дверей (Грузовой)",
+          "name_uk": "Автодоставка з аеропорту призначення до дверей (Вантажний)",
+          "name_de": "Auslieferung vom Flughafen (Nachlauf Cargo)",
+          "default_rate": 180.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "tms_provider" },
+            "CPT": { "status": "tms_provider" },
+            "CIP": { "status": "tms_provider" },
+            "DAP": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        }
+      }
+    },
+    "sea": {
+      "lcl": {
+        "vorlauf": {
+          "name_en": "Container Yard Pick-up (LCL Vorlauf)",
+          "name_ru": "Доставка сборного груза в порт отправления (LCL Vorlauf)",
+          "name_uk": "Доставка збірного вантажу в порт відправлення (LCL Vorlauf)",
+          "name_de": "Lkw-Zulauf zum Hafen (LCL Vorlauf)",
+          "default_rate": 95.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "sender" },
+            "FAS": { "status": "sender" },
+            "FOB": { "status": "sender" },
+            "CFR": { "status": "sender" },
+            "CIF": { "status": "sender" },
+            "CPT": { "status": "sender" },
+            "CIP": { "status": "sender" },
+            "DAP": { "status": "sender" },
+            "DPU": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        },
+        "hauptlauf": {
+          "name_en": "Ocean Freight (LCL Hauptlauf)",
+          "name_ru": "Морской фрахт (LCL сборный контейнер)",
+          "name_uk": "Морський фрахт (LCL збірний контейнер)",
+          "name_de": "Seefracht (LCL-Stückgutcontainer Hauptlauf)",
+          "default_rate": 85.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "tms_provider" },
+            "CPT": { "status": "sender" },
+            "CIP": { "status": "sender" },
+            "DAP": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        },
+        "nachlauf": {
+          "name_en": "Container Yard Delivery to Door (LCL Nachlauf)",
+          "name_ru": "Доставка груза из порта назначения клиенту (LCL Nachlauf)",
+          "name_uk": "Доставка вантажу з порту призначення клієнту (LCL Nachlauf)",
+          "name_de": "Lkw-Nachlauf vom Hafen (LCL Nachlauf)",
+          "default_rate": 95.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "tms_provider" },
+            "CPT": { "status": "tms_provider" },
+            "CIP": { "status": "tms_provider" },
+            "DAP": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        }
+      },
+      "fcl_20dc": {
+        "vorlauf": {
+          "name_en": "Container Trucking to Port (20' DC Vorlauf)",
+          "name_ru": "Подача пустого контейнера под загрузку и доставка в порт (20' DC)",
+          "name_uk": "Подача порожнього контейнера під завантаження та доставка в порт (20' DC)",
+          "name_de": "Angetransport Container zum Hafen (20' DC Vorlauf)",
+          "default_rate": 450.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "sender" },
+            "FAS": { "status": "sender" },
+            "FOB": { "status": "sender" },
+            "CFR": { "status": "sender" },
+            "CIF": { "status": "sender" },
+            "CPT": { "status": "sender" },
+            "CIP": { "status": "sender" },
+            "DAP": { "status": "sender" },
+            "DPU": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        },
+        "hauptlauf": {
+          "name_en": "Ocean Freight (20' DC Container Hauptlauf)",
+          "name_ru": "Морской фрахт (Контейнер 20' DC Hauptlauf)",
+          "name_uk": "Морський фрахт (Контейнер 20' DC Hauptlauf)",
+          "name_de": "Seefracht (20'-DC-Container Hauptlauf)",
+          "default_rate": 1800.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "tms_provider" },
+            "CPT": { "status": "sender" },
+            "CIP": { "status": "sender" },
+            "DAP": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        },
+        "nachlauf": {
+          "name_en": "Container Trucking from Port to Door (20' DC Nachlauf)",
+          "name_ru": "Вывоз контейнера из порта и доставка клиенту (20' DC Nachlauf)",
+          "name_uk": "Вивезення контейнера з порту та доставка клієнту (20' DC Nachlauf)",
+          "name_de": "Abtransport Container vom Hafen (20' DC Nachlauf)",
+          "default_rate": 450.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "tms_provider" },
+            "CPT": { "status": "tms_provider" },
+            "CIP": { "status": "tms_provider" },
+            "DAP": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        }
+      },
+      "fcl_40hc": {
+        "vorlauf": {
+          "name_en": "Container Trucking to Port (40' HC Vorlauf)",
+          "name_ru": "Подача пустого контейнера под загрузку и доставка в порт (40' HC)",
+          "name_uk": "Подача порожнього контейнера під завантаження та доставка в порт (40' HC)",
+          "name_de": "Angetransport Container zum Hafen (40' HC Vorlauf)",
+          "default_rate": 600.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "sender" },
+            "FAS": { "status": "sender" },
+            "FOB": { "status": "sender" },
+            "CFR": { "status": "sender" },
+            "CIF": { "status": "sender" },
+            "CPT": { "status": "sender" },
+            "CIP": { "status": "sender" },
+            "DAP": { "status": "sender" },
+            "DPU": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        },
+        "hauptlauf": {
+          "name_en": "Ocean Freight (40' HC High Cube Container Hauptlauf)",
+          "name_ru": "Морской фрахт (Контейнер 40' HC Hauptlauf)",
+          "name_uk": "Морський фрахт (Контейнер 40' HC Hauptlauf)",
+          "name_de": "Seefracht (40'-HC-High-Cube-Container Hauptlauf)",
+          "default_rate": 2600.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "tms_provider" },
+            "CPT": { "status": "sender" },
+            "CIP": { "status": "sender" },
+            "DAP": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        },
+        "nachlauf": {
+          "name_en": "Container Trucking from Port to Door (40' HC Nachlauf)",
+          "name_ru": "Вывоз контейнера из порта и доставка клиенту (40' HC Nachlauf)",
+          "name_uk": "Вивезення контейнера з порту та доставка клієнту (40' HC Nachlauf)",
+          "name_de": "Abtransport Container vom Hafen (40' HC Nachlauf)",
+          "default_rate": 600.00,
+          "rules": {
+            "EXW": { "status": "tms_provider" },
+            "FCA": { "status": "tms_provider" },
+            "CPT": { "status": "tms_provider" },
+            "CIP": { "status": "tms_provider" },
+            "DAP": { "status": "sender" },
+            "DDP": { "status": "sender" }
+          }
+        }
+      }
+    }
+  },
+  "surcharges": {
+    "customs_export": {
+      "name_en": "Export Customs Clearance (ATLAS / EX-A)",
+      "name_ru": "Таможенное运行 экспорта (EX-A)",
+      "allowed_directions": ["Export"],
+      "default_rate": 50.00,
+      "default_qty": 1,
+      "rules": {
+        "EXW": { "status": "tms_provider" },
+        "FCA": { "status": "sender" },
+        "FAS": { "status": "sender" },
+        "FOB": { "status": "sender" },
+        "CFR": { "status": "sender" },
+        "CIF": { "status": "sender" },
+        "CPT": { "status": "sender" },
+        "CIP": { "status": "sender" },
+        "DAP": { "status": "sender" },
+        "DPU": { "status": "sender" },
+        "DDP": { "status": "sender" }
+      }
+    },
+    "customs_import": {
+      "name_en": "Import Customs Clearance (Ukraine)",
+      "name_ru": "Таможенная очистка импорта (Украина)",
+      "allowed_directions": ["Import"],
+      "default_rate": 100.00,
+      "default_qty": 1,
+      "rules": {
+        "EXW": { "status": "tms_provider" },
+        "FCA": { "status": "tms_provider" },
+        "FAS": { "status": "tms_provider" },
+        "FOB": { "status": "tms_provider" },
+        "CFR": { "status": "tms_provider" },
+        "CIF": { "status": "tms_provider" },
+        "CPT": { "status": "tms_provider" },
+        "CIP": { "status": "tms_provider" },
+        "DAP": { "status": "tms_provider" },
+        "DPU": { "status": "tms_provider" },
+        "DDP": { "status": "sender" }
+      }
+    },
+    "transit_declaration_t1": {
+      "name_en": "Transit Declaration (T1)",
+      "name_ru": "Транзитная декларация (T1)",
+      "allowed_directions": ["Export", "Import"],
+      "default_rate": 60.00,
+      "default_qty": 1,
+      "rules": {
+        "EXW": { "status": "tms_provider" },
+        "FCA": { "status": "tms_provider" },
+        "CPT": { "status": "tms_provider" },
+        "CIP": { "status": "tms_provider" },
+        "DAP": { "status": "included" },
+        "DDP": { "status": "included" }
+      }
+    },
+    "epr_declaration": {
+      "name_en": "Electronic Pre-Arrival Declaration (EPR / ПД)",
+      "name_ru": "Предварительная декларация (ПД / ПП)",
+      "allowed_directions": ["Import"],
+      "default_rate": 40.00,
+      "default_qty": 1,
+      "rules": {
+        "EXW": { "status": "tms_provider" },
+        "FCA": { "status": "tms_provider" },
+        "CPT": { "status": "tms_provider" },
+        "CIP": { "status": "tms_provider" },
+        "DAP": { "status": "tms_provider" },
+        "DDP": { "status": "included" }
+      }
+    },
+    "additional-hs-code": {
+      "name_en": "Additional HS-Code",
+      "name_ru": "Дополнительный HS-Code",
+      "allowed_directions": ["Export", "Import"],
+      "default_rate": 3.50,
+      "default_qty": 1,
+      "rules": {
+        "EXW": { "status": "tms_provider" },
+        "FCA": { "status": "tms_provider" },
+        "CPT": { "status": "tms_provider" },
+        "CIP": { "status": "tms_provider" },
+        "DAP": { "status": "tms_provider" },
+        "DDP": { "status": "included" }
+      }
+    },
+    "thc": {
+      "name_en": "Terminal Handling Charges (THC)",
+      "name_ru": "Терминальная обработка груза (THC)",
+      "allowed_directions": ["Export", "Import"],
+      "default_rate": 120.00,
+      "default_qty": 1,
+      "rules": {
+        "EXW": { "status": "tms_provider" },
+        "FCA": { "status": "tms_provider" },
+        "FAS": { "status": "tms_provider" },
+        "FOB": { "status": "tms_provider" },
+        "CFR": { "status": "sender" },
+        "CIF": { "status": "sender" },
+        "CPT": { "status": "sender" },
+        "CIP": { "status": "sender" },
+        "DAP": { "status": "sender" },
+        "DPU": { "status": "sender" },
+        "DDP": { "status": "sender" }
+      }
+    },
+    "demurrage": {
+      "name_en": "Demurrage (Truck Detention per day)",
+      "name_ru": "Простой автомобиля (за сутки)",
+      "allowed_directions": ["Export", "Import", "Domestic"],
+      "default_rate": 250.00,
+      "default_qty": 1,
+      "rules": {
+        "EXW": { "status": "tms_provider" },
+        "FCA": { "status": "tms_provider" },
+        "CPT": { "status": "tms_provider" },
+        "CIP": { "status": "tms_provider" },
+        "DAP": { "status": "tms_provider" },
+        "DDP": { "status": "tms_provider" }
+      }
+    },
+    "adr_surcharge": {
+      "name_en": "Dangerous Goods Surcharge (ADR)",
+      "name_ru": "Надбавка за опасный груз (ADR)",
+      "allowed_directions": ["Export", "Import", "Domestic"],
+      "default_rate": 150.00,
+      "default_qty": 1,
+      "rules": {
+        "EXW": { "status": "tms_provider" },
+        "FCA": { "status": "tms_provider" },
+        "CPT": { "status": "tms_provider" },
+        "CIP": { "status": "tms_provider" },
+        "DAP": { "status": "tms_provider" },
+        "DDP": { "status": "tms_provider" }
+      }
+    },
+    "frigo_temperature_control": {
+      "name_en": "Temperature Control Surcharge (Reefer)",
+      "name_ru": "Надбавка за температурный режим (Рефрижератор)",
+      "allowed_directions": ["Export", "Import", "Domestic"],
+      "default_rate": 200.00,
+      "default_qty": 1,
+      "rules": {
+        "EXW": { "status": "tms_provider" },
+        "FCA": { "status": "tms_provider" },
+        "CPT": { "status": "tms_provider" },
+        "CIP": { "status": "tms_provider" },
+        "DAP": { "status": "tms_provider" },
+        "DDP": { "status": "tms_provider" }
+      }
+    },
+    "insurance": {
+      "name_en": "Cargo Insurance (All Risks)",
+      "name_ru": "Страхование груза (От всех рисков)",
+      "allowed_directions": ["Export", "Import", "Domestic"],
+      "default_rate": 80.00,
+      "default_qty": 1,
+      "rules": {
+        "EXW": { "status": "tms_provider" },
+        "FCA": { "status": "tms_provider" },
+        "FAS": { "status": "tms_provider" },
+        "FOB": { "status": "tms_provider" },
+        "CFR": { "status": "tms_provider" },
+        "CIF": { "status": "sender" },
+        "CPT": { "status": "tms_provider" },
+        "CIP": { "status": "sender" },
+        "DAP": { "status": "tms_provider" },
+        "DDP": { "status": "tms_provider" }
+      }
+    },
+    "customs_inspection": {
+      "name_en": "Customs Physical Inspection Surcharge",
+      "name_ru": "Сбор за вызов на таможенный досмотр",
+      "allowed_directions": ["Export", "Import"],
+      "default_rate": 150.00,
+      "default_qty": 1,
+      "rules": {
+        "EXW": { "status": "tms_provider" },
+        "FCA": { "status": "tms_provider" },
+        "CPT": { "status": "tms_provider" },
+        "CIP": { "status": "tms_provider" },
+        "DAP": { "status": "tms_provider" },
+        "DDP": { "status": "included" }
+      }
+    },
+    "extra_pickup_delivery": {
+      "name_en": "Additional Loading / Unloading Point",
+      "name_ru": "Дополнительная точка погрузки / выгрузки",
+      "allowed_directions": ["Export", "Import", "Domestic"],
+      "default_rate": 100.00,
+      "default_qty": 1,
+      "rules": {
+        "EXW": { "status": "tms_provider" },
+        "FCA": { "status": "tms_provider" },
+        "CPT": { "status": "tms_provider" },
+        "CIP": { "status": "tms_provider" },
+        "DAP": { "status": "tms_provider" },
+        "DDP": { "status": "tms_provider" }
+      }
+    },
+    "taillift_delivery": {
+      "name_en": "Delivery with Tail-Lift truck",
+      "name_ru": "Доставка автомобилем с гидробортом",
+      "allowed_directions": ["Domestic"],
+      "default_rate": 45.00,
+      "default_qty": 1,
+      "rules": {
+        "EXW": { "status": "tms_provider" },
+        "FCA": { "status": "tms_provider" },
+        "CPT": { "status": "tms_provider" },
+        "CIP": { "status": "tms_provider" },
+        "DAP": { "status": "tms_provider" },
+        "DDP": { "status": "tms_provider" }
+      }
+    }
+  },
+  "payment_terms": [
+    {
+      "id": "adv_100",
+      "text_en": "100% Advance Payment",
+      "text_uk": "100% Авансовий платіж",
+      "text_de": "100% Vorkasse"
+    },
+    {
+      "id": "bank_3",
+      "text_en": "Within 3 banking days upon delivery",
+      "text_uk": "Протягом 3 банківських днів після доставки",
+      "text_de": "Innerhalb von 3 Bankarbeitstagen nach Lieferung"
+    },
+    {
+      "id": "bank_5",
+      "text_en": "Within 5 banking days upon CMR receipt",
+      "text_uk": "Протягом 5 банківських днів після отримання CMR",
+      "text_de": "Innerhalb von 5 Bankarbeitstagen nach Erhalt dokumente (CMR)"
+    },
+    {
+      "id": "net_30",
+      "text_en": "Net 30 days after invoice date",
+      "text_uk": "30 днів з дати виставлення рахунку",
+      "text_de": "30 Tage netto nach Rechnungsdatum"
+    }
+  ]
+}

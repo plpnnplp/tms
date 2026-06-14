@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMS - Ввод запроса</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="padding: 40px; background-color: #f8fafc;">
+
+    <div style="max-width: 600px; margin: 0 auto;">
+        <div style="margin-bottom: 15px;">
+            <a href="QuoteCreation.html" style="font-size: 13px; color: #2563eb; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                ← Вернуться к бланку КП
+            </a>
+        </div>
+
+        <section class="tms-component" id="raw-input-component" style="width: 100%; box-sizing: border-box;">
+            <h2>Ввод запроса</h2>
+            <p style="margin-top: -10px; margin-bottom: 15px; font-size: 13px; color: #64748b; line-height: 1.4;">
+                Вставьте сырой текст из мессенджера (например: "Одесса Мюнхен 100 кг 20 коробок 120х80х160 см FCA")
+            </p>        
+            <textarea id="rawText" placeholder="Вставьте текст запроса из мессенджера сюда..." style="width: 100%; height: 200px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; resize: none; box-sizing: border-box; margin-bottom: 12px; font-family: inherit; outline: none; transition: border-color 0.2s;"></textarea>
+            
+            <button id="btn-parse-data" class="tms-btn" style="width: 100%; height: 44px; background: #2563eb; color: #ffffff; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s;">
+                Парсить данные и открыть КП ⚡
+            </button>
+        </section>
+    </div>
+
+    <script src="parser.js"></script>
+    <script>
+    document.getElementById('btn-parse-data').addEventListener('click', () => {
+        const rawText = document.getElementById('rawText').value;
+        // Сохраняем текст для следующей страницы
+        localStorage.setItem('pendingQuoteData', rawText);
+        // Переходим к бланку
+        window.location.href = "QuoteCreation.html";
+    });
+</script>
+</body>
+</html>

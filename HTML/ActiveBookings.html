@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMS Logistics Core - Активные заказы</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <script src="header.js"></script>
+
+<div class="tms-container">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2 style="margin: 0; color: #1e293b; font-size: 24px; font-weight: 800;">Оперативное управление заказами (Active Bookings)</h2>
+        <a href="QuotesDatabase.html" style="background: #fff; border: 1px solid #cbd5e1; color: #475569; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 13px;">&larr; Вернуться в Базу КП</a>
+    </div>
+
+    <div class="tms-tabs">
+        <button class="tms-tab active" data-filter="all">Все активные <span class="badge" id="cntAll">0</span></button>
+        
+        <button class="tms-tab" data-filter="ae">Air Export <span class="badge" id="cntAE">0</span></button>
+        <button class="tms-tab" data-filter="ai">Air Import <span class="badge" id="cntAI">0</span></button>
+        <button class="tms-tab" data-filter="ad">Air Domestic <span class="badge" id="cntAD">0</span></button>
+
+        <button class="tms-tab" data-filter="se">Sea Export <span class="badge" id="cntSE">0</span></button>
+        <button class="tms-tab" data-filter="si">Sea Import <span class="badge" id="cntSI">0</span></button>
+        
+        <button class="tms-tab" data-filter="re">Road Export <span class="badge" id="cntRE">0</span></button>
+        <button class="tms-tab" data-filter="ri">Road Import <span class="badge" id="cntRI">0</span></button>
+        <button class="tms-tab" data-filter="rd">Road Domestic <span class="badge" id="cntRD">0</span></button>
+        
+        <button class="tms-tab danger" data-filter="delays" style="color: #ef4444; margin-left: auto;">Задержки / Alerts <span class="badge" id="cntDelays" style="background:#fee2e2; color:#ef4444;">0</span></button>
+    </div>
+
+    <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center;">
+        <span style="font-size: 13px; font-weight: 700; color: #64748b;">Быстрый поиск:</span>
+        <input type="text" id="tmsBookingSearchInput" placeholder="Поиск по ID заказа, клиенту, машине, контейнеру или рейсу..." style="flex-grow: 1; padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; color: #1e293b;">
+    </div>
+
+    <div class="tms-table-wrapper">
+        <table class="tms-table">
+            <thead>
+                <tr>
+                    <th style="width: 10%;">1. ID / Дата</th>
+                    <th style="width: 18%;">2. Участники (Bill-to / Shipper / Consignee)</th>
+                    <th style="width: 12%;">3. Маршрут</th>
+                    <th style="width: 10%;">4. Спецификация</th>
+                    <th style="width: 16%;">5. Операционные детали</th>
+                    <th style="width: 10%;">6. Этап / Сроки</th>
+                    <th style="width: 14%;">7. Финансы / Документы</th>
+                    <th style="width: 10%; text-align: right;">8. Действия</th>
+                </tr>
+            </thead>
+            <tbody id="tmsActiveOrdersTableBody">
+                </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script type="module" src="js/pages/page-bookings.js"></script>
+</body>
+</html>
