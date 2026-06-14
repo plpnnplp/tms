@@ -518,32 +518,46 @@ const UIController = {
         const currentLang = document.getElementById('configLanguage')?.getAttribute('data-selected') || 'en';
         paymentDropdown.innerHTML = '';
 
-        let termsList = [];
+        let rawList = [];
 
-        // 1. Пытаемся взять данные из бэкенда (prices.json)
+        // 1. Ищем данные с сервера (Бэкенд)
         if (pricesData && Array.isArray(pricesData.payment_terms) && pricesData.payment_terms.length > 0) {
-            termsList = pricesData.payment_terms.map(term => ({
-                id: term.id || term.key || term['text_' + currentLang],
-                text: term['text_' + currentLang] || term.text_en
-            }));
+            rawList = pricesData.payment_terms;
         } 
-        // 2. Если бэкенд пустой — строго берем фолбэк из центрального файла переводов
+        // 2. Ищем в файле переводов (Умный поиск по всем уровням вложенности)
         else {
-            const dict = tmsTitleTemplates[currentLang] || tmsTitleTemplates.en;
-            if (dict && Array.isArray(dict.default_payment_terms)) {
-                termsList = dict.default_payment_terms;
+            const dict = window.tmsTitleTemplates || {};
+            
+            // Проверяем все возможные места, куда ты мог положить default_payment_terms
+            if (Array.isArray(dict[currentLang]?.default_payment_terms)) {
+                rawList = dict[currentLang].default_payment_terms;
+            } else if (Array.isArray(dict.en?.default_payment_terms)) {
+                rawList = dict.en.default_payment_terms;
+            } else if (Array.isArray(dict.default_payment_terms)) {
+                // Если массив лежит в корне tmsTitleTemplates
+                rawList = dict.default_payment_terms;
+            } else {
+                // ВРЕМЕННЫЙ ФОЛБЭК: Если файл переводов сломан или не подгрузился
+                console.warn("TMS: Payment Terms не найдены ни в БД, ни в translations.js!");
+                rawList = [
+                    { id: "adv_100", text_en: "100% Advance Payment", text_ru: "100% Предоплата", text_uk: "100% Авансовий платіж" },
+                    { id: "post_14", text_en: "14 days net after delivery", text_ru: "14 дней после выгрузки", text_uk: "14 днів після вивантаження" }
+                ];
             }
         }
 
-        // Рендерим элементы. Менеджер выбирает полностью самостоятельно.
-        termsList.forEach(term => {
+        // 3. Динамический рендер
+        rawList.forEach(term => {
+            // Читаем текст под текущий язык, с запасом прочности на английский
+            const localizedText = term['text_' + currentLang] || term.text || term.text_en || term.name || "Unknown Term";
+            const termId = term.id || term.key || "unknown_id";
+
             const optionDiv = document.createElement('div');
             optionDiv.className = 'tms-payment-option tms-option';
             optionDiv.style.cssText = 'padding: 6px 12px; font-size: 11px; font-weight: 700; color: #1e293b; cursor: pointer; text-align: left; transition: background 0.15s;';
             
-            optionDiv.innerText = term.text;
-            // В data-value уходит инвариантный ID (например "advance_100"), а не локализованный текст
-            optionDiv.setAttribute('data-value', term.id); 
+            optionDiv.innerText = localizedText;
+            optionDiv.setAttribute('data-value', termId); 
             
             paymentDropdown.appendChild(optionDiv);
         });

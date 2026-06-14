@@ -208,18 +208,26 @@ async function loadTmsPrices() {
         window.tmsCitiesData = cities;
         console.log("TMS: Справочники с бэкенда загружены успешно");
     } catch (error) {
-        console.warn("TMS: Бэкенд недоступен. Переход на автономный режим (фолбэк).", error.message);
+        console.warn("TMS: Бэкенд недоступен. Переход на автономный режим (фолбэк).");
         window.tmsPricesData = null;
         window.tmsCitiesData = null;
     } finally {
-        // Блок finally выполняется ВСЕГДА. 
-        // Если prices === null, функции сами возьмут переводы из translations.js
-        if (typeof initAdditionalServicesDropdown === 'function') initAdditionalServicesDropdown(prices);
-        if (typeof initPaymentTermsDropdown === 'function') initPaymentTermsDropdown(prices);
-        
-        const currentTransport = document.getElementById('configTransport')?.getAttribute('data-selected') || 'road';
-        if (window.UIController && typeof window.UIController.filterIncotermsOptions === 'function') {
-            window.UIController.filterIncotermsOptions(currentTransport);
+        // Вызываем методы строго из UIController, передавая данные напрямую
+        if (window.UIController) {
+            if (typeof window.UIController.initAdditionalServicesDropdown === 'function') {
+                window.UIController.initAdditionalServicesDropdown(window.tmsPricesData);
+            }
+            
+            if (typeof window.UIController.initPaymentTermsDropdown === 'function') {
+                window.UIController.initPaymentTermsDropdown(window.tmsPricesData);
+            }
+            
+            const currentTransport = document.getElementById('configTransport')?.getAttribute('data-selected') || 'road';
+            if (typeof window.UIController.filterIncotermsOptions === 'function') {
+                window.UIController.filterIncotermsOptions(currentTransport);
+            }
+        } else {
+            console.error("TMS Error: UIController не инициализирован к моменту загрузки данных.");
         }
     }
 }
