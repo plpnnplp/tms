@@ -12,55 +12,52 @@ import { injectTmsHeader } from '../ui/header.js';
 import { tmsTitleTemplates } from '../translations.js';
 
 // --- 1. ИНИЦИАЛИЗАЦИЯ ---
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
     console.log("🚀 [TMS] Шаг 1: Запуск скрипта бланка...");
 
-    // БЛОК А: Инициализация UI (Выполняется мгновенно, не ждет сеть)
+    // БЛОК А: Инициализация UI (Строго синхронно)
     try {
         injectTmsHeader();
-    window.tmsTitleTemplates = tmsTitleTemplates;
-    await loadTmsPrices();
-    initEventListeners();
-    UIController.initDropdownListeners();
-    HistoryManager.init();
-    UIController.initReactivity();
-    UIController.initCityAutocomplete();
-
-    if (typeof UIController.initReactivity === 'function') {
-        UIController.initReactivity();
-    }
-
-    console.log("✅ [TMS] Шаг 2: Интерфейс успешно активирован.");
-    } catch (err) {
-        console.error("❌ [TMS ОШИБКА UI] Где-то сломалась логика интерфейса:", err);
-    }
-
-    // БЛОК Б: Сетевые запросы (Не блокируют интерфейс)
-    try {
-        console.log("⏳ [TMS] Шаг 3: Запрос справочников с сервера...");
-        await loadTmsPrices();
-        console.log("✅ [TMS] Шаг 4: Справочники (цены и города) загружены!");
-    } catch (err) {
-        console.error("❌ [TMS ОШИБКА СЕТИ] Бэкенд не отдал справочники:", err);
-    }
-
-    processUrlRouting();
-
-    console.log("Текущий словарь:", window.tmsTitleTemplates);
-
-    const savedData = localStorage.getItem('pendingQuoteData');
-    if (savedData) {
-        // Очищаем, чтобы при обновлении страницы парсинг не повторялся
-        localStorage.removeItem('pendingQuoteData');
+        window.tmsTitleTemplates = tmsTitleTemplates;
         
-        // Вставляем текст в поле на странице бланка (убедись, что оно там есть)
-        const inputField = document.getElementById('rawText');
-        if (inputField) {
-            inputField.value = savedData;
-            // Авто-запуск парсинга
-            executeTmsTextParser();
+        // СНАЧАЛА навешиваем все слушатели, интерфейс должен реагировать немедленно
+        initEventListeners();
+        UIController.initDropdownListeners();
+        HistoryManager.init();
+        
+        if (typeof UIController.initReactivity === 'function') {
+            UIController.initReactivity();
         }
+        UIController.initCityAutocomplete();
+
+        console.log("✅ [TMS] Шаг 2: Интерфейс успешно активирован.");
+    } catch (err) {
+        console.error("❌ [TMS ОШИБКА UI] Логика интерфейса нарушена:", err);
     }
+
+    // БЛОК Б: Асинхронные сетевые запросы (В фоновом режиме)
+    (async () => {
+        try {
+            console.log("⏳ [TMS] Шаг 3: Запрос справочников с сервера...");
+            await loadTmsPrices();
+            console.log("✅ [TMS] Шаг 4: Справочники загружены, селекты обновлены!");
+        } catch (err) {
+            console.error("❌ [TMS ОШИБКА СЕТИ] Бэкенд не отдал справочники:", err);
+            // Здесь в будущем нужно добавить вывод уведомления пользователю (Toast/Alert)
+        }
+
+        processUrlRouting();
+
+        const savedData = localStorage.getItem('pendingQuoteData');
+        if (savedData) {
+            localStorage.removeItem('pendingQuoteData');
+            const inputField = document.getElementById('rawText');
+            if (inputField) {
+                inputField.value = savedData;
+                executeTmsTextParser();
+            }
+        }
+    })();
 });
 
 function initEventListeners() {
