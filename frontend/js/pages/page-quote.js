@@ -20,10 +20,15 @@ document.addEventListener("DOMContentLoaded", () => {
         injectTmsHeader();
         window.tmsTitleTemplates = tmsTitleTemplates;
         
-        // СНАЧАЛА навешиваем все слушатели, интерфейс должен реагировать немедленно
         initEventListeners();
         UIController.initDropdownListeners();
         HistoryManager.init();
+        UIController.initCityAutocomplete();
+        
+        // ВЫЗЫВАЕМ ЗДЕСЬ, ДО СЕТЕВОГО ЗАПРОСА
+        if (typeof UIController.initTmsBlankDateTime === 'function') {
+            UIController.initTmsBlankDateTime();
+        }
         
         if (typeof UIController.initReactivity === 'function') {
             UIController.initReactivity();

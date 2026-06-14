@@ -193,67 +193,120 @@ const UIController = {
             // 4. Метаданные бланка
             safeSetText('validUntilDate', state.meta.validUntilDate);
 
-            // 5. Реактивный рендеринг таблицы грузов
+            // 5. Реактивный рендеринг таблицы грузов (С защитой фокуса)
             const cargoTbody = document.getElementById('tmsCargoTableBody');
             if (cargoTbody && state.cargo) {
-                cargoTbody.innerHTML = '';
-                state.cargo.forEach((cItem, index) => {
-                    const tr = document.createElement('tr');
-                    tr.className = "tms-cargo-row";
-                    tr.setAttribute('data-id', cItem.id);
-                    
-                    let buttonsHtml = `<button type="button" class="tms-row-action-btn btn-plus" onclick="window.appStore.addCargoRow()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>`;
-                    if (index > 0) {
-                        buttonsHtml += `<button type="button" class="tms-row-action-btn btn-minus" onclick="window.appStore.removeCargoRow('${cItem.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>`;
-                    }
+                // Если количество строк изменилось (добавили/удалили груз) — перерисовываем структуру
+                if (cargoTbody.children.length !== state.cargo.length) {
+                    cargoTbody.innerHTML = '';
+                    state.cargo.forEach((cItem, index) => {
+                        const tr = document.createElement('tr');
+                        tr.className = "tms-cargo-row";
+                        tr.setAttribute('data-id', cItem.id);
+                        
+                        let buttonsHtml = `<button type="button" class="tms-row-action-btn btn-plus"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>`;
+                        if (index > 0) {
+                            buttonsHtml += `<button type="button" class="tms-row-action-btn btn-minus"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>`;
+                        }
 
-                    tr.innerHTML = `
-                        <td style="text-align: center; padding: 0 4px; position: relative;" class="tms-cargo-first-cell">
-                            <input type="number" class="cargo-qty" value="${cItem.qty}" style="width: 55px; border: none; background: #f8fafc; border-radius: 4px; padding: 3px 4px; font-weight: 700; font-size: 13px; text-align: center;">
-                            <div class="tms-cargo-action-wrapper">${buttonsHtml}</div>
-                        </td>
-                        <td style="text-align: center; padding: 0 4px;">
-                            <div class="tms-custom-select-wrapper" style="position: relative; display: inline-block; width: 100%;">
-                                <div class="tms-select-trigger" style="font-weight: 700; font-size: 11px; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px 20px 2px 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; position: relative; height: 20px; box-sizing: border-box;">${cItem.stack}</div>
-                            </div>
-                        </td>
-                        <td style="text-align: center; padding: 0 4px;">
-                            <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-                                <input type="number" class="cargo-dim-l" value="${cItem.l}" style="width: 48px; border: none; background: #f8fafc; border-radius: 4px; padding: 3px 4px; font-weight: 700; font-size: 12px; text-align: center;"><span>×</span>
-                                <input type="number" class="cargo-dim-w" value="${cItem.w}" style="width: 48px; border: none; background: #f8fafc; border-radius: 4px; padding: 3px 4px; font-weight: 700; font-size: 12px; text-align: center;"><span>×</span>
-                                <input type="number" class="cargo-dim-h" value="${cItem.h}" style="width: 48px; border: none; background: #f8fafc; border-radius: 4px; padding: 3px 4px; font-weight: 700; font-size: 12px; text-align: center;">
-                            </div>
-                        </td>
-                        <td style="text-align: center; padding: 0 4px;">
-                            <input type="number" class="cargo-weight" value="${cItem.weight}" style="width: 75px; border: none; background: #f8fafc; border-radius: 4px; padding: 3px 4px; font-weight: 700; font-size: 13px; text-align: center;">
-                        </td>
-                        <td style="text-align: center; padding: 0 4px;"><span class="cargo-charge-weight" style="font-weight: 800; font-size: 13px; color: #475569;">${cItem.charge}</span></td>
-                        <td style="text-align: center; padding: 0 4px;"><span class="cargo-ldm-val" style="font-weight: 800; font-size: 13px; color: #2563eb;">${cItem.ldm}</span></td>
-                    `;
-                    
-                    // ДОБАВЛЕНО: Подписываем инпуты на обновление стейта (взято из удаленного дубликата)
-                    tr.querySelectorAll('input[type="number"]').forEach(input => {
-                        input.addEventListener('input', (e) => {
-                            const rowId = e.target.closest('tr').getAttribute('data-id');
-                            const currentState = window.appStore.getState();
-                            const updatedCargo = currentState.cargo.map(c => {
-                                if (c.id === rowId) {
-                                    if (e.target.classList.contains('cargo-qty')) c.qty = e.target.value;
-                                    if (e.target.classList.contains('cargo-dim-l')) c.l = e.target.value;
-                                    if (e.target.classList.contains('cargo-dim-w')) c.w = e.target.value;
-                                    if (e.target.classList.contains('cargo-dim-h')) c.h = e.target.value;
-                                    if (e.target.classList.contains('cargo-weight')) c.weight = e.target.value;
-                                }
-                                return c;
+                        tr.innerHTML = `
+                            <td style="text-align: center; padding: 0 4px; position: relative;" class="tms-cargo-first-cell">
+                                <input type="number" class="cargo-qty" value="${cItem.qty}" style="width: 55px; border: none; background: #f8fafc; border-radius: 4px; padding: 3px 4px; font-weight: 700; font-size: 13px; text-align: center;">
+                                <div class="tms-cargo-action-wrapper">${buttonsHtml}</div>
+                            </td>
+                            <td style="text-align: center; padding: 0 4px;">
+                                <div class="tms-custom-select-wrapper" style="position: relative; display: inline-block; width: 100%;">
+                                    <div class="tms-select-trigger" style="font-weight: 700; font-size: 11px; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px 20px 2px 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; position: relative; height: 20px; box-sizing: border-box;">${cItem.stack}</div>
+                                </div>
+                            </td>
+                            <td style="text-align: center; padding: 0 4px;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                    <input type="number" class="cargo-dim-l" value="${cItem.l}" style="width: 48px; border: none; background: #f8fafc; border-radius: 4px; padding: 3px 4px; font-weight: 700; font-size: 12px; text-align: center;"><span>×</span>
+                                    <input type="number" class="cargo-dim-w" value="${cItem.w}" style="width: 48px; border: none; background: #f8fafc; border-radius: 4px; padding: 3px 4px; font-weight: 700; font-size: 12px; text-align: center;"><span>×</span>
+                                    <input type="number" class="cargo-dim-h" value="${cItem.h}" style="width: 48px; border: none; background: #f8fafc; border-radius: 4px; padding: 3px 4px; font-weight: 700; font-size: 12px; text-align: center;">
+                                </div>
+                            </td>
+                            <td style="text-align: center; padding: 0 4px;">
+                                <input type="number" class="cargo-weight" value="${cItem.weight}" style="width: 75px; border: none; background: #f8fafc; border-radius: 4px; padding: 3px 4px; font-weight: 700; font-size: 13px; text-align: center;">
+                            </td>
+                            <td style="text-align: center; padding: 0 4px;"><span class="cargo-charge-weight" style="font-weight: 800; font-size: 13px; color: #475569;">${cItem.charge}</span></td>
+                            <td style="text-align: center; padding: 0 4px;"><span class="cargo-ldm-val" style="font-weight: 800; font-size: 13px; color: #2563eb;">${cItem.ldm}</span></td>
+                        `;
+                        
+                        // Реактивность ввода: при изменении значения обновляем State
+                        tr.querySelectorAll('input[type="number"]').forEach(input => {
+                            input.addEventListener('input', (e) => {
+                                const rowId = e.target.closest('tr').getAttribute('data-id');
+                                const currentState = window.appStore.getState();
+                                const updatedCargo = currentState.cargo.map(c => {
+                                    if (c.id === rowId) {
+                                        if (e.target.classList.contains('cargo-qty')) c.qty = e.target.value;
+                                        if (e.target.classList.contains('cargo-dim-l')) c.l = e.target.value;
+                                        if (e.target.classList.contains('cargo-dim-w')) c.w = e.target.value;
+                                        if (e.target.classList.contains('cargo-dim-h')) c.h = e.target.value;
+                                        if (e.target.classList.contains('cargo-weight')) c.weight = e.target.value;
+                                    }
+                                    return c;
+                                });
+                                
+                                window.appStore.update(null, { cargo: updatedCargo }, false);
+                                if (window.Calculator) window.Calculator.recalculateFinances();
                             });
-                            
-                            window.appStore.update(null, { cargo: updatedCargo }, false);
-                            if (window.Calculator) window.Calculator.recalculateFinances();
                         });
-                    });
 
-                    cargoTbody.appendChild(tr);
+                        cargoTbody.appendChild(tr);
+                    });
+                } else {
+                    // Если количество строк не изменилось, делаем DOM Diffing (точечное обновление)
+                    // Это предотвращает выбивание каретки (потерю фокуса) при вводе более одного символа.
+                    state.cargo.forEach((cItem, index) => {
+                        const row = cargoTbody.children[index];
+                        if (!row) return;
+
+                        const safeUpdateInput = (selector, val) => {
+                            const el = row.querySelector(selector);
+                            // Обновляем значение ТОЛЬКО если курсор сейчас НЕ в этом поле
+                            if (el && el !== document.activeElement && el.value !== String(val)) {
+                                el.value = val;
+                            }
+                        };
+
+                        safeUpdateInput('.cargo-qty', cItem.qty);
+                        safeUpdateInput('.cargo-dim-l', cItem.l);
+                        safeUpdateInput('.cargo-dim-w', cItem.w);
+                        safeUpdateInput('.cargo-dim-h', cItem.h);
+                        safeUpdateInput('.cargo-weight', cItem.weight);
+
+                        // Текстовые поля (расчетные значения) можно обновлять напрямую
+                        const chargeEl = row.querySelector('.cargo-charge-weight');
+                        if (chargeEl) chargeEl.innerText = cItem.charge;
+                        
+                        const ldmEl = row.querySelector('.cargo-ldm-val');
+                        if (ldmEl) ldmEl.innerText = cItem.ldm;
+                        
+                        const stackEl = row.querySelector('.tms-select-trigger');
+                        if (stackEl && stackEl.innerText !== cItem.stack) stackEl.innerText = cItem.stack;
+                    });
+                }
+
+                // ПОДСЧЕТ "РЯДА ОБЩЕГО" (Итого)
+                let totalQty = 0, totalWeight = 0, totalCharge = 0, totalLdm = 0;
+                state.cargo.forEach(c => {
+                    totalQty += Number(c.qty) || 0;
+                    totalWeight += Number(c.weight) || 0;
+                    totalCharge += Number(c.charge) || 0;
+                    totalLdm += Number(c.ldm) || 0;
                 });
+
+                const safeSetInnerText = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerText = val;
+                };
+
+                safeSetInnerText('tmsCargoTotalQty', totalQty);
+                safeSetInnerText('tmsCargoTotalRealWeight', totalWeight.toFixed(2));
+                safeSetInnerText('tmsCargoTotalChargeWeight', totalCharge.toFixed(2));
+                safeSetInnerText('tmsCargoTotalLdm', totalLdm.toFixed(2));
             }
 
             // 6. Реактивный рендеринг таблицы стоимостей (Экспедиторский PnL-интерфейс)
@@ -893,12 +946,22 @@ const UIController = {
     },
 
     filterIncotermsOptions(transport) {
+
+        const defaultIncoterms = {
+            'road': ['EXW', 'FCA', 'CPT', 'DAP', 'DDP'],
+            'air': ['EXW', 'FCA', 'CPT', 'DAP', 'DDP'],
+            'sea': ['EXW', 'FOB', 'CIF', 'DAP']
+        };
+
+        const allowedInco = (window.tmsPricesData?.meta?.incoterms_by_transport && window.tmsPricesData.meta.incoterms_by_transport[transport]) 
+                            || defaultIncoterms[transport] 
+                            || defaultIncoterms['road'];
+
         if (!window.tmsPricesData || !window.tmsPricesData.meta?.incoterms_by_transport) {
             console.warn("TMS Core: Справочник incoterms_by_transport не найден в prices.json");
             return;
         }
 
-        const allowedInco = window.tmsPricesData.meta.incoterms_by_transport[transport] || [];
         const incotermTrigger = document.getElementById('blankIncotermsCode');
         if (!incotermTrigger) return;
 
