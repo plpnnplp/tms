@@ -981,20 +981,18 @@ const UIController = {
     },
 
     filterIncotermsOptions(transport) {
-
+        // 1. Автономная база (Срабатывает всегда, если сервер лежит)
         const defaultIncoterms = {
-            'road': ['EXW', 'FCA', 'CPT', 'DAP', 'DDP'],
-            'air': ['EXW', 'FCA', 'CPT', 'DAP', 'DDP'],
-            'sea': ['EXW', 'FOB', 'CIF', 'DAP']
+            'road': ['EXW', 'FCA', 'CPT', 'CIP', 'DAP', 'DDP'],
+            'air': ['EXW', 'FCA', 'CPT', 'CIP', 'DAP', 'DDP'],
+            'sea': ['EXW', 'FCA', 'CPT', 'CIP', 'DAP','FOB', 'CFR', 'CIF', 'DDP']
         };
 
-        const allowedInco = (window.tmsPricesData?.meta?.incoterms_by_transport && window.tmsPricesData.meta.incoterms_by_transport[transport]) 
-                            || defaultIncoterms[transport] 
-                            || defaultIncoterms['road'];
+        // 2. Определяем доступный список (пытаемся взять с сервера, иначе берем автономный)
+        let allowedInco = defaultIncoterms[transport] || defaultIncoterms['road'];
 
-        if (!window.tmsPricesData || !window.tmsPricesData.meta?.incoterms_by_transport) {
-            console.warn("TMS Core: Справочник incoterms_by_transport не найден в prices.json");
-            return;
+        if (window.tmsPricesData && window.tmsPricesData.meta && window.tmsPricesData.meta.incoterms_by_transport) {
+            allowedInco = window.tmsPricesData.meta.incoterms_by_transport[transport] || allowedInco;
         }
 
         const incotermTrigger = document.getElementById('blankIncotermsCode');
@@ -1005,6 +1003,7 @@ const UIController = {
 
         dropdown.innerHTML = '';
 
+        // 3. Рендер элементов списка
         allowedInco.forEach(incoCode => {
             const optDiv = document.createElement('div');
             optDiv.className = 'tms-option'; 
@@ -1014,12 +1013,12 @@ const UIController = {
             dropdown.appendChild(optDiv);
         });
 
+        // 4. Валидация текущего выбора на бланке
         const currentSelectedInco = incotermTrigger.innerText.trim().toUpperCase();
         if (currentSelectedInco && !allowedInco.includes(currentSelectedInco)) {
-            const defaultFallback = allowedInco.includes("FCA") ? "FCA" : allowedInco[0] || "EXW";
+            const defaultFallback = allowedInco.includes("FCA") ? "FCA" : (allowedInco[0] || "EXW");
             incotermTrigger.innerText = defaultFallback;
             incotermTrigger.setAttribute('data-selected', defaultFallback);
-            console.log(`TMS Автоматизация: Базис ${currentSelectedInco} недоступен для транспорта "${transport}". Сброшено на ${defaultFallback}.`);
         }
     },
 
