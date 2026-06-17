@@ -1,14 +1,55 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 import json
 import os
 
 from app.core.database import SessionLocal, QuoteDB, CounterpartyDB
 
 app = FastAPI(title="TMS Core API")
+
+# --- PYDANTIC СХЕМЫ ---
+class ContactSchema(BaseModel):
+    position: str = ""
+    salutation: str = ""
+    first_name: str = ""
+    last_name: str = ""
+    email: str = ""
+    phone: str = ""
+    tg_nick: str = ""
+    has_telegram: bool = False
+    has_whatsapp: bool = False
+    has_viber: bool = False
+
+class CounterpartySchema(BaseModel):
+    name: str
+    name_extra: str = ""
+    short_name: str = ""
+    street: str = ""
+    house_no: str = ""
+    office_no: str = ""
+    postal_code: str = ""
+    city: str = ""
+    region: str = ""
+    country: str = ""
+    country_iso: str = ""
+    country_en: str = ""
+    is_client_sender: bool = False
+    is_client_receiver: bool = False
+    is_carrier: bool = False
+    is_agent: bool = False
+    tax_number: str = ""
+    vat_id: str = ""
+    eori_number: str = ""
+    language: str = "en"
+    currency: str = "EUR"
+    credit_limit: float = 0.0
+    payment_terms: str = ""
+    contacts: List[ContactSchema] = []
+
+# --- CORS ---
 
 app.add_middleware(
     CORSMiddleware,
@@ -73,16 +114,25 @@ class CounterpartyCreate(BaseModel):
 # --- ЭНДПОИНТЫ КОНТРАГЕНТОВ ---
 from sqlalchemy.orm import joinedload
 
-@app.get("/api/counterparties")
-def get_all_counterparties(db: Session = Depends(get_db)):
-    results = db.query(CounterpartyDB).options(joinedload(CounterpartyDB.contacts)).order_by(CounterpartyDB.name).all()
+@app.post("/api/counterparties", status_code=201)
+def create_counterparty(cp: CounterpartySchema, db: Session = Depends(get_db)):
+    data_dict = cp.model_dump()
+    contacts_data = data_dict.pop("contacts", [])
     
-    # Ручная сериализация для избежания Ошибки 500
-    return [{
-        "id": c.id, "name": c.name, "short_name": c.short_name,
-        "role": c.role, "country": c.country, "payment_terms": c.payment_terms,
-        "contacts": [{"first_name": cont.first_name, "last_name": cont.last_name, "email": cont.email, "phone": cont.phone} for cont in c.contacts]
-    } for c in results]
+    new_cp = CounterpartyDB(**data_dict)
+    db.add(new_cp)
+    db.commit()
+    db.refresh(new_cp)
+    
+    for c_data in contacts_data:
+        db.add(ContactDB(**c_data, counterparty_id=new_cp.id))
+    db.commit()
+    return {"status": "created", "id": new_cp.id}
+
+@app.get("/api/counterparties")
+def get_counterparties(db: Session = Depends(get_db)):
+    results = db.query(CounterpartyDB).options(joinedload(CounterpartyDB.contacts)).order_by(CounterpartyDB.name).all()
+    return results
 
 @app.get("/api/counterparties/search")
 def search_counterparties(q: str, db: Session = Depends(get_db)):
@@ -97,13 +147,35 @@ def search_counterparties(q: str, db: Session = Depends(get_db)):
     } for c in results]
 
 @app.get("/api/counterparties/{cp_id}")
-def get_counterparty(cp_id: int, db: Session = Depends(get_db)):
-    c = db.query(CounterpartyDB).options(joinedload(CounterpartyDB.contacts)).filter(CounterpartyDB.id == cp_id).first()
-    if not c: return None
-    return {
-        "id": c.id, "name": c.name, "country": c.country, "payment_terms": c.payment_terms,
-        "contacts": [{"first_name": cont.first_name, "last_name": cont.last_name, "email": cont.email, "phone": cont.phone} for cont in c.contacts]
-    }
+def get_counterparty_by_id(cp_id: int, db: Session = Depends(get_db)):
+    return db.query(CounterpartyDB).options(joinedload(CounterpartyDB.contacts)).filter(CounterpartyDB.id == cp_id).first()
+
+@app.put("/api/counterparties/{cp_id}")
+def update_counterparty(cp_id: int, cp: CounterpartySchema, db: Session = Depends(get_db)):
+    db_cp = db.query(CounterpartyDB).filter(CounterpartyDB.id == cp_id).first()
+    if not db_cp:
+        return {"status": "error", "message": "Not found"}
+        
+    data_dict = cp.model_dump()
+    contacts_data = data_dict.pop("contacts", [])
+    
+    # Обновляем поля компании
+    for key, value in data_dict.items():
+        setattr(db_cp, key, value)
+        
+    # Стираем старые контакты и пишем новые
+    db.query(ContactDB).filter(ContactDB.counterparty_id == cp_id).delete()
+    for c_data in contacts_data:
+        db.add(ContactDB(**c_data, counterparty_id=cp_id))
+        
+    db.commit()
+    return {"status": "updated", "id": cp_id}
+
+@app.delete("/api/counterparties/{cp_id}")
+def delete_counterparty(cp_id: int, db: Session = Depends(get_db)):
+    db.query(CounterpartyDB).filter(CounterpartyDB.id == cp_id).delete()
+    db.commit()
+    return {"status": "deleted"}
 
 # --- ЭНДПОИНТЫ РАБОТЫ С КОММЕРЧЕСКИМИ ПРЕДЛОЖЕНИЯМИ ---
 
