@@ -2,10 +2,11 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+from typing import List
 import json
 import os
 
-from app.core.database import SessionLocal, QuoteDB
+from app.core.database import SessionLocal, QuoteDB, CounterpartyDB
 
 app = FastAPI(title="TMS Core API")
 
@@ -53,6 +54,56 @@ def get_cities():
             return json.load(f)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="cities.json не найден")
+
+# --- СХЕМЫ КОНТРАГЕНТОВ ---
+class ContactCreate(BaseModel):
+    first_name: str = ""
+    last_name: str = ""
+    email: str = ""
+    phone: str = ""
+
+class CounterpartyCreate(BaseModel):
+    name: str
+    short_name: str = ""
+    role: str = "client"
+    country: str = ""
+    payment_terms: str = ""
+    contacts: List[ContactCreate] = []
+
+# --- ЭНДПОИНТЫ КОНТРАГЕНТОВ ---
+from sqlalchemy.orm import joinedload
+
+@app.get("/api/counterparties")
+def get_all_counterparties(db: Session = Depends(get_db)):
+    results = db.query(CounterpartyDB).options(joinedload(CounterpartyDB.contacts)).order_by(CounterpartyDB.name).all()
+    
+    # Ручная сериализация для избежания Ошибки 500
+    return [{
+        "id": c.id, "name": c.name, "short_name": c.short_name,
+        "role": c.role, "country": c.country, "payment_terms": c.payment_terms,
+        "contacts": [{"first_name": cont.first_name, "last_name": cont.last_name, "email": cont.email, "phone": cont.phone} for cont in c.contacts]
+    } for c in results]
+
+@app.get("/api/counterparties/search")
+def search_counterparties(q: str, db: Session = Depends(get_db)):
+    if len(q) < 2: return []
+    results = db.query(CounterpartyDB).options(joinedload(CounterpartyDB.contacts)).filter(
+        (CounterpartyDB.name.ilike(f"%{q}%")) | (CounterpartyDB.short_name.ilike(f"%{q}%"))
+    ).limit(10).all()
+    
+    return [{
+        "id": c.id, "name": c.name, "country": c.country, "payment_terms": c.payment_terms,
+        "contacts": [{"first_name": cont.first_name, "last_name": cont.last_name, "email": cont.email, "phone": cont.phone} for cont in c.contacts]
+    } for c in results]
+
+@app.get("/api/counterparties/{cp_id}")
+def get_counterparty(cp_id: int, db: Session = Depends(get_db)):
+    c = db.query(CounterpartyDB).options(joinedload(CounterpartyDB.contacts)).filter(CounterpartyDB.id == cp_id).first()
+    if not c: return None
+    return {
+        "id": c.id, "name": c.name, "country": c.country, "payment_terms": c.payment_terms,
+        "contacts": [{"first_name": cont.first_name, "last_name": cont.last_name, "email": cont.email, "phone": cont.phone} for cont in c.contacts]
+    }
 
 # --- ЭНДПОИНТЫ РАБОТЫ С КОММЕРЧЕСКИМИ ПРЕДЛОЖЕНИЯМИ ---
 
