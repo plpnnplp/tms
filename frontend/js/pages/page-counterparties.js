@@ -330,22 +330,18 @@ function initTabsLogic() {
 
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            // 1. Убираем класс active у всех кнопок и скрываем контент
+            // 1. Снимаем класс active со всех кнопок и вкладок
             tabBtns.forEach(b => b.classList.remove('active'));
-            tabContents.forEach(c => {
-                c.classList.remove('active');
-                c.style.display = 'none';
-            });
+            tabContents.forEach(c => c.classList.remove('active'));
 
-            // 2. Активируем нажатую кнопку
+            // 2. Добавляем active на нажатую кнопку
             btn.classList.add('active');
 
-            // 3. Показываем нужный контент
-            const targetId = btn.getAttribute('data-target');
+            // 3. Добавляем active на связанный контент
+            const targetId = btn.getAttribute('data-tab');
             const targetContent = document.getElementById(targetId);
             if (targetContent) {
                 targetContent.classList.add('active');
-                targetContent.style.display = 'block';
             }
         });
     });
@@ -380,26 +376,46 @@ async function loadPaymentTermsDropdown() {
 }
 
 window.showTab = function(tabId, btn) {
-    // 1. Находим все вкладки и убираем у них класс active
-    const allTabs = document.querySelectorAll('.tms-tab-content');
-    allTabs.forEach(tab => {
-        tab.classList.remove('active');
+    // 1. Прячем ВСЕ вкладки через добавление класса tms-hidden
+    document.querySelectorAll('[id^="tab-"]').forEach(el => {
+        el.classList.add('tms-hidden');
     });
-
-    // 2. Находим все кнопки и убираем у них активное состояние (если есть)
-    const allBtns = document.querySelectorAll('.tms-tab-btn');
-    allBtns.forEach(b => {
-        b.classList.remove('active');
+    
+    // 2. Снимаем статус active со всех горизонтальных кнопок
+    document.querySelectorAll('.tms-tab-btn').forEach(el => {
+        el.classList.remove('active');
     });
-
-    // 3. Добавляем активный класс только нужной вкладке
+    
+    // 3. Открываем нужную вкладку, убирая tms-hidden
     const targetTab = document.getElementById(tabId);
     if (targetTab) {
-        targetTab.classList.add('active');
+        targetTab.classList.remove('tms-hidden');
     }
-
-    // 4. Подсвечиваем нажатую кнопку
+    
+    // 4. Подсвечиваем синим нажатую кнопку в ряду
     if (btn) {
         btn.classList.add('active');
     }
+    console.log(`[TMS CORE] Переключение на среду: ${tabId}`);
 };
+
+// Функция надежного переключения вкладок
+function initTabs() {
+    const tabBtns = document.querySelectorAll('.tms-tab-btn');
+    const tabContents = document.querySelectorAll('.tms-tab-content');
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+
+            btn.classList.add('active');
+
+            const targetId = btn.getAttribute('data-tab');
+            const targetTab = document.getElementById(targetId);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+        });
+    });
+}

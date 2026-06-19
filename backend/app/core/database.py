@@ -2,11 +2,30 @@ from sqlalchemy import create_engine, Column, String, Text, DateTime, Integer, F
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 import datetime
 
-# SQLALCHEMY_DATABASE_URL = "sqlite:///./tms_core.db"
-# engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
-# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-# Base = declarative_base()
+SQLALCHEMY_DATABASE_URL = "sqlite:///./tms_core.db"
 
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()
+
+# ==========================================
+# 1. ТАБЛИЦА КОММЕРЧЕСКИХ ПРЕДЛОЖЕНИЙ (КП)
+# ==========================================
+class QuoteDB(Base):
+    __tablename__ = "quotes"
+
+    id = Column(String, primary_key=True, index=True) 
+    status = Column(String, default="draft")
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    data = Column(Text) 
+
+
+# ==========================================
+# 2. ТАБЛИЦЫ КОНТРАГЕНТОВ И КОНТАКТОВ
+# ==========================================
 class CounterpartyDB(Base):
     __tablename__ = "counterparties"
     
@@ -26,7 +45,7 @@ class CounterpartyDB(Base):
     country_iso = Column(String, default="")
     country_en = Column(String, default="")
     
-    # Роли (флаги вместо текста для точной фильтрации)
+    # Роли
     is_client_sender = Column(Boolean, default=False)
     is_client_receiver = Column(Boolean, default=False)
     is_carrier = Column(Boolean, default=False)
@@ -34,15 +53,18 @@ class CounterpartyDB(Base):
 
     # 1.1б Финансовая информация
     tax_number = Column(String, default="")
-    vat_id = Column(String, default="")          # Международный VAT ID
-    eori_number = Column(String, default="")     # Таможенный EORI номер
-    language = Column(String, default="en")      # ukr, en, de
-    currency = Column(String, default="EUR")     # UAH, EUR, USD
-    credit_limit = Column(Float, default=0.0)    # Кредитный лимит фирмы
+    vat_id = Column(String, default="")         
+    eori_number = Column(String, default="")    
+    language = Column(String, default="en")     
+    currency = Column(String, default="EUR")    
+    credit_limit = Column(Float, default=0.0)   
     payment_terms = Column(String, default="")
 
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    
+    # Связь с контактами
     contacts = relationship("ContactDB", back_populates="counterparty", cascade="all, delete-orphan")
+
 
 class ContactDB(Base):
     __tablename__ = "contacts"
@@ -50,19 +72,20 @@ class ContactDB(Base):
     id = Column(Integer, primary_key=True, index=True)
     counterparty_id = Column(Integer, ForeignKey("counterparties.id"))
     
-    position = Column(String, default="")        # Бухгалтерия, диспозиция и т.д.
-    salutation = Column(String, default="")      # Frau, Herr, Mr, Ms
+    position = Column(String, default="")       
+    salutation = Column(String, default="")     
     first_name = Column(String, default="")
     last_name = Column(String, default="")
     email = Column(String, default="")
     phone = Column(String, default="")
     tg_nick = Column(String, default="")
     
-    # Флаги доступности мессенджеров
+    # Мессенджеры
     has_telegram = Column(Boolean, default=False)
     has_whatsapp = Column(Boolean, default=False)
     has_viber = Column(Boolean, default=False)
 
     counterparty = relationship("CounterpartyDB", back_populates="contacts")
 
+# Автоматически создаем все таблицы при запуске сервера
 Base.metadata.create_all(bind=engine)
