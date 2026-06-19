@@ -149,6 +149,30 @@ export const api = {
         return await response.json();
     },
 
+    // --- АКТИВНЫЕ ЗАКАЗЫ (BOOKINGS) ---
+    async getActiveBookings() {
+        try {
+            const response = await fetch(`${BASE_URL}/api/bookings`);
+            if (!response.ok) throw new Error("Не удалось загрузить активные заказы");
+            return await response.json();
+        } catch (error) {
+            console.error("[TMS] Ошибка загрузки заказов:", error);
+            return [];
+        }
+    },
+
+    async acceptQuoteToBooking(quoteId, prefix) {
+        // prefix: 'AE', 'SI', 'RE' и т.д.
+        const response = await fetch(`${BASE_URL}/api/quotes/${quoteId}/accept?prefix=${prefix}`, {
+            method: 'POST'
+        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Ошибка генерации заказа: ${errorText}`);
+        }
+        return await response.json();
+    },
+
     // ---------------------------------------------------------
     // ЗАГЛУШКИ ДЛЯ LOCAL STORAGE (Обратная совместимость)
     // ---------------------------------------------------------

@@ -609,3 +609,64 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
         .tms-tab-content.active { 
             display: block; /* Показывает только активную */
         }
+
+        /* --- ТЕМЫ ТРАНСПОРТА (Акцентные цвета) --- */
+:root {
+    --theme-color: #2563eb;      /* По умолчанию синий (Все активные) */
+    --theme-bg: #eff6ff;
+}
+.theme-air {
+    --theme-color: #db2777;      /* Розоватый */
+    --theme-bg: #fdf2f8;
+}
+.theme-sea {
+    --theme-color: #0284c7;      /* Голубоватый */
+    --theme-bg: #f0f9ff;
+}
+.theme-road {
+    --theme-color: #16a34a;      /* Зеленоватый */
+    --theme-bg: #f0fdf4;
+}
+.theme-delays {
+    --theme-color: #dc2626;      /* Красный */
+    --theme-bg: #fef2f2;
+}
+
+/* --- САБ-ВКЛАДКИ (Экспорт/Импорт) --- */
+.tms-sub-tab-btn {
+    padding: 6px 14px;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 20px; /* Круглые таблетки */
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.tms-sub-tab-btn.active {
+    background: var(--theme-color);
+    color: white;
+    border-color: var(--theme-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* --- ВНЕШНИЙ ВИД ТАБЛИЦЫ ЗАКАЗОВ --- */
+.tms-bookings-table tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+    transition: background 0.15s;
+}
+.tms-bookings-table tbody tr:hover {
+    background: var(--theme-bg); /* Строка подсвечивается цветом темы при наведении */
+}
+
+/* Класс для многострочных ячеек (3 ряда в одной клетке) */
+.tms-multi-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.tms-multi-row span {
+    display: flex;
+    justify-content: space-between;
+}
