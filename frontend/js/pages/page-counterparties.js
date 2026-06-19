@@ -201,56 +201,97 @@ function renderContactsTable() {
     });
 }
 
-// 4. ПОДКЛЮЧЕНИЕ СМАРТ-ПОИСКА (tmsGlobalSearchModal)
+// 4. ПОДКЛЮЧЕНИЕ СМАРТ-ПОИСКА (Справочник)
 function initSearchModalLogic() {
     const modal = document.getElementById('tmsGlobalSearchModal');
     const searchInput = document.getElementById('tmsGlobalSearchInput');
     const resultsContainer = document.getElementById('tmsGlobalSearchResults');
+    const btnSearch = document.getElementById('btnTmsSearchCp');
+    const btnClose = document.getElementById('btnCloseSearchModal');
 
-    document.getElementById('btnTmsSearchCp').addEventListener('click', () => {
-        modal.style.display = 'flex';
-        searchInput.focus();
-    });
+    if (!modal) return;
 
-    document.getElementById('btnCloseSearchModal').addEventListener('click', () => modal.style.display = 'none');
+    // Функция рендера и фильтрации (до 10 результатов)
+    const renderSearchResults = async (query = '') => {
+        resultsContainer.innerHTML = '<div style="padding:15px; font-size:12px; color:#64748b; text-align:center;">Загрузка данных...</div>';
+        
+        try {
+            // Берем всю базу один раз (работает мгновенно)
+            const allCp = await api.getCounterparties();
+            let filtered = allCp;
 
-    let timer;
-    searchInput.addEventListener('input', (e) => {
-        clearTimeout(timer);
-        const query = e.target.value.trim();
-        if (query.length < 2) return;
+            // Если введено 2+ символа, фильтруем по ID, Имени или Short-имени
+            if (query.length >= 2) {
+                const q = query.toLowerCase();
+                filtered = allCp.filter(c => {
+                    const smartId = (10000 + c.id).toString();
+                    return c.name.toLowerCase().includes(q) || 
+                           (c.short_name && c.short_name.toLowerCase().includes(q)) ||
+                           smartId.includes(q);
+                });
+            }
 
-        timer = setTimeout(async () => {
-            resultsContainer.innerHTML = '<div style="padding:15px; font-size:12px; color:#64748b;">Ищем контрагента...</div>';
-            const allQuotes = await api.getCounterparties(); // Получаем всю базу
-            // Фильтруем по имени, short-имени или ID
-            const found = allQuotes.filter(c => 
-                c.name.toLowerCase().includes(query.toLowerCase()) || 
-                (c.short_name && c.short_name.toLowerCase().includes(query.toLowerCase())) ||
-                `${10000 + c.id}`.includes(query)
-            );
+            // Ограничиваем список до 10 штук для чистоты интерфейса
+            filtered = filtered.slice(0, 10);
 
-            if (found.length === 0) {
-                resultsContainer.innerHTML = '<div style="padding:15px; font-size:12px; color:#ef4444;">Совпадений не найдено.</div>';
+            if (filtered.length === 0) {
+                resultsContainer.innerHTML = '<div style="padding:15px; font-size:12px; color:#ef4444; text-align:center;">Совпадений не найдено.</div>';
                 return;
             }
 
             resultsContainer.innerHTML = '';
-            found.forEach(cp => {
+            filtered.forEach(cp => {
                 const row = document.createElement('div');
-                row.style.cssText = 'padding:10px 15px; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:13px; display:flex; justify-content:space-between;';
+                row.style.cssText = 'padding:12px 15px; border-bottom:1px solid #f1f5f9; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition: background 0.15s;';
+                row.onmouseover = () => row.style.background = '#f8fafc';
+                row.onmouseout = () => row.style.background = 'transparent';
+                
+                // Красивый бейдж страны
+                const countryBadge = cp.country ? `<span style="background:#e2e8f0; color:#475569; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:6px; font-weight:700;">${cp.country}</span>` : '';
+                
                 row.innerHTML = `
-                    <div><b style="color:#2563eb; font-family:monospace;">${10000 + cp.id}</b> | <b>${cp.name}</b></div>
-                    <div style="color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase;">${cp.role}</div>
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <b style="color:#2563eb; font-family:monospace; font-size:14px; width: 45px;">${10000 + cp.id}</b>
+                        <div style="display:flex; flex-direction:column;">
+                            <div style="font-weight:800; color:#1e293b; font-size:13px;">${cp.name} ${countryBadge}</div>
+                            <div style="font-size:11px; color:#64748b; margin-top:2px;">Код: <span style="font-weight:700;">${cp.short_name || '—'}</span></div>
+                        </div>
+                    </div>
                 `;
                 row.addEventListener('click', () => {
-                    loadCounterpartyToWorkspace(cp);
+                    if (typeof loadCounterpartyToWorkspace === 'function') {
+                        loadCounterpartyToWorkspace(cp);
+                    }
                     modal.style.display = 'none';
                 });
                 resultsContainer.appendChild(row);
             });
-        }, 300);
-    });
+        } catch (err) {
+            resultsContainer.innerHTML = '<div style="padding:15px; font-size:12px; color:#ef4444; text-align:center;">Ошибка связи с базой данных.</div>';
+        }
+    };
+
+    // При открытии окна сразу показываем дефолтную десятку
+    if (btnSearch) {
+        btnSearch.addEventListener('click', () => {
+            modal.style.display = 'flex';
+            searchInput.value = '';
+            searchInput.focus();
+            renderSearchResults(''); 
+        });
+    }
+
+    if (btnClose) btnClose.addEventListener('click', () => modal.style.display = 'none');
+
+    // Поиск при вводе текста (с задержкой 300мс, чтобы не дергать базу на каждую букву)
+    let timer;
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(timer);
+            const query = e.target.value.trim();
+            timer = setTimeout(() => renderSearchResults(query), 300);
+        });
+    }
 }
 
 function loadCounterpartyToWorkspace(cp) {

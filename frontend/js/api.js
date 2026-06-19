@@ -102,7 +102,10 @@ export const api = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-        if (!response.ok) throw new Error("Ошибка обновления данных на бэкенде");
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Бэкенд отказал в обновлении: ${errorText}`);
+        }
         return await response.json();
     },
     
@@ -114,12 +117,18 @@ export const api = {
         return await response.json();
     },
 
-    async createCounterparty(data) {
+   async createCounterparty(data) {
         const response = await fetch(`${BASE_URL}/api/counterparties`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Бэкенд отказал в сохранении (Код ${response.status}): ${errorText}`);
+        }
+        
         return await response.json();
     },
 

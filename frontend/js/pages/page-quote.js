@@ -557,15 +557,23 @@ function initSmartClientSearch() {
 
     // ФУНКЦИЯ ПЕРЕНОСА ДАННЫХ В БЛАНК
     const applyClientToBlank = (cp) => {
-        document.getElementById('tmsFastClientId').value = 10000 + cp.id;
-        document.getElementById('clientCompany').innerText = cp.name;
-        document.getElementById('clientCountry').innerText = cp.country || '';
+        if (fastIdInput) fastIdInput.value = 10000 + cp.id;
         
-        // Берем первого контакта, если он есть
+        const companyEl = document.getElementById('clientCompany');
+        const countryEl = document.getElementById('clientCountry');
+        if (companyEl) companyEl.innerText = cp.name;
+        if (countryEl) countryEl.innerText = cp.country || '';
+        
+        // Берем первый контакт, если он есть
+        const contactEl = document.getElementById('clientContact');
+        const contactInfoEl = document.getElementById('clientContactInfo');
         if (cp.contacts && cp.contacts.length > 0) {
             const primary = cp.contacts[0];
-            document.getElementById('clientContact').value = `${primary.first_name} ${primary.last_name}`.trim();
-            document.getElementById('clientContactInfo').value = primary.email || primary.phone || '';
+            if (contactEl) contactEl.value = `${primary.first_name} ${primary.last_name}`.trim();
+            if (contactInfoEl) contactInfoEl.value = primary.email || primary.phone || '';
+        } else {
+            if (contactEl) contactEl.value = '';
+            if (contactInfoEl) contactInfoEl.value = '';
         }
 
         const paymentEl = document.getElementById('blankPaymentTerms');
@@ -575,12 +583,12 @@ function initSmartClientSearch() {
             window.appStore.update('details', { 
                 clientId: cp.id,
                 clientCompany: cp.name,
-                clientContact: document.getElementById('clientContact').value,
-                paymentTerms: cp.payment_terms
+                clientContact: contactEl ? contactEl.value : '',
+                paymentTerms: cp.payment_terms || ''
             }, true);
         }
-        modal.style.display = 'none';
-        searchInput.value = '';
+        if (modal) modal.style.display = 'none';
+        if (searchInput) searchInput.value = '';
     };
 
     // СЦЕНАРИЙ 1: БЫСТРЫЙ ВВОД ID + ENTER
@@ -589,7 +597,7 @@ function initSmartClientSearch() {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 const rawVal = fastIdInput.value.trim();
-                const actualId = parseInt(rawVal) - 10000; // Отнимаем 10000, чтобы получить реальный ID базы
+                const actualId = parseInt(rawVal) - 10000;
                 if (!isNaN(actualId) && actualId > 0) {
                     const cp = await api.getCounterpartyById(actualId);
                     if (cp) applyClientToBlank(cp);
@@ -599,52 +607,77 @@ function initSmartClientSearch() {
         });
     }
 
-    // СЦЕНАРИЙ 2: МОДАЛЬНЫЙ ПОИСК
-    if (btnSearch) btnSearch.addEventListener('click', () => {
-        modal.style.display = 'flex';
-        searchInput.focus();
-    });
+    // СЦЕНАРИЙ 2: МОДАЛЬНЫЙ ПОИСК С ДЕФОЛТНЫМ СПИСКОМ
+    const renderSearchResults = async (query = '') => {
+        if (!resultsContainer) return;
+        resultsContainer.innerHTML = '<div style="padding:15px; font-size:12px; color:#64748b; text-align:center;">Загрузка данных...</div>';
+        
+        try {
+            const allCp = await api.getCounterparties();
+            let filtered = allCp;
 
-    if (closeBtn) closeBtn.addEventListener('click', () => modal.style.display = 'none');
+            if (query.length >= 2) {
+                const q = query.toLowerCase();
+                filtered = allCp.filter(c => {
+                    const smartId = (10000 + c.id).toString();
+                    return c.name.toLowerCase().includes(q) || 
+                           (c.short_name && c.short_name.toLowerCase().includes(q)) ||
+                           smartId.includes(q);
+                });
+            }
+
+            filtered = filtered.slice(0, 10);
+
+            if (filtered.length === 0) {
+                resultsContainer.innerHTML = '<div style="padding:15px; font-size:12px; color:#ef4444; text-align:center;">Совпадений не найдено.</div>';
+                return;
+            }
+
+            resultsContainer.innerHTML = '';
+            filtered.forEach(cp => {
+                const row = document.createElement('div');
+                row.style.cssText = 'padding:12px 15px; border-bottom:1px solid #f1f5f9; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition: background 0.15s;';
+                row.onmouseover = () => row.style.background = '#f8fafc';
+                row.onmouseout = () => row.style.background = 'transparent';
+                
+                const countryBadge = cp.country ? `<span style="background:#e2e8f0; color:#475569; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:6px; font-weight:700;">${cp.country}</span>` : '';
+                
+                row.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <b style="color:#2563eb; font-family:monospace; font-size:14px; width: 45px;">${10000 + cp.id}</b>
+                        <div style="display:flex; flex-direction:column;">
+                            <div style="font-weight:800; color:#1e293b; font-size:13px;">${cp.name} ${countryBadge}</div>
+                            <div style="font-size:11px; color:#64748b; margin-top:2px;">Код: <span style="font-weight:700;">${cp.short_name || '—'}</span></div>
+                        </div>
+                    </div>
+                `;
+                row.addEventListener('click', () => applyClientToBlank(cp));
+                resultsContainer.appendChild(row);
+            });
+        } catch (err) {
+            resultsContainer.innerHTML = '<div style="padding:15px; font-size:12px; color:#ef4444; text-align:center;">Ошибка связи с базой данных.</div>';
+        }
+    };
+
+    if (btnSearch) {
+        btnSearch.addEventListener('click', () => {
+            if (modal) modal.style.display = 'flex';
+            if (searchInput) {
+                searchInput.value = '';
+                searchInput.focus();
+            }
+            renderSearchResults('');
+        });
+    }
+
+    if (closeBtn && modal) closeBtn.addEventListener('click', () => modal.style.display = 'none');
 
     let debounceTimer;
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             clearTimeout(debounceTimer);
             const query = e.target.value.trim();
-
-            if (query.length < 2) {
-                resultsContainer.innerHTML = '<div style="padding: 15px; text-align: center; color: #94a3b8; font-size: 12px;">Введите минимум 2 символа...</div>';
-                return;
-            }
-
-            debounceTimer = setTimeout(async () => {
-                resultsContainer.innerHTML = '<div style="padding: 15px; text-align: center; color: #64748b; font-size: 12px;">Ищем...</div>';
-                const results = await api.searchCounterparties(query);
-                
-                if (results.length === 0) {
-                    resultsContainer.innerHTML = '<div style="padding: 15px; text-align: center; color: #ef4444; font-size: 12px;">Ничего не найдено</div>';
-                    return;
-                }
-
-                resultsContainer.innerHTML = '';
-                results.forEach(cp => {
-                    const row = document.createElement('div');
-                    row.style.cssText = 'padding: 10px 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.1s; display: flex; align-items: center; gap: 15px;';
-                    row.onmouseover = () => row.style.background = '#f8fafc';
-                    row.onmouseout = () => row.style.background = 'transparent';
-                    
-                    row.innerHTML = `
-                        <div style="font-family: monospace; font-weight: 800; color: #2563eb; width: 50px;">${10000 + cp.id}</div>
-                        <div style="flex: 1; display: flex; flex-direction: column;">
-                            <div style="font-weight: 700; color: #1e293b;">${cp.name} <span style="color: #94a3b8; font-size: 10px;">[${cp.country || '?'}]</span></div>
-                            <div style="font-size: 11px; color: #64748b;">${cp.contacts && cp.contacts.length > 0 ? cp.contacts[0].first_name + ' ' + cp.contacts[0].last_name : 'Нет контактов'}</div>
-                        </div>
-                    `;
-                    row.addEventListener('click', () => applyClientToBlank(cp));
-                    resultsContainer.appendChild(row);
-                });
-            }, 300);
+            debounceTimer = setTimeout(() => renderSearchResults(query), 300);
         });
     }
 }
