@@ -6,7 +6,7 @@ from typing import List, Optional
 import json
 import os
 
-from app.core.database import SessionLocal, QuoteDB, CounterpartyDB
+from app.core.database import SessionLocal, QuoteDB, CounterpartyDB, ContactDB
 
 app = FastAPI(title="TMS Core API")
 
@@ -154,23 +154,35 @@ def get_counterparty_by_id(cp_id: int, db: Session = Depends(get_db)):
 def update_counterparty(cp_id: int, cp: CounterpartySchema, db: Session = Depends(get_db)):
     db_cp = db.query(CounterpartyDB).filter(CounterpartyDB.id == cp_id).first()
     if not db_cp:
-        return {"status": "error", "message": "Not found"}
+        return {"status": "error", "message": "Counterparty not found"}
         
+    # Превращаем схему в словарь и вытаскиваем контакты
     data_dict = cp.model_dump()
     contacts_data = data_dict.pop("contacts", [])
     
-    # Обновляем поля компании
+    # 1. Обновляем основные поля компании
     for key, value in data_dict.items():
         setattr(db_cp, key, value)
         
-    # Стираем старые контакты и пишем новые
-    db.query(ContactDB).filter(ContactDB.counterparty_id == cp_id).delete()
-    for c_data in contacts_data:
-        db.add(ContactDB(**c_data, counterparty_id=cp_id))
+    try:
+        # 2. Удаляем старые связанные контакты из базы
+        db.query(ContactDB).filter(ContactDB.counterparty_id == cp_id).delete()
         
-    db.commit()
-    return {"status": "updated", "id": cp_id}
-
+        # 3. Записываем обновленный список контактов
+        for c_data in contacts_data:
+            # Явно передаем counterparty_id, чтобы SQLAlchemy не терял связь
+            new_contact = ContactDB(**c_data, counterparty_id=cp_id)
+            db.add(new_contact)
+            
+        db.commit()
+        db.refresh(db_cp)
+        return {"status": "updated", "id": cp_id}
+        
+    except Exception as e:
+        db.rollback()
+        print(f"❌ [TMS CRITICAL ERROR] Сбой при PUT обновлении: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+    
 @app.delete("/api/counterparties/{cp_id}")
 def delete_counterparty(cp_id: int, db: Session = Depends(get_db)):
     db.query(CounterpartyDB).filter(CounterpartyDB.id == cp_id).delete()
