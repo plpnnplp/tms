@@ -149,8 +149,8 @@ function initEventListeners() {
                 if (trigger.id === 'blankIncotermsCode') {
                     window.appStore.update('conditions', { incotermsCode: val }, true);
                 } else if (trigger.id === 'blankPaymentTerms') {
-                    // Записываем выбранные условия оплаты в раздел 'details'
-                    window.appStore.update('details', { paymentTerms: val }, true);
+                    const actualText = option.innerText.trim();
+                    window.appStore.update('details', { paymentTerms: actualText }, true);
                 } else if (trigger.id === 'blankTruckType') {
                     window.appStore.update('conditions', { loadType: val }, true);
                 } else if (trigger.id === 'configLanguage') {
@@ -169,7 +169,10 @@ function initEventListeners() {
                 }
             }
         }
-    });
+
+    initSmartClientSearch();
+
+});
 
     // 5. РЕАКТИВНЫЙ ВВОД (Защита каретки: сохраняем состояние только при выходе из поля)
     document.getElementById('tms-live-blank')?.addEventListener('focusout', (e) => {
@@ -308,8 +311,40 @@ async function processUrlRouting() {
     const action = params.get('action');
     
     if (id) {
-        // Здесь логика подгрузки данных заказа из базы по ID через api.js
-        console.log(`Загрузка заказа ${id} для режима ${action}`);
+        console.log(`[TMS] Загрузка КП ${id} для режима ${action}`);
+        try {
+            // 1. Ищем КП в базе сервера
+            const allQuotes = await api.getQuotes();
+            const quote = allQuotes.find(q => q.id === id);
+            
+            if (!quote || !quote.data) {
+                alert("Ошибка: КП не найдено в базе данных.");
+                return;
+            }
+
+            // 2. Вливаем сохраненные данные обратно в бланк
+            if (window.appStore) {
+                window.appStore.update(null, quote.data, true);
+                
+                // Пересчитываем финансы на основе загруженных данных
+                if (window.Calculator) window.Calculator.recalculateFinances();
+                
+                // Если это "Копия" — стираем старый ID, чтобы генератор создал новый номер
+                if (action === 'duplicate') {
+                    window.appStore.update('meta', { quoteNumber: null }, false);
+                    if (window.Calculator) window.Calculator.generateSmartNumber();
+                }
+
+                // Если это просмотр PDF — ждем полсекунды (чтобы UI отрисовался) и печатаем
+                if (action === 'view') {
+                    setTimeout(() => {
+                        if (window.UIController) window.UIController.generatePdf();
+                    }, 500); 
+                }
+            }
+        } catch (err) {
+            console.error("[TMS ERROR] Ошибка при подгрузке КП из БД:", err);
+        }
     }
 }
 
@@ -420,6 +455,198 @@ function generatePdf() { UIController.generatePdf(); }
 function generateTmsSmartQuoteNumber() { 
     const num = Calculator.generateSmartNumber();
     UIController.displayQuoteNumber(num);
+}
+
+function initCounterpartyAutocomplete() {
+    const companyInput = document.getElementById('clientCompany');
+    if (!companyInput) return;
+
+    // Создаем DOM-элемент для выпадающего списка
+    const dropdown = document.createElement('div');
+    dropdown.className = 'tms-select-options-dropdown';
+    dropdown.style.cssText = 'position: absolute; background: white; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 9999; display: none; flex-direction: column; padding: 4px 0; max-height: 200px; overflow-y: auto; min-width: 250px;';
+    
+    // Внедряем выпадающий список сразу после поля компании
+    companyInput.parentNode.style.position = 'relative';
+    companyInput.parentNode.appendChild(dropdown);
+
+    let debounceTimer;
+
+    // Обработка ввода (событие input для contenteditable работает нормально)
+    companyInput.addEventListener('input', (e) => {
+        clearTimeout(debounceTimer);
+        const query = companyInput.innerText.trim();
+
+        if (query.length < 2) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        // Ждем 300мс, чтобы пользователь перестал печатать (Debounce)
+        debounceTimer = setTimeout(async () => {
+            const results = await api.searchCounterparties(query);
+            
+            if (results.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            dropdown.innerHTML = '';
+            results.forEach(cp => {
+                const item = document.createElement('div');
+                item.className = 'tms-option';
+                item.style.cssText = 'padding: 8px 12px; font-size: 12px; font-weight: 700; color: #1e293b; cursor: pointer; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 2px;';
+                
+                // Красивый рендер подсказки
+                item.innerHTML = `
+                    <span>${cp.name} <span style="color: #94a3b8; font-size: 10px;">[${cp.country || '?'}]</span></span>
+                    <span style="color: #64748b; font-size: 10px; font-weight: 500;">${cp.contact_person || ''}</span>
+                `;
+
+                // Что происходит при клике на подсказку:
+                item.addEventListener('click', () => {
+                    // 1. Заполняем интерфейс
+                    companyInput.innerText = cp.name;
+                    const countryEl = document.getElementById('clientCountry');
+                    if (countryEl) countryEl.innerText = cp.country || '';
+                    
+                    const contactEl = document.getElementById('clientContact');
+                    if (contactEl) contactEl.value = cp.contact_person || '';
+                    
+                    const infoEl = document.getElementById('clientContactInfo');
+                    if (infoEl) infoEl.value = cp.contact_info || '';
+
+                    const paymentEl = document.getElementById('blankPaymentTerms');
+                    if (paymentEl && cp.payment_terms) paymentEl.innerText = cp.payment_terms;
+
+                    // 2. Пушим изменения прямо в State Manager (чтобы при сохранении КП они не потерялись)
+                    if (window.appStore) {
+                        window.appStore.update('details', { 
+                            clientCompany: cp.name,
+                            clientContact: cp.contact_person,
+                            paymentTerms: cp.payment_terms
+                        }, false);
+                    }
+
+                    // 3. Закрываем дропдаун
+                    dropdown.style.display = 'none';
+                });
+
+                dropdown.appendChild(item);
+            });
+
+            dropdown.style.display = 'flex';
+        }, 300);
+    });
+
+    // Скрытие списка при клике мимо
+    document.addEventListener('click', (e) => {
+        if (!companyInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+}
+
+function initSmartClientSearch() {
+    const fastIdInput = document.getElementById('tmsFastClientId');
+    const btnSearch = document.getElementById('btnOpenClientSearch');
+    const modal = document.getElementById('tmsGlobalSearchModal');
+    const closeBtn = document.getElementById('btnCloseSearchModal');
+    const searchInput = document.getElementById('tmsGlobalSearchInput');
+    const resultsContainer = document.getElementById('tmsGlobalSearchResults');
+
+    // ФУНКЦИЯ ПЕРЕНОСА ДАННЫХ В БЛАНК
+    const applyClientToBlank = (cp) => {
+        document.getElementById('tmsFastClientId').value = 10000 + cp.id;
+        document.getElementById('clientCompany').innerText = cp.name;
+        document.getElementById('clientCountry').innerText = cp.country || '';
+        
+        // Берем первого контакта, если он есть
+        if (cp.contacts && cp.contacts.length > 0) {
+            const primary = cp.contacts[0];
+            document.getElementById('clientContact').value = `${primary.first_name} ${primary.last_name}`.trim();
+            document.getElementById('clientContactInfo').value = primary.email || primary.phone || '';
+        }
+
+        const paymentEl = document.getElementById('blankPaymentTerms');
+        if (paymentEl && cp.payment_terms) paymentEl.innerText = cp.payment_terms;
+
+        if (window.appStore) {
+            window.appStore.update('details', { 
+                clientId: cp.id,
+                clientCompany: cp.name,
+                clientContact: document.getElementById('clientContact').value,
+                paymentTerms: cp.payment_terms
+            }, true);
+        }
+        modal.style.display = 'none';
+        searchInput.value = '';
+    };
+
+    // СЦЕНАРИЙ 1: БЫСТРЫЙ ВВОД ID + ENTER
+    if (fastIdInput) {
+        fastIdInput.addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const rawVal = fastIdInput.value.trim();
+                const actualId = parseInt(rawVal) - 10000; // Отнимаем 10000, чтобы получить реальный ID базы
+                if (!isNaN(actualId) && actualId > 0) {
+                    const cp = await api.getCounterpartyById(actualId);
+                    if (cp) applyClientToBlank(cp);
+                    else alert('Контрагент с таким ID не найден');
+                }
+            }
+        });
+    }
+
+    // СЦЕНАРИЙ 2: МОДАЛЬНЫЙ ПОИСК
+    if (btnSearch) btnSearch.addEventListener('click', () => {
+        modal.style.display = 'flex';
+        searchInput.focus();
+    });
+
+    if (closeBtn) closeBtn.addEventListener('click', () => modal.style.display = 'none');
+
+    let debounceTimer;
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            const query = e.target.value.trim();
+
+            if (query.length < 2) {
+                resultsContainer.innerHTML = '<div style="padding: 15px; text-align: center; color: #94a3b8; font-size: 12px;">Введите минимум 2 символа...</div>';
+                return;
+            }
+
+            debounceTimer = setTimeout(async () => {
+                resultsContainer.innerHTML = '<div style="padding: 15px; text-align: center; color: #64748b; font-size: 12px;">Ищем...</div>';
+                const results = await api.searchCounterparties(query);
+                
+                if (results.length === 0) {
+                    resultsContainer.innerHTML = '<div style="padding: 15px; text-align: center; color: #ef4444; font-size: 12px;">Ничего не найдено</div>';
+                    return;
+                }
+
+                resultsContainer.innerHTML = '';
+                results.forEach(cp => {
+                    const row = document.createElement('div');
+                    row.style.cssText = 'padding: 10px 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.1s; display: flex; align-items: center; gap: 15px;';
+                    row.onmouseover = () => row.style.background = '#f8fafc';
+                    row.onmouseout = () => row.style.background = 'transparent';
+                    
+                    row.innerHTML = `
+                        <div style="font-family: monospace; font-weight: 800; color: #2563eb; width: 50px;">${10000 + cp.id}</div>
+                        <div style="flex: 1; display: flex; flex-direction: column;">
+                            <div style="font-weight: 700; color: #1e293b;">${cp.name} <span style="color: #94a3b8; font-size: 10px;">[${cp.country || '?'}]</span></div>
+                            <div style="font-size: 11px; color: #64748b;">${cp.contacts && cp.contacts.length > 0 ? cp.contacts[0].first_name + ' ' + cp.contacts[0].last_name : 'Нет контактов'}</div>
+                        </div>
+                    `;
+                    row.addEventListener('click', () => applyClientToBlank(cp));
+                    resultsContainer.appendChild(row);
+                });
+            }, 300);
+        });
+    }
 }
 
 window.addServiceRowFromCatalog = () => {

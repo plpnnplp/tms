@@ -130,10 +130,14 @@
                             </div>
                             
                             <div class="customer-details-cover" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 3px; margin: 0;">
-                                <div style="font-size: 9px; font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px; line-height: 1;" data-i18n="lbl_customer">
-                                    Customer:
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+                                    <div style="font-size: 9px; font-weight: 700; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px; line-height: 1;" data-i18n="lbl_customer">Customer:</div>
+                                    <div class="tms-search-tools" data-html2canvas-ignore="true" style="display: flex; align-items: center; gap: 4px;">
+                                        <input type="text" id="tmsFastClientId" placeholder="ID..." title="Введите ID (например, 10001) и нажмите Enter" style="width: 45px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 4px; font-size: 9px; font-weight: 800; color: #2563eb; outline: none; font-family: monospace; text-align: center; background: #f8fafc;">
+                                        <button type="button" id="btnOpenClientSearch" style="background: none; border: none; cursor: pointer; padding: 0; font-size: 11px; color: #64748b; display: flex;">🔍</button>
+                                    </div>
                                 </div>
-                                <div class="customer-title-row" style="font-size: 14px; color: #1e293b; line-height: 1.2; margin: 2px 0;">
+                                <div class="customer-title-row" style="font-size: 14px; color: #1e293b; line-height: 1.2; margin: 2px 0; display: flex; align-items: center; gap: 6px;">      
                                     <span id="clientCompany" contenteditable="true" data-i18n-placeholder="ph_company" placeholder="Компания" style="font-weight: 800; display: inline-block; outline: none; border-bottom: 1px dashed transparent; min-width: 60px;"></span><span style="font-weight: 800;">,</span> 
                                     <span id="clientCountry" contenteditable="true" data-i18n-placeholder="ph_country" placeholder="Страна" style="font-weight: 800; display: inline-block; outline: none; border-bottom: 1px dashed transparent; min-width: 40px; color: #475569;"></span>
                                 </div>
@@ -461,6 +465,20 @@
             </button>
         </div>
     </div>
+
+    <div id="tmsGlobalSearchModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 10000; display: none; align-items: center; justify-content: center;">
+        <div style="background: #ffffff; width: 600px; padding: 20px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #1e293b;">Поиск контрагента</h3>
+                <button type="button" id="btnCloseSearchModal" style="background: none; border: none; font-size: 16px; cursor: pointer; color: #64748b;">✖</button>
+            </div>
+            <input type="text" id="tmsGlobalSearchInput" placeholder="Введите название или TMS ID (мин. 2 символа)..." style="width: 100%; height: 40px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 12px; font-size: 14px; box-sizing: border-box; outline: none;">
+            <div id="tmsGlobalSearchResults" style="max-height: 300px; overflow-y: auto; border: 1px solid #f1f5f9; border-radius: 6px; display: flex; flex-direction: column;">
+                <div style="padding: 15px; text-align: center; color: #94a3b8; font-size: 12px;">Введите запрос для поиска...</div>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="../frontend/js/pages/page-quote.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     </body>

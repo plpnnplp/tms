@@ -50,7 +50,7 @@ const tmsHeaderHTML = `
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 </a>
                 <div class="tms-sub-menu">
-                    <a href="#">Контрагенты</a>
+                    <a href="Counterparties.html">Контрагенты</a>
                     <a href="#">Авиалинии и Порты</a>
                     <a href="#">Справочник сборов</a>
                 </div>

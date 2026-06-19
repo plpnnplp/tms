@@ -310,11 +310,13 @@ export const Calculator = {
         const directionMap = { 'export': 'E', 'import': 'I', 'domestic': 'D' };
         const y = directionMap[directionVal] || 'E';
 
-        const fromStr = this._getCitySmartCode(state.route.pickupCity);
-        const toStr = this._getCitySmartCode(state.route.deliveryCity);
+        const pickupStr = state.route.pickup?.cleanCity || state.route.pickupAddress || state.route.pickupCity || "";
+        const deliveryStr = state.route.delivery?.cleanCity || state.route.deliveryAddress || state.route.deliveryCity || "";
 
-        const totalCharge = state.cargo.reduce((sum, item) => sum + parseFloat(item.charge || 0), 0);
-        const chgWeight = Math.round(totalCharge);
+        const fromStr = this._getCitySmartCode(pickupStr);
+        const toStr = this._getCitySmartCode(deliveryStr);
+
+        const totalCharge = state.cargo.reduce((sum, item) => sum + parseFloat(item.charge || 0), 0);        const chgWeight = Math.round(totalCharge);
 
         const smartNumber = `${dateStr}-${x}-${y}-${fromStr}-${toStr}-${chgWeight}KG`;
         

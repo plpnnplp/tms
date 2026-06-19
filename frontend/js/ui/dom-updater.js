@@ -539,10 +539,6 @@ const UIController = {
             } else {
                 // ВРЕМЕННЫЙ ФОЛБЭК: Если файл переводов сломан или не подгрузился
                 console.warn("TMS: Payment Terms не найдены ни в БД, ни в translations.js!");
-                rawList = [
-                    { id: "adv_100", text_en: "100% Advance Payment", text_ru: "100% Предоплата", text_uk: "100% Авансовий платіж" },
-                    { id: "post_14", text_en: "14 days net after delivery", text_ru: "14 дней после выгрузки", text_uk: "14 днів після вивантаження" }
-                ];
             }
         }
 

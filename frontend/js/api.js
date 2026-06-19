@@ -52,19 +52,17 @@ export const api = {
     },
 
     async saveQuoteToBackend(payload) {
-        try {
-            const response = await fetch(`${BASE_URL}/api/quotes`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            if (!response.ok) throw new Error("Ошибка сохранения КП на бэкенде");
-            return await response.json();
-        } catch (error) {
-            console.warn("TMS Warning: Бэкенд недоступен. Сохранение имитируется (Mock).");
-            // Мок-ответ, чтобы кнопка "Сохранить" не вызывала краш фронтенда при отключенном сервере
-            return { status: 'mocked_success', id: payload.quote_id };
+        const response = await fetch(`${BASE_URL}/api/quotes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Отказ сервера: ${errorText}`);
         }
+        return await response.json();
     },
 
     async updateQuoteStatus(quoteId, newStatus) {
@@ -85,8 +83,65 @@ export const api = {
         return await response.json();
     },
 
+
+    async searchCounterparties(query) {
+        if (!query || query.length < 2) return [];
+        try {
+            const response = await fetch(`${BASE_URL}/api/counterparties/search?q=${encodeURIComponent(query)}`);
+            if (!response.ok) return [];
+            return await response.json();
+        } catch (error) {
+            console.error("[TMS] Ошибка поиска контрагента:", error);
+            return [];
+        }
+    },
+
+    async updateCounterparty(id, payload) {
+        const response = await fetch(`${BASE_URL}/api/counterparties/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error("Ошибка обновления данных на бэкенде");
+        return await response.json();
+    },
+    
+    async deleteCounterparty(id) {
+        const response = await fetch(`${BASE_URL}/api/counterparties/${id}`, {
+            method: 'DELETE'
+        });
+        if (!response.ok) throw new Error("Ошибка удаления контрагента");
+        return await response.json();
+    },
+
+    async createCounterparty(data) {
+        const response = await fetch(`${BASE_URL}/api/counterparties`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        return await response.json();
+    },
+
+    async getCounterparties() {
+        try {
+            const response = await fetch(`${BASE_URL}/api/counterparties`);
+            if (!response.ok) throw new Error("Не удалось загрузить контрагентов");
+            return await response.json();
+        } catch (error) {
+            console.error("[TMS] Ошибка загрузки справочника:", error);
+            return [];
+        }
+    },
+
+    async getCounterpartyById(id) {
+        const response = await fetch(`${BASE_URL}/api/counterparties/${id}`);
+        if (!response.ok) return null;
+        return await response.json();
+    },
+
     // ---------------------------------------------------------
-    // 4. ЗАГЛУШКИ ДЛЯ LOCAL STORAGE (Обратная совместимость)
+    // ЗАГЛУШКИ ДЛЯ LOCAL STORAGE (Обратная совместимость)
     // ---------------------------------------------------------
     saveQuotes(dataArray) {
         console.warn("saveQuotes устарел. Данные сохраняются через POST /api/quotes");
