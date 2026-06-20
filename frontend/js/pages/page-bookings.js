@@ -1,7 +1,8 @@
 import { api } from '../api.js';
 import { injectTmsHeader } from '../ui/header.js';
 
-let allBookings = []; // Храним загруженную базу здесь
+let currentSort = { column: 'created_at', asc: false };
+let allBookings = [];
 let currentTransport = 'all';
 let currentDirection = 'export';
 let currentSearch = '';
@@ -89,29 +90,145 @@ function initSearchAndActions() {
         });
     }
 
+    // Обработка кликов по таблице (Изоляция клика по строке от корзины)
     const tbody = document.getElementById('tmsBookingsTableBody');
     tbody.addEventListener('click', async (e) => {
-        const btn = e.target.closest('.tms-btn-action');
-        if (!btn) return;
-
-        const action = btn.getAttribute('data-action');
-        const orderId = btn.getAttribute('data-id');
-
-        if (action === 'delete') {
-            if (confirm(`Удалить заказ ${orderId} из оперативного учета?`)) {
+        const delBtn = e.target.closest('.tms-btn-delete');
+        if (delBtn) {
+            e.stopPropagation(); // Останавливаем клик, чтобы не открылась среда заказа
+            const orderId = delBtn.getAttribute('data-id');
+            if (confirm(`Безвозвратно удалить заказ ${orderId}?`)) {
                 try {
                     await api.deleteBooking(orderId);
-                    await loadBookings(); // Перезагружаем после удаления
-                } catch (err) {
-                    alert('Ошибка при удалении заказа');
-                }
+                    await loadBookings();
+                } catch (err) { alert('Ошибка при удалении'); }
             }
+            return;
         }
 
-        if (action === 'workspace') {
+        const row = e.target.closest('.tms-row-clickable');
+        if (row) {
+            const orderId = row.getAttribute('data-id');
             window.location.href = `OrderDetail.html?id=${encodeURIComponent(orderId)}`;
         }
     });
+
+    // Обработка кликов по заголовкам (Сортировка)
+    document.querySelectorAll('.tms-bookings-table th[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+            const col = th.getAttribute('data-sort');
+            if (currentSort.column === col) {
+                currentSort.asc = !currentSort.asc; // Меняем направление
+            } else {
+                currentSort.column = col;
+                currentSort.asc = true;
+            }
+            renderBookingsTable();
+        });
+    });
+}
+
+function renderBookingsTable() {
+    const tbody = document.getElementById('tmsBookingsTableBody');
+    
+    // 1. Фильтрация
+    let filtered = allBookings.filter(b => {
+        const isDelay = b.status === 'delayed' || (b.eta && new Date(b.eta) < new Date());
+        if (currentTransport === 'delays') return isDelay;
+        if (currentTransport === 'all') return true;
+        if (b.transport_type !== currentTransport) return false;
+        
+        const prefix = b.order_number.substring(1, 2).toLowerCase();
+        if (currentDirection === 'export' && prefix !== 'e') return false;
+        if (currentDirection === 'import' && prefix !== 'i') return false;
+        if (currentDirection === 'domestic' && prefix !== 'd') return false;
+        return true;
+    });
+
+    if (currentSearch) {
+        filtered = filtered.filter(b => 
+            `${b.order_number} ${b.bill_to_name} ${b.origin_city} ${b.destination_city}`.toLowerCase().includes(currentSearch)
+        );
+    }
+
+    // 2. Сортировка (На лету, без запросов к базе)
+    filtered.sort((a, b) => {
+        let valA, valB;
+        if (currentSort.column === 'id') { valA = a.order_number; valB = b.order_number; }
+        else if (currentSort.column === 'eta') { valA = new Date(a.eta || '2099-01-01'); valB = new Date(b.eta || '2099-01-01'); }
+        else if (currentSort.column === 'margin') { valA = a.quote_price - a.costs; valB = b.quote_price - b.costs; }
+        else { valA = new Date(a.created_at); valB = new Date(b.created_at); }
+        
+        if (valA < valB) return currentSort.asc ? -1 : 1;
+        if (valA > valB) return currentSort.asc ? 1 : -1;
+        return 0;
+    });
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="padding: 40px; text-align: center; color: #94a3b8; font-size: 13px;">Заказы не найдены.</td></tr>`;
+        return;
+    }
+
+    // 3. Генерация HTML (Чисто и семантично)
+    // 3. Генерация HTML (Нативный стиль)
+    let html = '';
+    filtered.forEach(b => {
+        const isDelay = b.status === 'delayed' || (b.eta && new Date(b.eta) < new Date());
+        
+        const statusClass = isDelay ? 'tms-status-delay' : 'tms-status-active';
+        const etaClass = isDelay ? 'color: #ef4444; font-weight: 700;' : 'tms-text-sub';
+        
+        const marginVal = (b.quote_price - b.costs) || 0;
+        const marginClass = marginVal < 0 ? 'tms-dot-bad' : 'tms-dot-good';
+        
+        let docsCount = 0;
+        if (b.has_awb_cmr) docsCount++;
+        if (b.has_invoice) docsCount++;
+        const docsComplete = docsCount === 2;
+        
+        let tIcon = '🚛 LKW';
+        let tColor = '#3b82f6';
+        if (b.transport_type === 'air') { tIcon = '✈️ Air'; tColor = '#8b5cf6'; }
+        if (b.transport_type === 'sea') { tIcon = '🚢 Sea'; tColor = '#06b6d4'; }
+
+        html += `
+            <tr class="tms-row-clickable" data-id="${b.order_number}">
+                <td>
+                    <div class="tms-text-id">${b.order_number}</div>
+                    <div class="tms-text-date">${new Date(b.created_at).toLocaleDateString()}</div>
+                </td>
+                <td>
+                    <div class="tms-party-bill">${b.bill_to_name || '—'}</div>
+                    <div class="tms-party-sub">Sh: ${b.shipper_name || '—'}</div>
+                    <div class="tms-party-sub">Cn: ${b.consignee_name || '—'}</div>
+                </td>
+                <td>
+                    <div class="tms-text-main">${b.origin_city || '—'} &rarr; ${b.destination_city || '—'}</div>
+                    <div style="margin-top: 6px;">
+                        <span class="tms-transport-badge" style="color: ${tColor};">${tIcon}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="tms-text-sub">ETD: ${b.etd ? new Date(b.etd).toLocaleDateString() : '—'}</div>
+                    <div class="${etaClass}">ETA: ${b.eta ? new Date(b.eta).toLocaleDateString() : '—'}</div>
+                </td>
+                <td>
+                    <span class="tms-status-box ${statusClass}">${isDelay ? 'DELAYED' : (b.status || 'ACTIVE').toUpperCase()}</span>
+                </td>
+                <td>
+                     <div class="tms-health-box">
+                        <span class="tms-health-dot ${marginClass}" title="Маржа: €${marginVal.toFixed(2)}"></span>
+                        <span class="tms-doc-progress ${docsComplete ? 'complete' : ''}">Docs: ${docsCount}/2</span>
+                    </div>
+                </td>
+                <td style="text-align: right;">
+                    <button class="tms-btn-icon tms-btn-delete" data-id="${b.order_number}" title="Удалить">Х</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
 }
 
 // Функция перевода КП в статус Заказа (вызывать при клике на кнопку "Взять в работу" / "Accept")
@@ -142,113 +259,4 @@ async function handleAcceptQuote(quoteId, transportMode, direction) {
         console.error("Ошибка при переводе КП в заказ:", error);
         alert(`Не удалось создать заказ: ${error.message}`);
     }
-}
-
-// --- ФИЛЬТРАЦИЯ И ОТРИСОВКА ---
-function renderBookingsTable() {
-    const tbody = document.getElementById('tmsBookingsTableBody');
-    
-    // 1. Фильтрация по табам (Транспорт и Направление)
-    let filtered = allBookings.filter(b => {
-        const isDelay = b.status === 'delayed' || (b.eta && new Date(b.eta) < new Date());
-        
-        if (currentTransport === 'delays') return isDelay;
-        if (currentTransport === 'all') return true;
-        
-        // Проверяем тип транспорта (air, sea, road)
-        if (b.transport_type !== currentTransport) return false;
-
-        // Проверяем префикс для саб-табов (AE/AI/AD, SE/SI/SD, RE/RI/RD)
-        const prefix = b.order_number.substring(1, 2).toLowerCase(); // Вторая буква префикса (E, I, D)
-        if (currentDirection === 'export' && prefix !== 'e') return false;
-        if (currentDirection === 'import' && prefix !== 'i') return false;
-        if (currentDirection === 'domestic' && prefix !== 'd') return false;
-
-        return true;
-    });
-
-    // 2. Живой поиск
-    if (currentSearch) {
-        filtered = filtered.filter(b => {
-            const searchString = `
-                ${b.order_number} 
-                ${b.bill_to_name} 
-                ${b.shipper_name} 
-                ${b.consignee_name} 
-                ${b.origin_city} 
-                ${b.destination_city}
-            `.toLowerCase();
-            return searchString.includes(currentSearch);
-        });
-    }
-
-    if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="padding: 40px; text-align: center; color: #94a3b8; font-size: 13px;">По вашему запросу ничего не найдено.</td></tr>`;
-        return;
-    }
-
-    // 3. Генерация HTML
-    let html = '';
-    filtered.forEach(b => {
-        const isDelay = b.status === 'delayed' || (b.eta && new Date(b.eta) < new Date());
-        
-        html += `
-            <tr>
-                <td style="text-align: center; padding: 10px;">
-                    <button class="tms-btn-action" data-action="workspace" data-id="${b.order_number}" style="background: none; border: none; cursor: pointer; font-size: 14px;" title="Открыть среду">👁️</button>
-                    <button class="tms-btn-action" data-action="delete" data-id="${b.order_number}" style="background: none; border: none; cursor: pointer; font-size: 14px; margin-top: 4px;" title="Удалить">🗑️</button>
-                </td>
-                <td style="padding: 10px;">
-                    <div style="font-weight: 800; color: var(--theme-color); font-size: 13px;">${b.order_number}</div>
-                    <div style="font-size: 10px; color: #94a3b8; font-weight: 700; margin-top: 2px;">${new Date(b.created_at).toLocaleDateString()}</div>
-                </td>
-                <td style="padding: 10px;">
-                    <div class="tms-multi-row" style="font-size: 11px; color: #475569;">
-                        <span><b style="color:#1e293b;">B:</b> ${b.bill_to_name || '—'}</span>
-                        <span><b style="color:#1e293b;">S:</b> ${b.shipper_name || '—'}</span>
-                        <span><b style="color:#1e293b;">C:</b> ${b.consignee_name || '—'}</span>
-                    </div>
-                </td>
-                <td style="padding: 10px;">
-                    <div class="tms-multi-row" style="font-size: 11px;">
-                        <span style="font-weight: 700;">🛫 ${b.origin_city || '—'}</span>
-                        <span style="font-weight: 700; margin-top: 4px;">🛬 ${b.destination_city || '—'}</span>
-                    </div>
-                </td>
-                <td style="padding: 10px;">
-                    <div class="tms-multi-row" style="font-size: 11px;">
-                        <span><b>PKGs:</b> ${b.packages_count || 0}</span>
-                        <span><b>GW:</b> ${b.gross_weight_kg || 0} kg</span>
-                        ${b.transport_type === 'road' ? `<span><b>LDM:</b> ${b.ldm || 0}</span>` : `<span><b>CW:</b> ${b.chargeable_weight_kg || 0} kg</span>`}
-                    </div>
-                </td>
-                <td style="padding: 10px;">
-                    <span style="background: ${isDelay ? '#fef2f2' : '#e2e8f0'}; color: ${isDelay ? '#ef4444' : '#475569'}; padding: 4px 8px; border-radius: 12px; font-weight: 800; font-size: 9px; letter-spacing: 0.5px;">
-                        ${isDelay ? 'ЗАДЕРЖКА' : (b.status || 'ACTIVE').toUpperCase()}
-                    </span>
-                </td>
-                <td style="padding: 10px;">
-                     <div class="tms-multi-row" style="font-size: 11px;">
-                        <span><b style="color:#1e293b;">ETD:</b> ${b.etd ? new Date(b.etd).toLocaleDateString() : '—'}</span>
-                        <span style="${isDelay ? 'color: #ef4444; font-weight: 800;' : ''}"><b style="color:#1e293b;">ETA:</b> ${b.eta ? new Date(b.eta).toLocaleDateString() : '—'}</span>
-                    </div>
-                </td>
-                <td style="padding: 10px; text-align: center;">
-                     <div style="display: flex; gap: 4px; justify-content: center;">
-                         <span style="opacity: ${b.has_awb_cmr ? 1 : 0.3}; border: 1px solid #cbd5e1; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800;">DOC</span>
-                         <span style="opacity: ${b.has_invoice ? 1 : 0.3}; border: 1px solid #cbd5e1; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800;">INV</span>
-                     </div>
-                </td>
-                <td style="padding: 10px; text-align: right;">
-                     <div class="tms-multi-row" style="font-size: 11px;">
-                        <span><b style="color:#1e293b;">План:</b> €${b.quote_price || 0}</span>
-                        <span><b style="color:#1e293b;">Факт:</b> €${b.actual_price || 0}</span>
-                        <span style="color: ${(b.quote_price - b.costs) < 0 ? '#ef4444' : '#10b981'}; margin-top: 4px;"><b style="color:#1e293b;">Маржа:</b> €${(b.quote_price - b.costs) || 0}</span>
-                    </div>
-                </td>
-            </tr>
-        `;
-    });
-
-    tbody.innerHTML = html;
 }

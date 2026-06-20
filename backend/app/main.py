@@ -228,7 +228,7 @@ def delete_quote(quote_id: str, db: Session = Depends(get_db)):
 
 @app.put("/api/quotes/{quote_id}/status")
 def update_quote_status(quote_id: str, payload: QuoteStatusUpdate, db: Session = Depends(get_db)):
-    """Изменение статуса КП и АВТО-ТРИГГЕР создания заказа (Безопасный парсинг списков)"""
+    """Изменение статуса КП и АВТО-ТРИГГЕР создания заказа (Бронебойный парсинг)"""
     import json
     
     quote = db.query(QuoteDB).filter(QuoteDB.id == quote_id).first()
@@ -242,14 +242,19 @@ def update_quote_status(quote_id: str, payload: QuoteStatusUpdate, db: Session =
         existing_booking = db.query(ActiveBookingDB).filter(ActiveBookingDB.quote_id == quote_id).first()
         
         if not existing_booking:
+            # 1. Глубокая распаковка JSON (защита от двойного stringify фронтенда)
+            q_data = quote.data
             try:
-                q_data = json.loads(quote.data) if quote.data else {}
+                for _ in range(3):
+                    if isinstance(q_data, str):
+                        q_data = json.loads(q_data)
+                    else:
+                        break
                 if not isinstance(q_data, dict):
                     q_data = {}
             except Exception:
                 q_data = {}
                 
-            # Вспомогательные функции
             def safe_float(val):
                 try: return float(val) if val else 0.0
                 except (ValueError, TypeError): return 0.0
@@ -258,14 +263,15 @@ def update_quote_status(quote_id: str, payload: QuoteStatusUpdate, db: Session =
                 try: return int(val) if val else 0
                 except (ValueError, TypeError): return 0
 
-            # Безопасное извлечение словарей
+            # 2. Безопасное извлечение блоков
+            config_data = q_data.get("config") if isinstance(q_data.get("config"), dict) else {}
             details = q_data.get("details") if isinstance(q_data.get("details"), dict) else {}
             route = q_data.get("route") if isinstance(q_data.get("route"), dict) else {}
             pickup = route.get("pickup") if isinstance(route.get("pickup"), dict) else {}
             delivery = route.get("delivery") if isinstance(route.get("delivery"), dict) else {}
             meta = q_data.get("meta") if isinstance(q_data.get("meta"), dict) else {}
             
-            # --- РАБОТА С ГРУЗОМ (Может быть списком или словарем) ---
+            # 3. Обработка грузов (массив или объект)
             cargo_data = q_data.get("cargo")
             total_pkg = 0
             total_gw = 0.0
@@ -273,7 +279,6 @@ def update_quote_status(quote_id: str, payload: QuoteStatusUpdate, db: Session =
             total_ldm = 0.0
             
             if isinstance(cargo_data, list):
-                # Если грузов несколько - суммируем их параметры
                 for item in cargo_data:
                     if isinstance(item, dict):
                         total_pkg += safe_int(item.get("packages"))
@@ -281,15 +286,17 @@ def update_quote_status(quote_id: str, payload: QuoteStatusUpdate, db: Session =
                         total_cw += safe_float(item.get("chargeableWeight"))
                         total_ldm += safe_float(item.get("ldm"))
             elif isinstance(cargo_data, dict):
-                # Если груз один (словарь)
                 total_pkg = safe_int(cargo_data.get("packages"))
                 total_gw = safe_float(cargo_data.get("weight"))
                 total_cw = safe_float(cargo_data.get("chargeableWeight"))
                 total_ldm = safe_float(cargo_data.get("ldm"))
 
-            # Определяем префикс
-            t_mode = (details.get("transport") or "road").lower()
-            direction = (details.get("direction") or "export").lower()
+            # 4. Жесткое чтение транспорта и направления без пробелов
+            t_val = config_data.get("transport") or details.get("transport") or "road"
+            t_mode = str(t_val).strip().lower()
+            
+            dir_val = config_data.get("direction") or details.get("direction") or "export"
+            direction = str(dir_val).strip().lower()
             
             t_letter = "A" if "air" in t_mode else ("S" if "sea" in t_mode else "R")
             d_letter = "I" if "import" in direction else ("D" if "domestic" in direction else "E")
@@ -298,7 +305,7 @@ def update_quote_status(quote_id: str, payload: QuoteStatusUpdate, db: Session =
             current_year = datetime.datetime.now().year
             
             try:
-                # Блокировка счетчика
+                # 5. Блокировка счетчика номеров
                 counter = db.query(OrderCounterDB).filter(
                     OrderCounterDB.prefix == prefix,
                     OrderCounterDB.current_year == current_year
@@ -316,10 +323,11 @@ def update_quote_status(quote_id: str, payload: QuoteStatusUpdate, db: Session =
                 origin_c = pickup.get("cleanCity") or "—"
                 dest_c = delivery.get("cleanCity") or "—"
                 
+                # 6. Запись в БД
                 booking = ActiveBookingDB(
                     order_number=order_number,
                     quote_id=quote.id,
-                    transport_type=t_mode[:4],
+                    transport_type=t_mode,
                     status="active",
                     bill_to_name=details.get("clientCompany") or "—",
                     origin_city=origin_c.split(",")[0] if origin_c != "—" else "—",
@@ -333,7 +341,7 @@ def update_quote_status(quote_id: str, payload: QuoteStatusUpdate, db: Session =
                     costs=safe_float(meta.get("totalCostValue"))
                 )
                 db.add(booking)
-                print(f"✅ [TMS TRIGGER] Успешно сгенерирован заказ {order_number} из КП {quote_id}")
+                print(f"✅ [TMS TRIGGER] Успешно сгенерирован заказ {order_number} из КП {quote_id} (Транспорт: {t_mode})")
                 
             except Exception as e:
                 db.rollback()
@@ -418,3 +426,21 @@ def accept_quote_to_booking(quote_id: str, prefix: str, db: Session = Depends(ge
         db.rollback()
         print(f"❌ [TMS CRITICAL] Ошибка генерации заказа: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Внутренняя ошибка генерации: {str(e)}")
+    
+@app.delete("/api/bookings/{order_number}")
+def delete_booking(order_number: str, db: Session = Depends(get_db)):
+    """Безвозвратное удаление оперативного заказа из базы"""
+    booking = db.query(ActiveBookingDB).filter(ActiveBookingDB.order_number == order_number).first()
+    
+    if not booking:
+        raise HTTPException(status_code=404, detail="Заказ не найден")
+        
+    try:
+        db.delete(booking)
+        db.commit()
+        print(f"🗑️ [TMS] Заказ {order_number} безвозвратно удален")
+        return {"status": "success", "message": f"Заказ {order_number} удален"}
+    except Exception as e:
+        db.rollback()
+        print(f"❌ [TMS CRITICAL] Ошибка удаления заказа {order_number}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Внутренняя ошибка при удалении")

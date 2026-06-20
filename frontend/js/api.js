@@ -173,6 +173,19 @@ export const api = {
         return await response.json();
     },
 
+    // --- АКТИВНЫЕ ЗАКАЗЫ ---
+    async deleteBooking(orderNumber) {
+        const response = await fetch(`${BASE_URL}/api/bookings/${orderNumber}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Ошибка сервера: ${errorText}`);
+        }
+        return await response.json();
+    },
+
     // ---------------------------------------------------------
     // ЗАГЛУШКИ ДЛЯ LOCAL STORAGE (Обратная совместимость)
     // ---------------------------------------------------------

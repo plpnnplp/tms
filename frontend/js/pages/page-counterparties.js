@@ -340,11 +340,6 @@ function loadCounterpartyToWorkspace(cp) {
 // 5. РЕНДЕР КРАСИВОГО СПИСКА АКТОВ В ФОРМАТЕ (R-E-2600001)
 function generateMockActsTable(shortName) {
     const tbody = document.getElementById('tmsActsTableBody');
-    // Мокаем пару финансовых записей для демонстрации сквозной аналитики актов
-    const mockActs = [
-        { id: `R-E-260001`, date: "12.06.2026", from: shortName, to: "MUC_LOG", manager: "Stanislav", bill: "1450.00", cost: "1100.00", margin: "350.00" },
-        { id: `R-I-260004`, date: "15.06.2026", from: "HAM_CORP", to: shortName, manager: "Stanislav", bill: "2800.00", cost: "2350.00", margin: "450.00" }
-    ];
 
     let html = '';
     mockActs.forEach(act => {
