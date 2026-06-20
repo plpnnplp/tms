@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 import json
 import os
+import datetime
 
 from app.core.database import SessionLocal, QuoteDB, CounterpartyDB, ContactDB, ActiveBookingDB, OrderCounterDB
 
@@ -49,8 +50,28 @@ class CounterpartySchema(BaseModel):
     payment_terms: str = ""
     contacts: List[ContactSchema] = []
 
-# --- CORS ---
+class QuoteCreatePayload(BaseModel):
+    quote_id: str
+    data: dict
 
+class QuoteStatusUpdate(BaseModel):
+    status: str
+
+class ContactCreate(BaseModel):
+    first_name: str = ""
+    last_name: str = ""
+    email: str = ""
+    phone: str = ""
+
+class CounterpartyCreate(BaseModel):
+    name: str
+    short_name: str = ""
+    role: str = "client"
+    country: str = ""
+    payment_terms: str = ""
+    contacts: List[ContactCreate] = []
+
+# --- CORS ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -66,10 +87,8 @@ def get_db():
     finally:
         db.close()
 
-class QuoteCreatePayload(BaseModel):
-    quote_id: str
-    data: dict
 
+# --- БАЗОВЫЕ ЭНДПОИНТЫ И СПРАВОЧНИКИ ---
 @app.get("/")
 def read_root():
     return {
@@ -96,24 +115,8 @@ def get_cities():
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="cities.json не найден")
 
-# --- СХЕМЫ КОНТРАГЕНТОВ ---
-class ContactCreate(BaseModel):
-    first_name: str = ""
-    last_name: str = ""
-    email: str = ""
-    phone: str = ""
-
-class CounterpartyCreate(BaseModel):
-    name: str
-    short_name: str = ""
-    role: str = "client"
-    country: str = ""
-    payment_terms: str = ""
-    contacts: List[ContactCreate] = []
 
 # --- ЭНДПОИНТЫ КОНТРАГЕНТОВ ---
-from sqlalchemy.orm import joinedload
-
 @app.post("/api/counterparties", status_code=201)
 def create_counterparty(cp: CounterpartySchema, db: Session = Depends(get_db)):
     data_dict = cp.model_dump()
@@ -156,21 +159,15 @@ def update_counterparty(cp_id: int, cp: CounterpartySchema, db: Session = Depend
     if not db_cp:
         return {"status": "error", "message": "Counterparty not found"}
         
-    # Превращаем схему в словарь и вытаскиваем контакты
     data_dict = cp.model_dump()
     contacts_data = data_dict.pop("contacts", [])
     
-    # 1. Обновляем основные поля компании
     for key, value in data_dict.items():
         setattr(db_cp, key, value)
         
     try:
-        # 2. Удаляем старые связанные контакты из базы
         db.query(ContactDB).filter(ContactDB.counterparty_id == cp_id).delete()
-        
-        # 3. Записываем обновленный список контактов
         for c_data in contacts_data:
-            # Явно передаем counterparty_id, чтобы SQLAlchemy не терял связь
             new_contact = ContactDB(**c_data, counterparty_id=cp_id)
             db.add(new_contact)
             
@@ -189,20 +186,17 @@ def delete_counterparty(cp_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "deleted"}
 
-# --- ЭНДПОИНТЫ РАБОТЫ С КОММЕРЧЕСКИМИ ПРЕДЛОЖЕНИЯМИ ---
 
+# --- ЭНДПОИНТЫ КОММЕРЧЕСКИХ ПРЕДЛОЖЕНИЙ ---
 @app.post("/api/quotes", status_code=201)
 def save_quote(payload: QuoteCreatePayload, db: Session = Depends(get_db)):
-    """Сохранение или обновление коммерческого предложения"""
     existing_quote = db.query(QuoteDB).filter(QuoteDB.id == payload.quote_id).first()
     data_str = json.dumps(payload.data, ensure_ascii=False)
     
     if existing_quote:
         existing_quote.data = data_str
-        # При изменении сбрасываем статус обратно в draft (черновик)
         existing_quote.status = "draft" 
     else:
-        # Новые КП создаются строго со статусом "draft"
         new_quote = QuoteDB(id=payload.quote_id, data=data_str, status="draft")
         db.add(new_quote)
         
@@ -211,9 +205,7 @@ def save_quote(payload: QuoteCreatePayload, db: Session = Depends(get_db)):
 
 @app.get("/api/quotes")
 def get_all_quotes(db: Session = Depends(get_db)):
-    """Выгрузка всех КП для реестра (QuotesDatabase.html)"""
     quotes = db.query(QuoteDB).order_by(QuoteDB.created_at.desc()).all()
-    
     result = []
     for q in quotes:
         result.append({
@@ -224,22 +216,8 @@ def get_all_quotes(db: Session = Depends(get_db)):
         })
     return result
 
-@app.put("/api/quotes/{quote_id}/status")
-def update_quote_status(quote_id: str, status_payload: dict, db: Session = Depends(get_db)):
-    """Изменение статуса (Won/Lost/Sent) из реестра"""
-    new_status = status_payload.get("status")
-    quote = db.query(QuoteDB).filter(QuoteDB.id == quote_id).first()
-    
-    if not quote:
-        raise HTTPException(status_code=404, detail="КП не найдено")
-        
-    quote.status = new_status
-    db.commit()
-    return {"message": "Статус updated успешно", "new_status": new_status}
-
 @app.delete("/api/quotes/{quote_id}")
 def delete_quote(quote_id: str, db: Session = Depends(get_db)):
-    """Удаление КП из базы"""
     quote = db.query(QuoteDB).filter(QuoteDB.id == quote_id).first()
     if not quote:
         raise HTTPException(status_code=404, detail="КП не найдено")
@@ -248,13 +226,127 @@ def delete_quote(quote_id: str, db: Session = Depends(get_db)):
     db.commit()
     return {"message": f"КП {quote_id} удалено"}
 
+@app.put("/api/quotes/{quote_id}/status")
+def update_quote_status(quote_id: str, payload: QuoteStatusUpdate, db: Session = Depends(get_db)):
+    """Изменение статуса КП и АВТО-ТРИГГЕР создания заказа (Безопасный парсинг списков)"""
+    import json
+    
+    quote = db.query(QuoteDB).filter(QuoteDB.id == quote_id).first()
+    if not quote:
+        raise HTTPException(status_code=404, detail="КП не найдено")
+        
+    old_status = quote.status
+    quote.status = payload.status
+    
+    if payload.status == "accepted" and old_status != "accepted":
+        existing_booking = db.query(ActiveBookingDB).filter(ActiveBookingDB.quote_id == quote_id).first()
+        
+        if not existing_booking:
+            try:
+                q_data = json.loads(quote.data) if quote.data else {}
+                if not isinstance(q_data, dict):
+                    q_data = {}
+            except Exception:
+                q_data = {}
+                
+            # Вспомогательные функции
+            def safe_float(val):
+                try: return float(val) if val else 0.0
+                except (ValueError, TypeError): return 0.0
+                    
+            def safe_int(val):
+                try: return int(val) if val else 0
+                except (ValueError, TypeError): return 0
+
+            # Безопасное извлечение словарей
+            details = q_data.get("details") if isinstance(q_data.get("details"), dict) else {}
+            route = q_data.get("route") if isinstance(q_data.get("route"), dict) else {}
+            pickup = route.get("pickup") if isinstance(route.get("pickup"), dict) else {}
+            delivery = route.get("delivery") if isinstance(route.get("delivery"), dict) else {}
+            meta = q_data.get("meta") if isinstance(q_data.get("meta"), dict) else {}
+            
+            # --- РАБОТА С ГРУЗОМ (Может быть списком или словарем) ---
+            cargo_data = q_data.get("cargo")
+            total_pkg = 0
+            total_gw = 0.0
+            total_cw = 0.0
+            total_ldm = 0.0
+            
+            if isinstance(cargo_data, list):
+                # Если грузов несколько - суммируем их параметры
+                for item in cargo_data:
+                    if isinstance(item, dict):
+                        total_pkg += safe_int(item.get("packages"))
+                        total_gw += safe_float(item.get("weight"))
+                        total_cw += safe_float(item.get("chargeableWeight"))
+                        total_ldm += safe_float(item.get("ldm"))
+            elif isinstance(cargo_data, dict):
+                # Если груз один (словарь)
+                total_pkg = safe_int(cargo_data.get("packages"))
+                total_gw = safe_float(cargo_data.get("weight"))
+                total_cw = safe_float(cargo_data.get("chargeableWeight"))
+                total_ldm = safe_float(cargo_data.get("ldm"))
+
+            # Определяем префикс
+            t_mode = (details.get("transport") or "road").lower()
+            direction = (details.get("direction") or "export").lower()
+            
+            t_letter = "A" if "air" in t_mode else ("S" if "sea" in t_mode else "R")
+            d_letter = "I" if "import" in direction else ("D" if "domestic" in direction else "E")
+            prefix = f"{t_letter}{d_letter}"
+            
+            current_year = datetime.datetime.now().year
+            
+            try:
+                # Блокировка счетчика
+                counter = db.query(OrderCounterDB).filter(
+                    OrderCounterDB.prefix == prefix,
+                    OrderCounterDB.current_year == current_year
+                ).with_for_update().first()
+                
+                if not counter:
+                    counter = OrderCounterDB(prefix=prefix, current_year=current_year, last_value=0)
+                    db.add(counter)
+                    db.flush()
+                
+                counter.last_value += 1
+                year_str = str(current_year)[-2:]
+                order_number = f"{prefix}-{year_str}{counter.last_value:05d}"
+                
+                origin_c = pickup.get("cleanCity") or "—"
+                dest_c = delivery.get("cleanCity") or "—"
+                
+                booking = ActiveBookingDB(
+                    order_number=order_number,
+                    quote_id=quote.id,
+                    transport_type=t_mode[:4],
+                    status="active",
+                    bill_to_name=details.get("clientCompany") or "—",
+                    origin_city=origin_c.split(",")[0] if origin_c != "—" else "—",
+                    destination_city=dest_c.split(",")[0] if dest_c != "—" else "—",
+                    packages_count=total_pkg,
+                    gross_weight_kg=total_gw,
+                    chargeable_weight_kg=total_cw,
+                    ldm=total_ldm,
+                    quote_price=safe_float(meta.get("grandTotalValue")),
+                    actual_price=safe_float(meta.get("grandTotalValue")),
+                    costs=safe_float(meta.get("totalCostValue"))
+                )
+                db.add(booking)
+                print(f"✅ [TMS TRIGGER] Успешно сгенерирован заказ {order_number} из КП {quote_id}")
+                
+            except Exception as e:
+                db.rollback()
+                print(f"❌ [TMS CRITICAL] Ошибка авто-генерации: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Сбой парсинга при генерации: {str(e)}")
+
+    db.commit()
+    return {"status": "success", "new_status": quote.status}
+
+# --- ЭНДПОИНТЫ ЗАКАЗОВ (BOOKINGS) ---
 @app.get("/api/bookings")
 def get_all_bookings(db: Session = Depends(get_db)):
-    """
-    Отдает список всех активных заказов, отсортированных от самых свежих к старым.
-    """
     try:
-        # Запрашиваем все заказы, сортируем по дате создания (свежие сверху)
         bookings = db.query(ActiveBookingDB).order_by(ActiveBookingDB.created_at.desc()).all()
         return bookings
     except Exception as e:
@@ -263,10 +355,7 @@ def get_all_bookings(db: Session = Depends(get_db)):
 
 @app.post("/api/quotes/{quote_id}/accept")
 def accept_quote_to_booking(quote_id: str, prefix: str, db: Session = Depends(get_db)):
-    """
-    Превращает КП в Активный заказ с полным переносом операционных и финансовых данных
-    """
-    # 1. Ищем оригинальное КП в базе
+    """Кнопка явного перевода КП в Заказ из UI (если не используется статус-дропдаун)"""
     quote = db.query(QuoteDB).filter(QuoteDB.id == quote_id).first()
     if not quote:
         raise HTTPException(status_code=404, detail="КП не найдено")
@@ -274,10 +363,20 @@ def accept_quote_to_booking(quote_id: str, prefix: str, db: Session = Depends(ge
     if quote.status == "accepted":
         raise HTTPException(status_code=400, detail="Это КП уже переведено в заказ")
 
+    try:
+        q_data = json.loads(quote.data) if quote.data else {}
+    except Exception:
+        q_data = {}
+        
+    details = q_data.get("details", {})
+    cargo = q_data.get("cargo", {})
+    route = q_data.get("route", {})
+    pickup = route.get("pickup", {})
+    delivery = route.get("delivery", {})
+    
     current_year = datetime.datetime.now().year
     
     try:
-        # 2. Блокируем счетчик номеров для предотвращения дубликатов (Race Condition)
         counter = db.query(OrderCounterDB).filter(
             OrderCounterDB.prefix == prefix,
             OrderCounterDB.current_year == current_year
@@ -288,104 +387,34 @@ def accept_quote_to_booking(quote_id: str, prefix: str, db: Session = Depends(ge
             db.add(counter)
             db.flush()
         
-        # 3. Генерируем уникальный номер по маске префикса
         counter.last_value += 1
-        year_str = str(current_year)[-2:]
+        year_str = str(current_year)[-2:] 
         order_number = f"{prefix}-{year_str}{counter.last_value:05d}"
         
-        # 4. Создаем заказ и переносим данные из полей КП
-        # (Используем getattr на случай, если какие-то поля в твоей модели QuoteDB называются иначе)
         booking = ActiveBookingDB(
             order_number=order_number,
             quote_id=quote.id,
-            transport_type=prefix.lower()[:3], # 'air', 'sea', 'road'
+            transport_type=prefix.lower()[:3],
             status="active",
-            
-            # Участники (если в КП они сохранены как строки или ID)
-            bill_to_name=getattr(quote, "client_company", "—"),
-            shipper_name=getattr(quote, "shipper_name", "—"),
-            consignee_name=getattr(quote, "consignee_name", "—"),
-            
-            # Маршрут
-            origin_city=getattr(quote, "origin_city", "—"),
-            destination_city=getattr(quote, "destination_city", "—"),
-            
-            # Габариты груза
-            packages_count=getattr(quote, "packages_count", 0),
-            gross_weight_kg=getattr(quote, "total_weight", 0.0),
-            chargeable_weight_kg=getattr(quote, "chargeable_weight", 0.0),
-            ldm=getattr(quote, "ldm", 0.0),
-            
-            # Финансовый блок (План)
-            quote_price=getattr(quote, "total_price", 0.0),
-            actual_price=getattr(quote, "total_price", 0.0), # На старте факт равен плану
-            costs=getattr(quote, "total_costs", 0.0),
-            margin=getattr(quote, "margin", 0.0)
+            bill_to_name=details.get("clientCompany", "—"),
+            origin_city=pickup.get("cleanCity", "—").split(",")[0] if pickup.get("cleanCity") else "—",
+            destination_city=delivery.get("cleanCity", "—").split(",")[0] if delivery.get("cleanCity") else "—",
+            packages_count=int(cargo.get("packages", 0) or 0),
+            gross_weight_kg=float(cargo.get("weight", 0.0) or 0.0),
+            chargeable_weight_kg=float(cargo.get("chargeableWeight", 0.0) or 0.0),
+            ldm=float(cargo.get("ldm", 0.0) or 0.0),
+            quote_price=float(q_data.get("meta", {}).get("grandTotalValue", 0.0) or 0.0),
+            actual_price=float(q_data.get("meta", {}).get("grandTotalValue", 0.0) or 0.0),
+            costs=float(q_data.get("meta", {}).get("totalCostValue", 0.0) or 0.0)
         )
         db.add(booking)
         
-        # 5. Меняем статус КП, чтобы оно скрылось из черновиков
         quote.status = "accepted"
         
-        db.commit()
-        return {"status": "success", "order_number": order_number}
-        
-    except Exception as e:
-        db.rollback()
-        print(f"❌ [TMS CRITICAL] Ошибка генерации заказа из КП: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
-    """
-    Превращает КП в Активный заказ:
-    1. Проверяет существование КП.
-    2. Блокирует счетчик префикса (защита от гонки).
-    3. Генерирует номер (AE-2600001).
-    4. Создает заказ и меняет статус КП.
-    """
-    # 1. Ищем КП
-    quote = db.query(QuoteDB).filter(QuoteDB.id == quote_id).first()
-    if not quote:
-        raise HTTPException(status_code=404, detail="КП не найдено")
-    
-    if quote.status == "accepted":
-        raise HTTPException(status_code=400, detail="Это КП уже переведено в заказ")
-
-    current_year = datetime.datetime.now().year
-    
-    try:
-        # 2. ЗАЩИТА: Блокируем строку счетчика на время транзакции
-        counter = db.query(OrderCounterDB).filter(
-            OrderCounterDB.prefix == prefix,
-            OrderCounterDB.current_year == current_year
-        ).with_for_update().first()
-        
-        # Если счетчика для этого года еще нет - создаем
-        if not counter:
-            counter = OrderCounterDB(prefix=prefix, current_year=current_year, last_value=0)
-            db.add(counter)
-            db.flush() # Применяем промежуточно в сессии
-        
-        # 3. Генерируем номер
-        counter.last_value += 1
-        year_str = str(current_year)[-2:] # Берем '26' из '2026'
-        order_number = f"{prefix}-{year_str}{counter.last_value:05d}" # 'AE-2600001'
-        
-        # 4. Создаем новый активный заказ (пока с пустыми данными, позже добавим парсер JSON из КП)
-        booking = ActiveBookingDB(
-            order_number=order_number,
-            quote_id=quote.id,
-            transport_type=prefix.lower(), # ae -> air export
-            status="active"
-        )
-        db.add(booking)
-        
-        # 5. Скрываем КП из списка "Драфтов"
-        quote.status = "accepted"
-        
-        # 6. Только сейчас всё сохраняем и разблокируем счетчик
         db.commit()
         return {"status": "success", "order_number": order_number}
         
     except Exception as e:
         db.rollback()
         print(f"❌ [TMS CRITICAL] Ошибка генерации заказа: {str(e)}")
-        raise HTTPException(status_code=500, detail="Внутренняя ошибка генерации")
+        raise HTTPException(status_code=500, detail=f"Внутренняя ошибка генерации: {str(e)}")
