@@ -142,8 +142,7 @@
                                         </div>
                                     </legend>
                                     <div class="tms-awb-acc-row">
-                                        <span>Shipper's Account Number</span>
-                                        <input type="text" id="awbShipperAcc" class="tms-ws-input tms-locked-field" disabled>
+                                        <input type="text" id="awbShipperAcc" placeholder="Shipper's Account Number" class="tms-ws-input tms-locked-field" disabled>
                                     </div>
                                     <textarea id="awbShipperAddress" class="tms-awb-textarea tms-locked-field" style="height: 60px;" disabled></textarea>
                                 </fieldset>
@@ -157,8 +156,7 @@
                                         </div>
                                     </legend>
                                     <div class="tms-awb-acc-row">
-                                        <span>Consignee's Account Number</span>
-                                        <input type="text" id="awbConsigneeAcc" class="tms-ws-input tms-locked-field" disabled>
+                                        <input type="text" id="awbConsigneeAcc" placeholder="Consignee's Account Number" class="tms-ws-input tms-locked-field" disabled>
                                     </div>
                                     <textarea id="awbConsigneeAddress" class="tms-awb-textarea tms-locked-field" style="height: 60px;" disabled></textarea>
                                 </fieldset>
@@ -178,22 +176,44 @@
                                     </div>
                                 </fieldset>
 
-                                <fieldset class="tms-awb-box">
-                                    <legend>Airport of Departure (Addr. of First Carrier) and Requested Routing</legend>
-                                    <input type="text" id="awbDept" class="tms-ws-input tms-locked-field" disabled>
-                                    <div class="tms-awb-routing-row" style="margin-top: 5px;">
-                                        <div style="width: 40px;"><label>To</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
-                                        <div style="flex: 1;"><label>By First Carrier</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
-                                        <div style="width: 35px;"><label>to</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
-                                        <div style="width: 35px;"><label>by</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
-                                        <div style="width: 35px;"><label>to</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
-                                        <div style="width: 35px;"><label>by</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
+                                <div class="tms-awb-box tms-strict-grid">
+                                    <div class="tms-strict-row tms-border-bottom">
+                                        <div class="tms-strict-cell">
+                                            <label>Airport of Departure (Addr. of First Carrier) and Requested Routing</label>
+                                            <input type="text" id="awbDept" class="tms-ws-input tms-locked-field tms-text-lg" disabled>
+                                        </div>
                                     </div>
-                                    <div class="tms-form-row" style="margin-top: 5px;">
-                                        <div style="flex: 1;"><label>Airport of Destination</label><input type="text" id="awbDest" class="tms-ws-input tms-locked-field" disabled></div>
-                                        <div style="flex: 1;"><label>Requested Flight/Date</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
+                                    <div class="tms-strict-row tms-border-bottom">
+                                        <div class="tms-strict-cell tms-border-right" style="width: 40px;">
+                                            <label>To</label>
+                                            <input type="text" class="tms-ws-input tms-locked-field tms-text-center" disabled>
+                                        </div>
+                                        <div class="tms-strict-cell tms-border-right" style="flex: 1;">
+                                            <label>By First Carrier</label>
+                                            <input type="text" class="tms-ws-input tms-locked-field" disabled>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column; width: 140px;">
+                                            <label class="tms-border-bottom tms-text-center">Routing and Destination</label>
+                                            <div style="display: flex; flex: 1;">
+                                                <div class="tms-strict-cell tms-border-right" style="flex: 1;"><label class="tms-text-center">to</label><input type="text" class="tms-ws-input tms-locked-field tms-text-center" disabled></div>
+                                                <div class="tms-strict-cell tms-border-right" style="flex: 1;"><label class="tms-text-center">by</label><input type="text" class="tms-ws-input tms-locked-field tms-text-center" disabled></div>
+                                                <div class="tms-strict-cell tms-border-right" style="flex: 1;"><label class="tms-text-center">to</label><input type="text" class="tms-ws-input tms-locked-field tms-text-center" disabled></div>
+                                                <div class="tms-strict-cell" style="flex: 1;"><label class="tms-text-center">by</label><input type="text" class="tms-ws-input tms-locked-field tms-text-center" disabled></div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </fieldset>
+                                    <div class="tms-strict-row">
+                                        <div class="tms-strict-cell tms-border-right" style="flex: 1;">
+                                            <label>Airport of Destination</label>
+                                            <input type="text" id="awbDest" class="tms-ws-input tms-locked-field tms-text-lg" disabled>
+                                        </div>
+                                        <div class="tms-strict-cell" style="flex: 1;">
+                                            <label>Requested Flight/Date</label>
+                                            <input type="text" class="tms-ws-input tms-locked-field tms-text-lg" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div> <div class="tms-awb-col">
                                 <fieldset class="tms-awb-box">
                                     <legend>
@@ -226,33 +246,52 @@
                                     </div>
                                 </fieldset>
 
-                                <fieldset class="tms-awb-box">
-                                    <legend>Charges Declaration</legend>
-                                    <div class="tms-awb-charges-decl-grid">
-                                        <div class="tms-cell"><label>Currency</label><input type="text" value="EUR" class="tms-ws-input tms-locked-field" disabled></div>
-                                        <div class="tms-cell"><label>CHGS Code</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
-                                        <div class="tms-cell"><label>WT/VAL</label>
-                                            <select class="tms-ws-input tms-locked-field" disabled><option>PPD</option><option>COLL</option></select>
+                                <div class="tms-awb-box tms-strict-grid" style="margin-top: 5px;">
+                    <div class="tms-strict-row tms-border-bottom">
+                        <div class="tms-strict-cell tms-border-right" style="width: 50px;">
+                            <label>Currency</label>
+                            <input type="text" value="USD" class="tms-ws-input tms-locked-field tms-text-lg tms-text-center" disabled>
+                        </div>
+                        <div class="tms-strict-cell tms-border-right" style="width: 40px;">
+                            <label>CHGS<br>Code</label>
+                            <input type="text" class="tms-ws-input tms-locked-field tms-text-center" disabled>
+                        </div>
+                        <div style="display: flex; flex-direction: column; width: 60px; border-right: 1px solid #cbd5e1;">
+                            <label class="tms-border-bottom tms-text-center">WT / VAL</label>
+                            <div style="display: flex; flex: 1;">
+                                <div class="tms-strict-cell tms-border-right" style="flex: 1;"><label class="tms-text-center">PPD</label><input type="text" class="tms-ws-input tms-locked-field tms-text-center" value="X" disabled></div>
+                                <div class="tms-strict-cell" style="flex: 1;"><label class="tms-text-center">COLL</label><input type="text" class="tms-ws-input tms-locked-field tms-text-center" disabled></div>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; width: 60px; border-right: 1px solid #cbd5e1;">
+                                            <label class="tms-border-bottom tms-text-center">Other</label>
+                                            <div style="display: flex; flex: 1;">
+                                                <div class="tms-strict-cell tms-border-right" style="flex: 1;"><label class="tms-text-center">PPD</label><input type="text" class="tms-ws-input tms-locked-field tms-text-center" value="X" disabled></div>
+                                                <div class="tms-strict-cell" style="flex: 1;"><label class="tms-text-center">COLL</label><input type="text" class="tms-ws-input tms-locked-field tms-text-center" disabled></div>
+                                            </div>
                                         </div>
-                                        <div class="tms-cell"><label>Other</label>
-                                            <select class="tms-ws-input tms-locked-field" disabled><option>PPD</option><option>COLL</option></select>
+                                        <div class="tms-strict-cell tms-border-right" style="flex: 1;">
+                                            <label class="tms-text-center">Declared Value for Carriage</label>
+                                            <input type="text" value="NVD" class="tms-ws-input tms-locked-field tms-text-lg tms-text-center" disabled>
+                                        </div>
+                                        <div class="tms-strict-cell" style="flex: 1;">
+                                            <label class="tms-text-center">Declared Value for Customs</label>
+                                            <input type="text" value="NCV" class="tms-ws-input tms-locked-field tms-text-lg tms-text-center" disabled>
                                         </div>
                                     </div>
-                                    <div class="tms-form-row" style="margin-top: 5px;">
-                                        <div style="flex: 1;"><label>Declared Value Carriage</label><input type="text" value="NVD" class="tms-ws-input tms-locked-field" disabled></div>
-                                        <div style="flex: 1;"><label>Declared Value Customs</label><input type="text" value="NCV" class="tms-ws-input tms-locked-field" disabled></div>
+                                    <div class="tms-strict-row">
+                                        <div class="tms-strict-cell tms-border-right" style="width: 160px;">
+                                            <label>Amount of Insurance</label>
+                                            <input type="text" value="NIL" class="tms-ws-input tms-locked-field tms-text-lg" disabled>
+                                        </div>
+                                        <div class="tms-strict-cell" style="flex: 1;">
+                                            <div class="tms-text-sub" style="font-size: 8px; line-height: 1.1; margin-top: 2px;">
+                                                INSURANCE – If carrier offers insurance, and such insurance is requested in accordance with the conditions thereof, indicate amount to be insured in figures in box marked “Amount of Insurance”
+                                            </div>
+                                        </div>
                                     </div>
-                                </fieldset>
+                                </div>
 
-                                <fieldset class="tms-awb-box">
-                                    <legend>Amount of Insurance</legend>
-                                    <div class="tms-form-row" style="align-items: center;">
-                                        <input type="text" value="XXX" class="tms-ws-input tms-locked-field" style="width: 80px;" disabled>
-                                        <div class="tms-text-sub" style="font-size: 8px; line-height: 1.1; margin-left: 5px;">
-                                            INSURANCE – If carrier offers insurance, and such insurance is requested in accordance with the conditions thereof, indicate amount to be insured in figures in field “Amount of Insurance”
-                                        </div>
-                                    </div>
-                                </fieldset>
                             </div> </div> <fieldset class="tms-awb-box tms-handling-box" style="margin-top: -1px;">
                             <legend>Handling Information</legend>
                             <textarea id="awbHandling" class="tms-awb-textarea tms-locked-field" style="height: 45px; padding-right: 70px;" placeholder="Handling Instructions..." disabled></textarea>

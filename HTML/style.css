@@ -1192,6 +1192,46 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 .tms-lookup-input:focus { border-color: #3b82f6; }
 .tms-lookup-input:disabled { background: transparent; border-color: transparent; }
 
+/* --- СТРОГАЯ ТАБЛИЧНАЯ ВЕРСТКА ДЛЯ AWB --- */
+.tms-strict-grid {
+    padding: 0 !important; /* Убираем padding у родительского box */
+    overflow: hidden;
+}
+.tms-strict-row {
+    display: flex;
+    width: 100%;
+}
+.tms-border-bottom {
+    border-bottom: 1px solid #cbd5e1;
+}
+.tms-border-right {
+    border-right: 1px solid #cbd5e1;
+}
+.tms-strict-cell {
+    padding: 2px 4px;
+    display: flex;
+    flex-direction: column;
+}
+.tms-strict-cell label, .tms-strict-grid label {
+    font-size: 9px;
+    color: #475569;
+    line-height: 1.1;
+    margin-bottom: 1px;
+}
+.tms-strict-grid input.tms-ws-input {
+    padding: 1px 0;
+    height: auto;
+    background: transparent !important;
+    border: none !important; /* Инпуты сливаются с фоном ячейки */
+}
+.tms-text-center {
+    text-align: center;
+}
+.tms-text-lg {
+    font-size: 14px !important;
+    font-weight: 700;
+}
+
 /* Handling & SCI */
 .tms-handling-box {
     position: relative;
