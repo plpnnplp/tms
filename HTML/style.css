@@ -1266,3 +1266,219 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
     font-size: 14px !important;
     font-weight: 700;
 }
+
+/* =========================================
+   AWB ИДЕАЛЬНАЯ СЕТКА (Grid Matrix)
+   ========================================= */
+.tms-awb-matrix {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background-color: #cbd5e1; /* Тот самый цвет рамки */
+    border: 1px solid #cbd5e1;
+}
+
+.tms-awb-matrix > div, 
+.tms-awb-matrix > fieldset {
+    background-color: #ffffff; /* Белый фон ячеек */
+    border: none !important;   /* Отключаем дефолтные рамки */
+    margin: 0;
+    padding: 8px 12px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* Расширение ячеек на 2 колонки */
+.tms-col-span-2 { grid-column: span 2; }
+
+/* Абсолютное позиционирование для Account Numbers */
+.tms-acc-absolute {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    width: 140px;
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.tms-acc-absolute span { font-size: 9px; color: #94a3b8; text-transform: uppercase; }
+.tms-acc-absolute input {
+    border: none;
+    border-bottom: 1px dashed #cbd5e1;
+    text-align: right;
+    font-size: 12px;
+    outline: none;
+    background: transparent;
+}
+
+/* Утопленные поля ID */
+.tms-lookup-input {
+    background: #f8fafc;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    outline: none;
+}
+.tms-lookup-input:focus {
+    background: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.06), 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* Excel-таблица груза */
+.tms-excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+.tms-excel-table th {
+    border: 1px solid #cbd5e1;
+    font-size: 9px;
+    color: #64748b;
+    padding: 4px;
+    text-align: left;
+}
+.tms-excel-table td {
+    border: 1px solid #cbd5e1;
+    padding: 0; /* Убираем паддинги, инпут займет все место */
+    height: 24px;
+}
+.tms-excel-table input, .tms-excel-table textarea {
+    width: 100%;
+    height: 100%;
+    border: none;
+    padding: 4px 6px;
+    box-sizing: border-box;
+    outline: none;
+    background: transparent;
+    font-size: 12px;
+}
+.tms-excel-table input:focus, .tms-excel-table textarea:focus { background: #eff6ff; }
+
+/* Жесткая блокировка переполнения для многострочных полей */
+.tms-awb-textarea { overflow: hidden; resize: none; }
+
+/* =========================================
+   ПЕЧАТЬ (Print Media)
+   ========================================= */
+@media print {
+    /* Скрываем интерфейс */
+    .tms-order-topbar, .tms-left-sidebar, .tms-tabs-header, 
+    .tms-legend-actions, button, #btnNextToCharges {
+        display: none !important;
+    }
+    
+    /* Разворачиваем контент */
+    .tms-workspace-layout, .tms-right-content, .tms-tab-content {
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        background: #ffffff !important;
+    }
+    
+    /* Убираем стилизацию полей ввода */
+    input, textarea {
+        background: transparent !important;
+        border-color: transparent !important;
+        box-shadow: none !important;
+        color: #000 !important;
+    }
+
+    /* Фокусируем печать только на бланке */
+    .tms-awb-canvas {
+        max-width: 100%;
+        box-shadow: none;
+        border: none;
+        margin: 0;
+        padding: 0;
+    }
+}
+
+/* ==========================================================================
+   МЕТОД «ПРОСВЕЧИВАЮЩЕГО ГРИДА» (TRANSLUCENT MATRIX)
+   ========================================================================== */
+
+/* Контейнер, формирующий линии за счет своего фона */
+.tms-matrix-container {
+    background-color: #cbd5e1 !important; /* Цвет линий сетки */
+    gap: 1px !important;
+    border: 1px solid #cbd5e1; /* Внешний контур (чтобы рамка была и по краям) */
+    
+    /* КРИТИЧНО ДЛЯ ПЕЧАТИ: Принудительный рендер фона */
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+}
+
+/* Модификаторы поведения контейнера */
+.tms-matrix-grid {
+    display: grid;
+}
+.tms-matrix-flex-col {
+    display: flex;
+    flex-direction: column;
+}
+.tms-matrix-flex-row {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+/* Все прямые потомки матрицы становятся "ячейками" с белым фоном */
+.tms-matrix-container > * {
+    background-color: #ffffff !important;
+    border: none !important; /* Принудительно убиваем старые рамки */
+    margin: 0 !important;
+    box-sizing: border-box;
+}
+
+/* Корректировка существующих классов бланка под матрицу */
+.tms-awb-box {
+    padding: 8px 12px;
+    border-radius: 0 !important; /* В матрице не должно быть скруглений */
+}
+
+/* Избавляемся от старых костылей с рамками в строгих сетках */
+.tms-border-bottom, .tms-border-right {
+    border: none !important; 
+}
+
+/* ==========================================================================
+   AWB МЕТОД «МОЗАИКИ» (Идеальные рамки для IATA бланка и печати)
+   ========================================================================== */
+
+/* Внешняя обертка всей матрицы (Верх и Лево) */
+.tms-mosaic-wrapper {
+    border-top: 1px solid #cbd5e1 !important;
+    border-left: 1px solid #cbd5e1 !important;
+    background-color: #ffffff;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+/* Ячейки мозаики (Низ и Право) */
+.tms-mosaic-cell {
+    border-bottom: 1px solid #cbd5e1 !important;
+    border-right: 1px solid #cbd5e1 !important;
+    box-sizing: border-box;
+    position: relative;
+    padding: 6px 10px;
+    background: #ffffff;
+}
+
+/* Утилиты для Flex-структуры */
+.tms-flex-row { display: flex; width: 100%; }
+.tms-flex-col { display: flex; flex-direction: column; }
+
+/* Убираем отступы браузера внутри ячеек */
+.tms-mosaic-cell label { margin: 0; padding: 0; }
+.tms-mosaic-cell input, 
+.tms-mosaic-cell textarea { background: transparent; border: none; outline: none; box-sizing: border-box; }
+
+/* Специфичные инпуты для сетки */
+.tms-input-dashed { border-bottom: 1px dashed #cbd5e1 !important; width: 100%; }
