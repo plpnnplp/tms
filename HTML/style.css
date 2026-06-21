@@ -1192,6 +1192,41 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 .tms-lookup-input:focus { border-color: #3b82f6; }
 .tms-lookup-input:disabled { background: transparent; border-color: transparent; }
 
+/* Handling & SCI */
+.tms-handling-box {
+    position: relative;
+}
+
+.tms-sci-corner {
+    position: absolute;
+    top: 0; /* Было bottom: 0 */
+    right: 0;
+    width: 60px;
+    height: 45px;
+    border-bottom: 1px solid #cbd5e1; /* Рамка теперь снизу */
+    border-left: 1px solid #cbd5e1;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    z-index: 2; /* Защита от перекрытия текстом */
+}
+
+.tms-sci-title {
+    text-align: center;
+    font-size: 10px;
+    font-weight: 800;
+    color: #64748b;
+    border-bottom: 0.5px solid #cbd5e1;
+    padding: 2px 0;
+}
+.tms-sci-input {
+    flex-grow: 1;
+    border: none !important;
+    text-align: center;
+    font-size: 18px !important;
+    background: transparent !important;
+}
+
 /* --- СТРОГАЯ ТАБЛИЧНАЯ ВЕРСТКА ДЛЯ AWB --- */
 .tms-strict-grid {
     padding: 0 !important; /* Убираем padding у родительского box */
@@ -1230,39 +1265,4 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 .tms-text-lg {
     font-size: 14px !important;
     font-weight: 700;
-}
-
-/* Handling & SCI */
-.tms-handling-box {
-    position: relative;
-}
-
-.tms-sci-corner {
-    position: absolute;
-    top: 0; /* Было bottom: 0 */
-    right: 0;
-    width: 60px;
-    height: 45px;
-    border-bottom: 1px solid #cbd5e1; /* Рамка теперь снизу */
-    border-left: 1px solid #cbd5e1;
-    background: #ffffff;
-    display: flex;
-    flex-direction: column;
-    z-index: 2; /* Защита от перекрытия текстом */
-}
-
-.tms-sci-title {
-    text-align: center;
-    font-size: 10px;
-    font-weight: 800;
-    color: #64748b;
-    border-bottom: 0.5px solid #cbd5e1;
-    padding: 2px 0;
-}
-.tms-sci-input {
-    flex-grow: 1;
-    border: none !important;
-    text-align: center;
-    font-size: 18px !important;
-    background: transparent !important;
 }
