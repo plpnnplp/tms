@@ -1362,7 +1362,14 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 .tms-excel-table input:focus, .tms-excel-table textarea:focus { background: #eff6ff; }
 
 /* Жесткая блокировка переполнения для многострочных полей */
-.tms-awb-textarea { overflow: hidden; resize: none; }
+/* Жесткая фиксация высоты для 4 рядов (14px * 4 = 56px + паддинги) */
+.tms-awb-textarea {
+    height: 60px !important; /* Фиксированная высота */
+    line-height: 14px;       /* Высота строки */
+    overflow: hidden !important; /* Наглухо скрываем всё лишнее */
+    resize: none !important;    /* Запрет растягивания мышкой */
+    white-space: pre-wrap;      /* Перенос слов */
+}
 
 /* =========================================
    ПЕЧАТЬ (Print Media)

@@ -47,7 +47,7 @@ async function loadOrderContext(orderId) {
         initTabs();
         initLookups();
         initAwbCalculator();
-        initTextareaProtection();
+        initIataValidation();
         initPdfGeneration();
         
     } catch (error) {
@@ -259,58 +259,124 @@ function initAwbCalculator() {
 }
 
 /**
- * Уровень защиты: Жесткое ограничение строк и символов в textarea
+ * ГЛОБАЛЬНЫЙ ВАЛИДАТОР IATA CARGO-IMP (Версия 2.0: Auto-Wrap + Ripple Effect)
+ * Жестко контролирует матрицы (5x35 и др.), автоматически перенося текст на новые строки.
  */
-function initTextareaProtection() {
-    const textareas = document.querySelectorAll('.tms-awb-textarea');
+function initIataValidation() {
+    // 1. Конфигурация матриц для многострочных полей (Textarea)
+    const areaLimits = {
+        'awbShipperAddress': { lines: 5, chars: 35 },
+        'awbConsigneeAddress': { lines: 5, chars: 35 },
+        'awbAgentInfo': { lines: 2, chars: 35 },
+        'awbHandling': { lines: 4, chars: 65 },
+        'awbGridNature': { lines: 10, chars: 20 },
+        'awbAirlineName': { lines: 2, chars: 35 },
+        'awbAccounting': { lines: 4, chars: 35 }
+    };
 
-    textareas.forEach(ta => {
-        // Устанавливаем лимиты:
-        // Для партий (Shipper/Consignee): строго 5 строк по 35 символов (Стандарт IATA)
-        // Для других блоков (Handling, Agent): например, 4 строки по 65 символов
-        const isPartyAddress = ta.id === 'awbShipperAddress' || ta.id === 'awbConsigneeAddress';
-        const maxLines = isPartyAddress ? 5 : 4; 
-        const maxChars = isPartyAddress ? 35 : 65;
+    // 2. Лимиты для однострочных инпутов
+    const exactLimits = {
+        'awbPrefix': 3, 'awbSerial': 8, 'awbDept': 3, 'awbDest': 3,
+        'awbGridPieces': 4, 'awbGridGw': 7, 'awbGridCw': 7, 'awbGridRc': 1,
+        'awbGridItemNo': 4, 'awbGridRate': 8, 'awbGridTotal': 12, 'awbAgentIata': 7,
+        'awbAgentAcc': 15, 'awbShipperAcc': 15, 'awbConsigneeAcc': 15
+    };
 
-        // 1. Плавная блокировка Enter (чтобы курсор не дергался при попытке создать 6-ю строку)
-        ta.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const lines = ta.value.split('\n');
-                if (lines.length >= maxLines) {
-                    e.preventDefault();
-                }
+    // Утилита: очистка по стандартам IATA (Только A-Z, 0-9, пробел, Enter и пунктуация)
+    const cleanIata = (str) => str.toUpperCase().replace(/[^A-Z0-9 \n.,\-\/]/g, '');
+
+    const allFields = document.querySelectorAll('.tms-ws-input, .tms-locked-field, .tms-awb-textarea');
+
+    allFields.forEach(field => {
+        
+        // ==========================================
+        // БЛОК 1: БЕЗОПАСНАЯ ВСТАВКА (CTRL+V)
+        // ==========================================
+        field.addEventListener('paste', function(e) {
+            e.preventDefault(); 
+            let pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            pastedText = cleanIata(pastedText);
+
+            // Если это обычный инпут - убираем переносы строк перед вставкой
+            if (this.tagName.toLowerCase() !== 'textarea') {
+                pastedText = pastedText.replace(/\n/g, '');
             }
+
+            let start = this.selectionStart;
+            let end = this.selectionEnd;
+            this.value = this.value.slice(0, start) + pastedText + this.value.slice(end);
+            
+            // Ставим курсор в конец вставленного текста
+            let newPos = start + pastedText.length;
+            this.setSelectionRange(newPos, newPos);
+            
+            // Запускаем событие input, чтобы сработал авто-перенос (Auto-Wrap) и калькуляторы
+            this.dispatchEvent(new Event('input'));
         });
 
-        // 2. ЖЕСТКАЯ защита (Срабатывает при любом изменении текста: ввод, вставка, автозамена)
-        ta.addEventListener('input', function() {
-            let lines = this.value.split('\n');
-            let isModified = false;
+        // ==========================================
+        // БЛОК 2: АВТОМАТИЧЕСКИЙ ПЕРЕНОС СТРОК (AUTO-WRAP)
+        // ==========================================
+        field.addEventListener('input', function(e) {
+            let cursorOrig = this.selectionStart;
+            let rawVal = this.value;
+            let val = cleanIata(rawVal);
 
-            // Шаг А: Жестко отсекаем лишние строки (больше 5)
-            if (lines.length > maxLines) {
-                lines = lines.slice(0, maxLines);
-                isModified = true;
-            }
+            if (this.tagName.toLowerCase() === 'textarea' && areaLimits[this.id]) {
+            const limit = areaLimits[this.id];
+            let rawLines = val.split('\n');
+            let processedLines = [];
 
-            // Шаг Б: Жестко отсекаем лишние символы в каждой строке (больше 35)
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].length > maxChars) {
-                    lines[i] = lines[i].substring(0, maxChars);
-                    isModified = true;
+            // 1. Проходим по каждой строке и применяем авто-перенос (Ripple)
+            for (let i = 0; i < rawLines.length; i++) {
+                let line = rawLines[i];
+                
+                // Пока строка длиннее лимита - режем и кидаем остаток в следующую строку
+                while (line.length > limit.chars) {
+                    processedLines.push(line.substring(0, limit.chars));
+                    line = line.substring(limit.chars);
+                    
+                    // Если достигли лимита строк - прекращаем "водопад"
+                    if (processedLines.length >= limit.lines) break;
+                }
+
+                // Добавляем остаток или нормальную строку
+                if (processedLines.length < limit.lines) {
+                    processedLines.push(line);
+                } else {
+                    break; // Лимит строк исчерпан
                 }
             }
 
-            // Если скрипт нашел нарушения и обрезал текст — обновляем поле
-            if (isModified) {
-                // Запоминаем позицию курсора, чтобы он не улетал в конец текста при обрезке
-                let cursorPosition = this.selectionStart;
-                let oldLength = this.value.length;
+            // 2. Финальная проверка: обрезаем массив до лимита строк (на всякий случай)
+            val = processedLines.slice(0, limit.lines).join('\n');
+            
+        } else if (exactLimits[this.id]) {
+            // Для обычных инпутов
+            if (val.length > exactLimits[this.id]) {
+                val = val.substring(0, exactLimits[this.id]);
+            }
+        }
+
+            // ==========================================
+            // БЛОК 3: УМНЫЙ КОНТРОЛЬ КУРСОРОВ
+            // ==========================================
+            if (this.value !== val) {
+                // Чтобы курсор не улетал при авто-переносе, вычисляем его реальную позицию
+                let charsBeforeCursor = rawVal.substring(0, cursorOrig).replace(/\n/g, '').length;
+                let charsCounted = 0;
+                let newCursor = 0;
                 
-                this.value = lines.join('\n');
-                
-                // Корректируем курсор с учетом удаленных символов
-                let newCursor = cursorPosition - (oldLength - this.value.length);
+                for (let i = 0; i < val.length; i++) {
+                    if (charsCounted === charsBeforeCursor) {
+                        newCursor = i;
+                        break;
+                    }
+                    if (val[i] !== '\n') charsCounted++;
+                }
+                if (charsCounted < charsBeforeCursor) newCursor = val.length;
+
+                this.value = val;
                 this.setSelectionRange(newCursor, newCursor);
             }
         });
