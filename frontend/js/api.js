@@ -186,6 +186,12 @@ export const api = {
         return await response.json();
     },
 
+    async getBookingById(orderNumber) {
+        const response = await fetch(`${BASE_URL}/api/bookings/${orderNumber}`);
+        if (!response.ok) throw new Error("Ошибка загрузки контекста заказа");
+        return await response.json();
+    },
+
     // ---------------------------------------------------------
     // ЗАГЛУШКИ ДЛЯ LOCAL STORAGE (Обратная совместимость)
     // ---------------------------------------------------------

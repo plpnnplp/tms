@@ -67,7 +67,7 @@ const tmsHeaderHTML = `
                     S
                 </div>
                 <div style="display: flex; flex-direction: column;">
-                    <span style="font-size: 13px; font-weight: 700; color: #1e293b; line-height: 1;">Stanislav</span>
+                    <span style="font-size: 13px; font-weight: 700; color: #1e293b; line-height: 1;">Manager</span>
                     <span style="font-size: 10px; font-weight: 600; color: #94a3b8; text-transform: uppercase;">Manager</span>
                 </div>
             </div>

@@ -1,309 +1,358 @@
 /**
  * TMS ORDER WORKSPACE CORE (page-order.js)
- * Ответственность: Маршрутизация конкретного заказа, адаптивный бланк (AWB/BL/CMR),
- * динамический расчет финансового контроля (Profit) и управление контрагентами.
- * Исполнено в рамках модульной архитектуры ES6 без сокращения логики.
  */
 
 import { api } from '../api.js';
 import { injectTmsHeader } from '../ui/header.js';
 
-let currentOrderContext = null;
+let currentOrder = null;
+let isEditMode = false;
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Инициализация рабочего пространства при загрузке DOM-дерева
-    initWorkspace();
-    setupEventListeners();
+document.addEventListener('DOMContentLoaded', async () => {
+    injectTmsHeader();
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('id');
+    
+    if (!orderId) {
+        alert("ID заказа не передан. Возврат в реестр.");
+        window.location.href = "ActiveBookings.html";
+        return;
+    }
+
+    await loadOrderContext(orderId);
 });
 
-/**
- * 1. ИНИЦИАЛИЗАЦИЯ РАБОЧЕЙ СРЕДЫ ЗАКАЗА
- */
-export function initWorkspace() {
-    // Читаем ID заказа из адресной строки (например, ?id=AE-2600001)
-    const params = new URLSearchParams(window.location.search);
-    const orderId = params.get('id');
-
-    if (!orderId) {
-        alert("КРИТИЧЕСКАЯ ОШИБКА: ID заказа не передан. Возврат в базу.");
+async function loadOrderContext(orderId) {
+    try {
+        currentOrder = await api.getBookingById(orderId);
+        
+        populatePassportData();
+        initTopBarLogic();
+        initQuickJump();
+        initDocPagination();
+        initTabs();
+        initLookups(); // Запуск логики баз данных контрагентов
+        
+    } catch (error) {
+        alert(`Сбой загрузки: ${error.message}`);
         window.location.href = "ActiveBookings.html";
-        return;
     }
-
-    // Запрос контекста заказа из хранилища через общий API-клиент
-    const db = api.getActiveOrders();
-    currentOrderContext = db.find(o => o.orderId === orderId);
-
-    if (!currentOrderContext) {
-        alert(`Заказ ${orderId} не найден в активной базе.`);
-        window.location.href = "ActiveBookings.html";
-        return;
-    }
-
-    console.log("[TMS WORKSPACE] Загружен контекст заказа:", currentOrderContext);
-
-    // Запуск формирования интерфейсных компонентов
-    setupQuickJump(currentOrderContext.orderId);
-    renderSystemSidebar(currentOrderContext);
-    renderDynamicDocument(currentOrderContext);
 }
 
 /**
- * 2. ЦЕНТРАЛИЗОВАННАЯ ПРИВЯЗКА СОБЫТИЙ (Замена инлайновых вызовов)
+ * 2. ЗАПОЛНЕНИЕ ЛЕВОЙ ПАНЕЛИ И БЛАНКА (Безопасный рендер)
  */
-function setupEventListeners() {
-    // Кнопка удаления заказа из оперативного учета
-    const deleteBtn = document.querySelector('.tms-top-bar button[style*="background: #ef4444"]');
-    if (deleteBtn) {
-        deleteBtn.addEventListener('click', () => {
-            if (!currentOrderContext) return;
-            const isConfirmed = confirm(`КРИТИЧЕСКОЕ ДЕЙСТВИЕ!\nВы уверены, что хотите безвозвратно удалить заказ ${currentOrderContext.orderId} из оперативного учета?`);
-            if (isConfirmed) {
-                let db = api.getActiveOrders();
-                db = db.filter(o => o.orderId !== currentOrderContext.orderId);
-                api.saveActiveOrders(db);
-                window.location.href = "ActiveBookings.html";
-            }
-        });
+function populatePassportData() {
+    if (!currentOrder) return;
+
+    // Функция-предохранитель: меняет value только если элемент реально есть на странице
+    const safeSetVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val || '';
+    };
+
+    // Топ-бар
+    const dateEl = document.getElementById('orderCreationDate');
+    if (dateEl && currentOrder.created_at) {
+        dateEl.innerText = new Date(currentOrder.created_at).toLocaleDateString();
+    }
+    safeSetVal('opStatus', currentOrder.status || 'active');
+
+    // Левая панель (Паспорт) - Синхронизация
+    updatePartyUI('billTo', currentOrder.bill_to_name);
+    updatePartyUI('shipper', currentOrder.shipper_name);
+    updatePartyUI('consignee', currentOrder.consignee_name);
+
+    safeSetVal('originCity', currentOrder.origin_city);
+    safeSetVal('destCity', currentOrder.destination_city);
+    
+    const etd = currentOrder.etd ? currentOrder.etd.split('T')[0] : '';
+    const eta = currentOrder.eta ? currentOrder.eta.split('T')[0] : '';
+    safeSetVal('etdDate', etd);
+    safeSetVal('etaDate', eta);
+
+    const gw = currentOrder.gross_weight_kg || '';
+    const cw = currentOrder.chargeable_weight_kg || currentOrder.ldm || '';
+    const pkgs = currentOrder.packages_count || '';
+
+    safeSetVal('cargoGw', gw);
+    safeSetVal('cargoCw', cw);
+    safeSetVal('cargoPkgs', pkgs);
+
+    // Правая панель (Бланк AWB) - Заполняем только те поля, которые уже сверстали
+    safeSetVal('awbDept', currentOrder.origin_city); // Обрати внимание, ID исправлен на awbDept
+    safeSetVal('awbDest', currentOrder.destination_city); // Исправлено на awbDest
+
+    if (currentOrder.order_number && currentOrder.order_number.includes('-')) {
+        const numPart = currentOrder.order_number.split('-')[1];
+        safeSetVal('awbPrefix', "020"); // Заглушка
+        safeSetVal('awbSerial', numPart);
     }
 
-    // Кнопка сохранения изменений всей формы
-    const saveBtn = document.querySelector('.tms-top-bar button[style*="background: #16a34a"]');
-    if (saveBtn) {
-        saveBtn.addEventListener('click', () => {
-            if (!currentOrderContext) return;
+    // Эти поля пока закомментированы, так как мы будем верстать эту таблицу на следующем шаге
+    /*
+    safeSetVal('awbGridPieces', pkgs);
+    safeSetVal('awbGridGw', gw);
+    safeSetVal('awbGridCw', cw);
+    */
+}
+
+
+/**
+ * ИНИЦИАЛИЗАЦИЯ ГЛОБАЛЬНОГО ПОИСКА (Lookup + Enter Key)
+ */
+function initLookups() {
+    const modal = document.getElementById('tmsGlobalSearchModal');
+    const closeBtn = document.getElementById('btnCloseSearchModal');
+    const searchInput = document.getElementById('tmsGlobalSearchInput');
+    const resultsContainer = document.getElementById('tmsGlobalSearchResults');
+    
+    let currentLookupType = null; 
+    let currentDocField = null;   
+
+    // Добавлен inputId для связи с полем ввода
+    const lookups = [
+        { btnId: 'lkShipper', inputId: 'lkShipperId', type: 'shipper', docField: 'awbShipperAddress', accField: 'awbShipperAcc' },
+        { btnId: 'lkConsignee', inputId: 'lkConsigneeId', type: 'consignee', docField: 'awbConsigneeAddress', accField: 'awbConsigneeAcc' },
+        { btnId: 'lkAgent', inputId: 'lkAgentId', type: 'agent', docField: 'awbAgentInfo', accField: 'awbAgentAcc' },
+        { btnId: 'lkAirline', inputId: 'lkAirlineId', type: 'airline', docField: 'awbAirlineName', accField: null }
+    ];
+
+    // Имитация базы данных
+    const dummyDb = [
+        { id: 'SHP-101', name: 'GLOBAL EXPORTS GMBH', addr: 'STREET 1, BERLIN\nGERMANY' },
+        { id: 'AL-020', name: 'Lufthansa Cargo AG', addr: 'Tor 25, 60549 Frankfurt\nGermany' },
+        { id: 'CNE-505', name: 'IMPORTEX S.A.', addr: 'ASUNCION 118\nPARAGUAY' }
+    ];
+
+    // Функция применения найденных данных в интерфейс (DRY)
+    const applyLookupData = (itemData, config) => {
+        const fullText = `${itemData.name}\n${itemData.addr}`;
+        const docFieldEl = document.getElementById(config.docField);
+        if (docFieldEl) docFieldEl.value = fullText;
+
+        if (config.accField) {
+            const accFieldEl = document.getElementById(config.accField);
+            if (accFieldEl) accFieldEl.value = itemData.id;
+        }
+
+        // Обновляем мини-инпут
+        const minInput = document.getElementById(config.inputId);
+        if (minInput) minInput.value = itemData.id;
+
+        // Синхронизация с Левой Панелью
+        if (config.type === 'shipper' || config.type === 'consignee') {
+            const nameField = document.getElementById(`${config.type}Name`);
+            const idField = document.getElementById(`${config.type}Id`);
+            if (nameField) nameField.value = itemData.name;
+            if (idField) idField.value = itemData.id;
+        }
+    };
+
+    // Функция открытия модалки
+    const openModalWithSearch = (config, initialQuery = '') => {
+        currentLookupType = config.type;
+        currentDocField = config.docField;
+        
+        searchInput.value = initialQuery;
+        resultsContainer.innerHTML = '<div style="padding: 15px; text-align: center; color: #94a3b8; font-size: 12px;">Введите запрос для поиска...</div>';
+        
+        modal.style.display = 'flex';
+        searchInput.focus();
+        
+        // Триггерим поиск сразу, если есть query
+        if (initialQuery) {
+            searchInput.dispatchEvent(new Event('input'));
+        }
+    };
+
+    // Навешиваем слушатели на кнопки 🔍 и инпуты (Enter)
+    lookups.forEach(config => {
+        const btn = document.getElementById(config.btnId);
+        const inputEl = document.getElementById(config.inputId);
+        
+        // Клик по лупе
+        if (btn) {
+            btn.addEventListener('click', () => openModalWithSearch(config, inputEl ? inputEl.value.trim() : ''));
+        }
+
+        // Нажатие Enter в мини-поле
+        if (inputEl) {
+            inputEl.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const query = inputEl.value.trim().toUpperCase();
+                    if (!query) return;
+
+                    // Ищем точное совпадение по ID
+                    const found = dummyDb.find(dbItem => dbItem.id.toUpperCase() === query);
+                    
+                    if (found) {
+                        applyLookupData(found, config);
+                    } else {
+                        openModalWithSearch(config, query);
+                    }
+                }
+            });
+        }
+    });
+
+    // Живой поиск в модалке (Оставлен без изменений)
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
             
-            // Чтение измененного Buy Rate из сайдбара
-            const buyRateInput = document.getElementById('sbBuyRateInput');
-            if (buyRateInput) {
-                currentOrderContext.commercials.buyRate = parseFloat(buyRateInput.value) || 0;
+            if (query.length < 2) {
+                resultsContainer.innerHTML = '<div style="padding: 15px; text-align: center; color: #94a3b8; font-size: 12px;">Введите минимум 2 символа...</div>';
+                return;
             }
 
-            // Если транспорт относится к авиации, производим сбор изменений из полей бланка AWB
-            if (currentOrderContext.specification.transportMode === 'air') {
-                const prefix = document.getElementById('awbPrefix')?.value.trim() || '';
-                const serial = document.getElementById('awbSerial')?.value.trim() || '';
-                if (prefix || serial) {
-                    currentOrderContext.transportDocs.masterDocNumber = `${prefix}-${serial}`;
-                }
+            const filtered = dummyDb.filter(item => 
+                item.name.toLowerCase().includes(query) || 
+                item.id.toLowerCase().includes(query)
+            );
 
-                if (currentOrderContext.parties.shipper) {
-                    currentOrderContext.parties.shipper.text = document.getElementById('awbShipper')?.value || '';
-                }
-                if (currentOrderContext.parties.consignee) {
-                    currentOrderContext.parties.consignee.text = document.getElementById('awbConsignee')?.value || '';
-                }
-                if (currentOrderContext.parties.carrier) {
-                    currentOrderContext.parties.carrier.text = document.getElementById('awbCarrierName')?.value || '';
-                }
+            if (filtered.length === 0) {
+                resultsContainer.innerHTML = '<div style="padding: 15px; text-align: center; color: #94a3b8; font-size: 12px;">Ничего не найдено</div>';
+                return;
+            }
+
+            resultsContainer.innerHTML = '';
+            filtered.forEach(item => {
+                const row = document.createElement('div');
+                row.style.cssText = 'padding: 12px 15px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;';
                 
-                currentOrderContext.transportDocs.portOfLoading = document.getElementById('awbDep')?.value || '';
-                currentOrderContext.transportDocs.portOfDischarge = document.getElementById('awbDest')?.value || '';
-                currentOrderContext.transportDocs.vesselOrFlight = document.getElementById('awbFlight')?.value || '';
-                
-                currentOrderContext.cargoDetails.totalQty = parseInt(document.getElementById('awbPieces')?.value, 10) || 0;
-                currentOrderContext.cargoDetails.grossWeight = parseFloat(document.getElementById('awbGrossForm')?.value) || 0;
-                currentOrderContext.cargoDetails.chargeableWeight = parseFloat(document.getElementById('awbChargeableForm')?.value) || 0;
-                currentOrderContext.cargoDetails.descriptionOfGoods = document.getElementById('awbNature')?.value || '';
-            }
+                row.onmouseover = () => row.style.background = '#f8fafc';
+                row.onmouseout = () => row.style.background = 'transparent';
 
-            // Перезапись измененного контекста в хранилище через API слой
-            let db = api.getActiveOrders();
-            const index = db.findIndex(o => o.orderId === currentOrderContext.orderId);
-            if (index !== -1) {
-                db[index] = currentOrderContext;
-                api.saveActiveOrders(db);
-                alert(`Изменения по заказу ${currentOrderContext.orderId} успешно сохранены в системе.`);
-                renderSystemSidebar(currentOrderContext);
-            }
+                row.innerHTML = `
+                    <div>
+                        <div style="font-weight: 700; color: #1e293b; font-size: 13px;">${item.name}</div>
+                        <div style="font-size: 11px; color: #64748b; margin-top: 4px;">${item.addr.replace(/\n/g, ', ')}</div>
+                    </div>
+                    <div style="font-weight: 800; color: #cbd5e1; font-size: 12px;">${item.id}</div>
+                `;
+
+                row.addEventListener('click', () => {
+                    const activeConfig = lookups.find(l => l.type === currentLookupType);
+                    if (activeConfig) {
+                        applyLookupData(item, activeConfig);
+                    }
+                    modal.style.display = 'none';
+                });
+
+                resultsContainer.appendChild(row);
+            });
         });
     }
 
-    // Живой пересчет Profit при вводе данных в поле Buy Rate
-    const sidebar = document.querySelector('.tms-sidebar');
-    if (sidebar) {
-        sidebar.addEventListener('input', (e) => {
-            if (e.target.id === 'sbBuyRateInput') {
-                const buyRate = parseFloat(e.target.value) || 0;
-                const sellRate = currentOrderContext?.commercials?.sellRate || 0;
-                const profit = sellRate - buyRate;
-                
-                const profitSpan = document.getElementById('sbProfitValue');
-                if (profitSpan) {
-                    profitSpan.innerText = `${profit >= 0 ? '+' : ''}${profit.toFixed(2)} EUR`;
-                    profitSpan.style.color = profit >= 0 ? '#16a34a' : '#ef4444';
-                }
-            }
+    // Закрытие модального окна
+    if (closeBtn) closeBtn.addEventListener('click', () => modal.style.display = 'none');
+    window.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+}
+
+/**
+ * Утилита синхронизации полей участников
+ */
+function updatePartyUI(type, name, id = "DB") {
+    // Обновляем паспорт слева
+    const idField = document.getElementById(`${type}Id`);
+    const nameField = document.getElementById(`${type}Name`);
+    if (idField) idField.value = id;
+    if (nameField) nameField.value = name;
+}
+
+function initTopBarLogic() {
+    const btnEdit = document.getElementById('btnEditOrder');
+    const btnSave = document.getElementById('btnSaveOrder');
+    const lockedFields = document.querySelectorAll('.tms-locked-field');
+
+    btnEdit.addEventListener('click', () => {
+        isEditMode = !isEditMode;
+        if (isEditMode) {
+            btnEdit.classList.add('active');
+            btnEdit.innerText = '✖ Отменить ред.';
+            btnSave.disabled = false;
+            lockedFields.forEach(field => field.disabled = false);
+        } else {
+            btnEdit.classList.remove('active');
+            btnEdit.innerText = '🔓 Редактировать';
+            btnSave.disabled = true;
+            lockedFields.forEach(field => field.disabled = true);
+            populatePassportData(); 
+        }
+    });
+
+    btnSave.addEventListener('click', () => {
+        isEditMode = false;
+        btnEdit.classList.remove('active');
+        btnEdit.innerText = '🔓 Редактировать';
+        btnSave.disabled = true;
+        lockedFields.forEach(field => field.disabled = true);
+        alert("Изменения сохранены в оперативный контекст.");
+    });
+}
+
+function initDocPagination() {
+    const btnNext = document.getElementById('btnNextToCharges');
+    const btnBack = document.getElementById('btnBackToCargo');
+    const page1 = document.getElementById('docPage1');
+    const page2 = document.getElementById('docPage2');
+
+    if (btnNext && btnBack) {
+        btnNext.addEventListener('click', () => {
+            page1.style.display = 'none';
+            page2.style.display = 'block';
+        });
+        btnBack.addEventListener('click', () => {
+            page2.style.display = 'none';
+            page1.style.display = 'block';
         });
     }
 }
 
-/**
- * 3. ЗАПОЛНЕНИЕ СИСТЕМНОГО САЙДБАРА
- */
-export function renderSystemSidebar(order) {
-    const parties = order.parties || {};
-    const cargo = order.cargoDetails || {};
-    const comm = order.commercials || { sellRate: 0, buyRate: 0 };
-
-    // Установка системных идентификаторов компаний
-    document.getElementById('sbBillTo').innerText = parties.billTo?.id || '---';
-    document.getElementById('sbShipper').innerText = parties.shipper?.id || '---';
-    document.getElementById('sbConsignee').innerText = parties.consignee?.id || '---';
-    document.getElementById('sbCarrier').innerText = parties.carrier?.id || '---';
-
-    // Установка весовых характеристик груза
-    document.getElementById('sbGross').innerText = `${cargo.grossWeight || 0} kg`;
-    document.getElementById('sbChargeable').innerText = `${cargo.chargeableWeight || 0} kg`;
-
-    // Расчет финансовой эффективности с генерацией управляемого инпута
-    const profit = comm.sellRate - comm.buyRate;
-    const financeBlock = document.querySelectorAll('.tms-sidebar .sidebar-block')[2];
-    
-    if (financeBlock) {
-        financeBlock.innerHTML = `
-            <div class="sidebar-title">Финансовый контроль</div>
-            <div class="sidebar-row"><span>Sell Rate:</span> <span class="sidebar-value">${comm.sellRate.toFixed(2)} EUR</span></div>
-            <div class="sidebar-row">
-                <span>Buy Rate:</span> 
-                <input type="number" id="sbBuyRateInput" value="${comm.buyRate}" style="width: 65px; font-size:11px; text-align:right; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 4px; font-weight: 700; color: #1e293b; outline: none;"> EUR
-            </div>
-            <div class="sidebar-row" style="margin-top: 8px; border-top: 1px dashed #cbd5e1; padding-top: 4px;">
-                <span>Profit:</span> <span class="sidebar-value" id="sbProfitValue" style="color: ${profit >= 0 ? '#16a34a' : '#ef4444'};">${profit >= 0 ? '+' : ''}${profit.toFixed(2)} EUR</span>
-            </div>
-        `;
-    }
+function initTabs() {
+    const tabs = document.querySelectorAll('#wsTabs .tms-tab-btn');
+    const contents = document.querySelectorAll('.tms-tab-content');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.style.display = 'none');
+            tab.classList.add('active');
+            const targetId = tab.getAttribute('data-target');
+            document.getElementById(targetId).style.display = 'block';
+        });
+    });
 }
 
-/**
- * 4. ПЕРЕКЛЮЧЕНИЕ ФОРМАТА ДОКУМЕНТА (Мод-контроллер)
- */
-export function renderDynamicDocument(order) {
-    const spec = order.specification || {};
-    const transportMode = spec.transportMode || 'road';
-
-    // Сброс активного класса видимости со всех типов бланков
-    document.getElementById('viewAir')?.classList.remove('active');
-    document.getElementById('viewSea')?.classList.remove('active');
-    document.getElementById('viewRoad')?.classList.remove('active');
-
-    // Активация и наполнение целевой формы документа
-    if (transportMode === 'air') {
-        document.getElementById('viewAir')?.classList.add('active');
-        fillAirWaybillForm(order);
-    } else if (transportMode === 'sea') {
-        document.getElementById('viewSea')?.classList.add('active');
-    } else {
-        document.getElementById('viewRoad')?.classList.add('active');
-    }
-}
-
-/**
- * 5. ЛОГИКА НАПОЛНЕНИЯ AIR WAYBILL
- */
-export function fillAirWaybillForm(order) {
-    const parties = order.parties || {};
-    const docs = order.transportDocs || {};
-    const route = order.routing || {};
-    const cargo = order.cargoDetails || {};
-
-    // Разбор структуры номера MAWB (маска 020-44128953)
-    let awbPrefix = '', awbSerial = '';
-    if (docs.masterDocNumber && docs.masterDocNumber.includes('-')) {
-        const parts = docs.masterDocNumber.split('-');
-        awbPrefix = parts[0].trim();
-        awbSerial = parts[1].trim();
-    } else if (docs.masterDocNumber) {
-        awbSerial = docs.masterDocNumber;
-    }
-
-    // Безопасное сопоставление данных с элементами DOM-дерева бланка
-    const elPrefix = document.getElementById('awbPrefix');
-    const elSerial = document.getElementById('awbSerial');
-    const elShipper = document.getElementById('awbShipper');
-    const elConsignee = document.getElementById('awbConsignee');
-    const elCarrier = document.getElementById('awbCarrierName');
-    const elRef = document.getElementById('awbReferenceId');
-    const elDep = document.getElementById('awbDep');
-    const elDest = document.getElementById('awbDest');
-    const elFlight = document.getElementById('awbFlight');
-    const elPieces = document.getElementById('awbPieces');
-    const elGross = document.getElementById('awbGrossForm');
-    const elChargeable = document.getElementById('awbChargeableForm');
-    const elNature = document.getElementById('awbNature');
-
-    if (elPrefix) elPrefix.value = awbPrefix;
-    if (elSerial) elSerial.value = awbSerial;
-    if (elShipper) elShipper.value = parties.shipper?.text || '';
-    if (elConsignee) elConsignee.value = parties.consignee?.text || '';
-    if (elCarrier) elCarrier.value = parties.carrier?.text || '';
-    if (elRef) elRef.value = order.orderId;
-    
-    if (elDep) elDep.value = docs.portOfLoading || route.fromCity || '';
-    if (elDest) elDest.value = docs.portOfDischarge || route.toCity || '';
-    if (elFlight) elFlight.value = docs.vesselOrFlight || '';
-    
-    if (elPieces) elPieces.value = cargo.totalQty || '';
-    if (elGross) elGross.value = cargo.grossWeight || '';
-    if (elChargeable) elChargeable.value = cargo.chargeableWeight || '';
-    if (elNature) elNature.value = cargo.descriptionOfGoods || '';
-}
-
-/**
- * 6. ПАРАМЕТРИЧЕСКИЙ QUICK JUMP ДЛЯ БЫСТРОГО ПЕРЕХОДА
- */
-export function setupQuickJump(currentId) {
+function initQuickJump() {
     const qjCategory = document.getElementById('qjCategory');
     const qjYear = document.getElementById('qjYear');
     const qjNumber = document.getElementById('qjNumber');
-    const goBtn = document.querySelector('.quick-jump-group .tms-btn-primary');
+    const goBtn = document.getElementById('qjGoBtn');
 
-    // Разбор текущего ID (маска вида AE-2600001) для предзаполнения полей перехода
-    if (currentId && currentId.includes('-')) {
-        const parts = currentId.split('-');
-        if (qjCategory) qjCategory.value = parts[0];
-        if (parts[1].length >= 2) {
+    if (currentOrder && currentOrder.order_number) {
+        const parts = currentOrder.order_number.split('-');
+        if (parts.length === 2) {
+            if (qjCategory) qjCategory.value = parts[0];
             if (qjYear) qjYear.value = parts[1].substring(0, 2);
-            if (qjNumber) qjNumber.value = parseInt(parts[1].substring(2), 10);
+            if (qjNumber) qjNumber.value = parseInt(parts[1].substring(2), 10) || '';
         }
     }
 
-    if (goBtn) {
-        goBtn.addEventListener('click', () => {
-            const cat = qjCategory?.value.trim().toUpperCase() || '';
-            const yr = qjYear?.value.trim() || '';
-            const numRaw = qjNumber?.value.trim() || '';
-            
-            if (!numRaw) return;
-
-            // Сборка нормализованного номера: "42" -> "00042"
-            const numFormatted = String(numRaw).padStart(5, '0');
-            const targetOrderId = `${cat}-${yr}${numFormatted}`;
-
-            // Верификация существования записи перед выполнением редиректа
-            const db = api.getActiveOrders();
-            const exists = db.some(o => o.orderId === targetOrderId);
-
-            if (exists) {
-                window.location.href = `order-detail.html?id=${targetOrderId}`;
-            } else {
-                alert(`Заказ ${targetOrderId} не найден в базе активных оперативных данных.`);
-                qjNumber?.focus();
-            }
-        });
-    }
-
-    // Поддержка обработки перехода по клавише Enter
     if (qjNumber) {
-        qjNumber.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') goBtn?.click();
+        qjNumber.addEventListener('blur', (e) => {
+            let val = e.target.value.trim();
+            if (val && !isNaN(val)) e.target.value = val.padStart(4, '0');
         });
     }
-}
 
-// Принудительный экспорт функций в глобальный контекст для предотвращения сбоев старой инфраструктуры
-window.initWorkspace = initWorkspace;
-window.renderSystemSidebar = renderSystemSidebar;
-window.renderDynamicDocument = renderDynamicDocument;
-window.fillAirWaybillForm = fillAirWaybillForm;
-window.setupQuickJump = setupQuickJump;
+    goBtn.addEventListener('click', () => {
+        const cat = qjCategory.value.toUpperCase();
+        const yr = qjYear.value;
+        const numRaw = qjNumber.value;
+        if (!cat || !numRaw) return;
+        window.location.href = `OrderDetail.html?id=${cat}-${yr}${numRaw.padStart(4, '0')}`;
+    });
+}

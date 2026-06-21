@@ -361,6 +361,14 @@ def get_all_bookings(db: Session = Depends(get_db)):
         print(f"❌ [TMS ERROR] Ошибка загрузки списка заказов: {str(e)}")
         raise HTTPException(status_code=500, detail="Не удалось получить список заказов")
 
+@app.get("/api/bookings/{order_number}")
+def get_booking_by_id(order_number: str, db: Session = Depends(get_db)):
+    """Получение полного контекста оперативного заказа по номеру"""
+    booking = db.query(ActiveBookingDB).filter(ActiveBookingDB.order_number == order_number).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Заказ не найден в оперативной базе")
+    return booking
+
 @app.post("/api/quotes/{quote_id}/accept")
 def accept_quote_to_booking(quote_id: str, prefix: str, db: Session = Depends(get_db)):
     """Кнопка явного перевода КП в Заказ из UI (если не используется статус-дропдаун)"""

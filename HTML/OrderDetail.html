@@ -2,160 +2,386 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>TMS - Рабочая среда заказа</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMS - Order Workspace</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <div class="tms-top-bar">
-        <div>
-            <a href="ActiveBookings.html" style="color: #cbd5e1; text-decoration: none; margin-right: 16px; font-weight: 600;">&larr; Назад в активные</a>
-            <span style="font-size: 16px; font-weight: 700;">Управление заказом</span>
+    <div class="tms-order-topbar">
+        <div class="tms-quick-jump">
+            <span class="tms-qj-label">Прыжок:</span>
+            <input type="text" id="qjCategory" list="qjCategories" class="tms-qj-input" placeholder="AE" maxlength="2" style="width: 45px;">
+            <datalist id="qjCategories">
+                <option value="AE"><option value="AI"><option value="AD">
+                <option value="SE"><option value="SI"><option value="SD">
+                <option value="RE"><option value="RI"><option value="RD">
+            </datalist>
+            <span class="tms-qj-dash">-</span>
+            <input type="text" id="qjYear" class="tms-qj-input" disabled style="width: 35px; text-align: center;">
+            <input type="text" id="qjNumber" class="tms-qj-input" placeholder="0001" maxlength="4" style="width: 55px;">
+            <button id="qjGoBtn" class="tms-qj-btn">GO</button>
         </div>
-        <div style="display: flex; gap: 8px;">
-            <button class="tms-btn-primary" style="background: #ef4444;">Удалить заказ</button>
-            <button class="tms-btn-primary" style="background: #16a34a;">Сохранить изменения</button>
+
+        <div class="tms-topbar-controls">
+            <button id="btnEditOrder" class="tms-btn-edit">🔓 Редактировать</button>
+            <button id="btnSaveOrder" class="tms-btn-save" disabled>💾 Сохранить</button>
+        </div>
+
+        <div class="tms-topbar-date">
+            <span style="color: #94a3b8; font-size: 11px;">Создан:</span>
+            <span id="orderCreationDate" style="font-weight: 700; color: #1e293b;">--.--.----</span>
         </div>
     </div>
 
-    <div class="tms-sub-bar">
-        <div class="quick-jump-group">
-            <span style="font-weight: 600; color: #475569;">Quick Jump:</span>
-            <select class="qj-select" id="qjCategory">
-                <option value="AE">AE</option><option value="AI">AI</option>
-                <option value="SE">SE</option><option value="SI">SI</option>
-                <option value="RD">RD</option><option value="RE">RE</option><option value="RI">RI</option>
-            </select>
-            <span style="font-weight: 800;">-</span>
-            <input type="text" class="qj-input" id="qjYear" value="26">
-            <span style="font-weight: 800;"></span>
-            <input type="number" class="qj-input" id="qjNumber" placeholder="00042">
-            <button class="tms-btn-primary" style="padding: 4px 12px; font-size: 12px;">Go</button>
-        </div>
+    <div class="tms-workspace-layout">
         
-        <div>
-            <button class="tms-btn-primary" style="background: #475569; font-size: 12px;">📄 Создать Dispatch Docs (Transportauftrag)</button>
-        </div>
-    </div>
-
-    <div class="tms-workspace">
-        
-        <div class="tms-sidebar">
-            <div class="sidebar-block">
-                <div class="sidebar-title">Системные ID компаний</div>
-                <div class="sidebar-row"><span>Bill-to:</span> <span class="sidebar-value" id="sbBillTo">CUST-104</span></div>
-                <div class="sidebar-row"><span>Shipper:</span> <span class="sidebar-value" id="sbShipper">SHIP-001</span></div>
-                <div class="sidebar-row"><span>Consignee:</span> <span class="sidebar-value" id="sbConsignee">CONS-099</span></div>
-                <div class="sidebar-row"><span>Carrier:</span> <span class="sidebar-value" id="sbCarrier">CARR-412</span></div>
-            </div>
+        <aside class="tms-left-sidebar">
             
-            <div class="sidebar-block">
-                <div class="sidebar-title">Вес для расчетов</div>
-                <div class="sidebar-row"><span>Gross Weight:</span> <span class="sidebar-value" id="sbGross">850.00 kg</span></div>
-                <div class="sidebar-row" style="color: #2563eb;"><span>Chargeable Wgt:</span> <span class="sidebar-value" id="sbChargeable">920.00 kg</span></div>
-            </div>
+            <select id="opStatus" class="tms-status-select tms-locked-field" disabled>
+                <option value="active">ACTIVE (В работе)</option>
+                <option value="transit">IN TRANSIT (В пути)</option>
+                <option value="customs">AT CUSTOMS (На таможне)</option>
+                <option value="delivered">DELIVERED (Доставлен)</option>
+                <option value="delayed">DELAYED (Задержка)</option>
+            </select>
 
-            <div class="sidebar-block">
-                <div class="sidebar-title">Финансовый контроль</div>
-                <div class="sidebar-row"><span>Sell Rate:</span> <span class="sidebar-value">2100.00 EUR</span></div>
-                <div class="sidebar-row"><span>Buy Rate:</span> <input type="number" value="1650" style="width: 60px; font-size:11px; text-align:right;"> EUR</div>
-                <div class="sidebar-row" style="margin-top: 8px; border-top: 1px dashed #cbd5e1; padding-top: 4px;">
-                    <span>Profit:</span> <span class="sidebar-value" style="color: #16a34a;">+450.00 EUR</span>
-                </div>
-            </div>
-
-            <div style="margin-top: auto;">
-                <button class="tms-btn-primary" style="width: 100%; display: flex; justify-content: center; background: #8b5cf6;">Выставить Invoice клиенту</button>
-            </div>
-        </div>
-
-        <div class="tms-document-zone">
-
-            <div class="doc-form-air" id="viewAir">
+            <div class="tms-sidebar-section">
+                <h4 class="tms-section-title">Участники</h4>
                 
-                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px;">
-                    <div>
-                        <div style="font-size: 24px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px;">AIR WAYBILL</div>
-                        <div style="font-size: 11px; color: #64748b; font-weight: 600;">Not Negotiable. Issued by IATA Carrier.</div>
-                    </div>
-                    <div style="font-size: 22px; font-weight: 800; color: #0f172a; font-family: monospace;">
-                        <input type="text" id="awbPrefix" placeholder="020" style="width: 50px; text-align: right; border: none; font-size: 22px; font-weight: 800; font-family: monospace; outline: none; border-bottom: 1px dashed #cbd5e1;"> - 
-                        <input type="text" id="awbSerial" placeholder="4412 8953" style="width: 130px; border: none; font-size: 22px; font-weight: 800; font-family: monospace; outline: none; border-bottom: 1px dashed #cbd5e1;">
+                <div class="tms-party-group">
+                    <label>Bill-To (Плательщик)</label>
+                    <div class="tms-input-row">
+                        <input type="text" id="billToId" class="tms-locked-field" placeholder="ID" style="width: 30%;" disabled>
+                        <input type="text" id="billToName" class="tms-locked-field" placeholder="Короткое имя" style="width: 70%;" disabled>
+                        <button class="tms-btn-search tms-locked-field" disabled>🔍</button>
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; border: 2px solid #1e293b; gap: 1px; background: #1e293b;">
-                    
-                    <div style="background: #fff; padding: 10px;">
-                        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase;">Shipper's Name and Address</div>
-                        <textarea id="awbShipper" style="width: 100%; height: 60px; border: none; resize: none; font-family: monospace; font-size: 12px; margin-top: 4px; outline: none;" placeholder="Внесите данные отправителя..."></textarea>
-                    </div>
-                    
-                    <div style="background: #fff; padding: 10px;">
-                        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase;">Issuing Carrier's Name and City</div>
-                        <input type="text" id="awbCarrierName" style="width: 100%; border: none; font-family: monospace; font-size: 14px; font-weight: 800; margin-top: 4px; outline: none;" placeholder="Название авиалинии">
-                    </div>
-                    
-                    <div style="background: #fff; padding: 10px;">
-                        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase;">Consignee's Name and Address</div>
-                        <textarea id="awbConsignee" style="width: 100%; height: 60px; border: none; resize: none; font-family: monospace; font-size: 12px; margin-top: 4px; outline: none;" placeholder="Внесите данные получателя..."></textarea>
-                    </div>
-                    
-                    <div style="background: #fff; padding: 10px;">
-                        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase;">Reference Number (TMS Order ID)</div>
-                        <input type="text" id="awbReferenceId" readonly style="width: 100%; border: none; font-family: monospace; font-size: 12px; margin-top: 4px; outline: none; color: #64748b; background: transparent;">
+                <div class="tms-party-group">
+                    <label>Shipper (Отправитель)</label>
+                    <div class="tms-input-row">
+                        <input type="text" id="shipperId" class="tms-locked-field" placeholder="ID" style="width: 30%;" disabled>
+                        <input type="text" id="shipperName" class="tms-locked-field" placeholder="Короткое имя" style="width: 70%;" disabled>
+                        <button class="tms-btn-search tms-locked-field" disabled>🔍</button>
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; border: 2px solid #1e293b; border-top: none; gap: 1px; background: #1e293b;">
-                    <div style="background: #fff; padding: 10px;">
-                        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase;">Airport of Departure</div>
-                        <input type="text" id="awbDep" style="width: 100%; border: none; font-family: monospace; font-size: 12px; margin-top: 4px; outline: none;" placeholder="IATA Code / City">
-                    </div>
-                    <div style="background: #fff; padding: 10px;">
-                        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase;">Airport of Destination</div>
-                        <input type="text" id="awbDest" style="width: 100%; border: none; font-family: monospace; font-size: 12px; margin-top: 4px; outline: none;" placeholder="IATA Code / City">
-                    </div>
-                    <div style="background: #fff; padding: 10px;">
-                        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase;">Flight / Date</div>
-                        <input type="text" id="awbFlight" style="width: 100%; border: none; font-family: monospace; font-size: 12px; margin-top: 4px; outline: none;" placeholder="e.g. LH8402 / 08.06">
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 100px 120px 120px 1fr; border: 2px solid #1e293b; border-top: none; gap: 1px; background: #1e293b;">
-                    <div style="background: #fff; padding: 10px;">
-                        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase;">No. of Pieces</div>
-                        <input type="number" id="awbPieces" style="width: 100%; border: none; font-family: monospace; font-size: 12px; margin-top: 4px; outline: none;" placeholder="Qty">
-                    </div>
-                    <div style="background: #fff; padding: 10px;">
-                        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase;">Gross Weight</div>
-                        <input type="text" id="awbGrossForm" style="width: 100%; border: none; font-family: monospace; font-size: 12px; margin-top: 4px; outline: none;" placeholder="kg">
-                    </div>
-                    <div style="background: #fff; padding: 10px;">
-                        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase;">Chargeable Wgt</div>
-                        <input type="text" id="awbChargeableForm" style="width: 100%; border: none; font-family: monospace; font-size: 12px; margin-top: 4px; outline: none;" placeholder="kg">
-                    </div>
-                    <div style="background: #fff; padding: 10px;">
-                        <div style="font-size: 10px; font-weight: 700; text-transform: uppercase;">Nature and Quantity of Goods</div>
-                        <textarea id="awbNature" style="width: 100%; height: 60px; border: none; resize: none; font-family: monospace; font-size: 12px; margin-top: 4px; outline: none;" placeholder="Описание груза (вкл. UN номера при наличии)..."></textarea>
+                <div class="tms-party-group">
+                    <label>Consignee (Получатель)</label>
+                    <div class="tms-input-row">
+                        <input type="text" id="consigneeId" class="tms-locked-field" placeholder="ID" style="width: 30%;" disabled>
+                        <input type="text" id="consigneeName" class="tms-locked-field" placeholder="Короткое имя" style="width: 70%;" disabled>
+                        <button class="tms-btn-search tms-locked-field" disabled>🔍</button>
                     </div>
                 </div>
             </div>
 
-
-            <div class="doc-form-sea" id="viewSea">
-                <div class="mock-blank-header">BILL OF LADING</div>
-                <div style="border: 1px solid #000; padding: 10px;">Ocean Freight form mock...</div>
+            <div class="tms-sidebar-section">
+                <h4 class="tms-section-title">Маршрут</h4>
+                <input type="text" id="originCity" class="tms-locked-field tms-mb" placeholder="Город отправления" disabled>
+                <input type="text" id="destCity" class="tms-locked-field tms-mb" placeholder="Город доставки" disabled>
+                <input type="text" id="incoterms" class="tms-locked-field" placeholder="Incoterms (напр. EXW)" disabled>
             </div>
 
-
-            <div class="doc-form-road" id="viewRoad">
-                <div class="mock-blank-header">INTERNATIONAL CONSIGNMENT NOTE (CMR)</div>
-                <div style="border: 1px solid #000; padding: 10px;">Road Freight form mock...</div>
+            <div class="tms-sidebar-section">
+                <h4 class="tms-section-title">Сроки</h4>
+                <div class="tms-input-row">
+                    <div style="flex: 1;"><label>ETD</label><input type="date" id="etdDate" class="tms-locked-field" disabled></div>
+                    <div style="flex: 1;"><label>ETA</label><input type="date" id="etaDate" class="tms-locked-field" disabled></div>
+                </div>
             </div>
 
+            <div class="tms-sidebar-section">
+                <h4 class="tms-section-title">Груз</h4>
+                <div class="tms-input-row">
+                    <div style="flex: 1;"><label>GW (kg)</label><input type="number" id="cargoGw" class="tms-locked-field" disabled></div>
+                    <div style="flex: 1;"><label>LDM / CW</label><input type="number" id="cargoCw" class="tms-locked-field" disabled></div>
+                    <div style="width: 50px;"><label>PKGs</label><input type="number" id="cargoPkgs" class="tms-locked-field" disabled></div>
+                </div>
+            </div>
+
+            <div class="tms-sidebar-actions">
+                <button class="tms-btn-ar">💳 AR Фактура</button>
+                <button class="tms-btn-transmit" id="btnTransmitDoc">✈️ FWB / AMS</button>
+                <button class="tms-btn-master">📑 Написать мастер</button>
+            </div>
+        </aside>
+
+        <main class="tms-right-content">
+            <div class="tms-tabs-header" id="wsTabs">
+                <button class="tms-tab-btn active" data-target="tabDocBuilder">📝 Document Builder</button>
+                <button class="tms-tab-btn" data-target="tabVault">📁 Files (Vault)</button>
+                <button class="tms-tab-btn" data-target="tabTracking">⏱️ Tracking & Notes</button>
+            </div>
+
+            <div class="tms-tab-content active" id="tabDocBuilder">
+                
+                <div id="docPage1">
+                    
+                    <div class="tms-awb-canvas">
+                        
+                        <div class="tms-awb-header-row">
+                            <div class="tms-awb-number-box">
+                                <label>Air Waybill No.</label>
+                                <div class="tms-input-row" style="gap: 5px;">
+                                    <input type="text" id="awbPrefix" class="tms-ws-input tms-locked-field" style="width: 50px; text-align: center;" placeholder="020" disabled>
+                                    <span style="font-weight: 800;">-</span>
+                                    <input type="text" id="awbSerial" class="tms-ws-input tms-locked-field" placeholder="09635635" disabled>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tms-awb-main-grid">
+                            
+                            <div class="tms-awb-col">
+                                <fieldset class="tms-awb-box" style="height: 105px; box-sizing: border-box;">
+                                    <legend>
+                                        <span>Shipper's Name and Address</span>
+                                        <div class="tms-legend-actions">
+                                            <input type="text" id="lkShipperId" class="tms-lookup-input tms-locked-field" placeholder="ID..." disabled>
+                                            <button class="tms-btn-lookup tms-locked-field" id="lkShipper" disabled>🔍</button>
+                                        </div>
+                                    </legend>
+                                    <div class="tms-awb-acc-row">
+                                        <span>Shipper's Account Number</span>
+                                        <input type="text" id="awbShipperAcc" class="tms-ws-input tms-locked-field" disabled>
+                                    </div>
+                                    <textarea id="awbShipperAddress" class="tms-awb-textarea tms-locked-field" rows="3" disabled></textarea>
+                                </fieldset>
+
+                                <fieldset class="tms-awb-box" style="height: 105px; box-sizing: border-box;">
+                                    <legend>
+                                        <span>Consignee's Name and Address</span>
+                                        <div class="tms-legend-actions">
+                                            <input type="text" id="lkConsigneeId" class="tms-lookup-input tms-locked-field" placeholder="ID..." disabled>
+                                            <button class="tms-btn-lookup tms-locked-field" id="lkConsignee" disabled>🔍</button>
+                                        </div>
+                                    </legend>
+                                    <div class="tms-awb-acc-row">
+                                        <span>Consignee's Account Number</span>
+                                        <input type="text" id="awbConsigneeAcc" class="tms-ws-input tms-locked-field" disabled>
+                                    </div>
+                                    <textarea id="awbConsigneeAddress" class="tms-awb-textarea tms-locked-field" rows="3" disabled></textarea>
+                                </fieldset>
+
+                                <fieldset class="tms-awb-box">
+                                    <legend>
+                                        <span>Issuing Carrier's Agent</span>
+                                        <div class="tms-legend-actions">
+                                            <input type="text" id="lkAgentId" class="tms-lookup-input tms-locked-field" placeholder="ID..." disabled>
+                                            <button class="tms-btn-lookup tms-locked-field" id="lkAgent" disabled>🔍</button>
+                                        </div>
+                                    </legend>
+                                    <textarea id="awbAgentInfo" class="tms-awb-textarea tms-locked-field" rows="2" disabled></textarea>
+                                    <div class="tms-form-row" style="margin-top: 2px;">
+                                        <div><label>Agent's IATA Code</label><input type="text" id="awbAgentIata" class="tms-ws-input tms-locked-field" disabled></div>
+                                        <div><label>Account No.</label><input type="text" id="awbAgentAcc" class="tms-ws-input tms-locked-field" disabled></div>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="tms-awb-box">
+                                    <legend>Routing and Destination</legend>
+                                    <div class="tms-form-row">
+                                        <div style="flex: 2;"><label>Airport of Departure</label><input type="text" id="awbDept" class="tms-ws-input tms-locked-field" disabled></div>
+                                    </div>
+                                    <div class="tms-awb-routing-row" style="margin-top: 5px;">
+                                        <div style="width: 40px;"><label>To</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
+                                        <div style="flex: 1;"><label>By First Carrier</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
+                                        <div style="width: 35px;"><label>to</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
+                                        <div style="width: 35px;"><label>by</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
+                                        <div style="width: 35px;"><label>to</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
+                                        <div style="width: 35px;"><label>by</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
+                                    </div>
+                                    <div class="tms-form-row" style="margin-top: 5px;">
+                                        <div style="flex: 1;"><label>Airport of Destination</label><input type="text" id="awbDest" class="tms-ws-input tms-locked-field" disabled></div>
+                                        <div style="flex: 1;"><label>Requested Flight/Date</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
+                                    </div>
+                                </fieldset>
+                            </div> <div class="tms-awb-col">
+                                <fieldset class="tms-awb-box" style="height: 90px; box-sizing: border-box;">
+                                    <legend>
+                                        <span>Issued by</span>
+                                        <div class="tms-legend-actions">
+                                            <input type="text" id="lkAirlineId" class="tms-lookup-input tms-locked-field" placeholder="ID..." disabled>
+                                            <button class="tms-btn-lookup tms-locked-field" id="lkAirline" disabled>🔍</button>
+                                        </div>
+                                    </legend>
+                                    <textarea id="awbAirlineName" class="tms-awb-textarea tms-locked-field" rows="2" disabled placeholder="Название авиалинии и адрес"></textarea>
+                                </fieldset>
+
+                                <div class="tms-awb-static-text" style="height: 120px; box-sizing: border-box;">
+                                    <span style="font-weight: 800; color: #1e293b;">Not Negotiable. Air Waybill.</span><br>
+                                    Copies 1, 2 and 3 of this Air Waybill are originals and have the same validity.
+                                    <br><br>
+                                    It is agreed that the goods described herein are accepted in apparent good order and condition (except as noted) for carriage SUBJECT TO THE CONDITIONS OF CONTRACT ON THE REVERSE HEREOF...
+                                </div>
+
+                                <fieldset class="tms-awb-box">
+                                    <legend>Accounting Information</legend>
+                                    <textarea class="tms-awb-textarea tms-locked-field" rows="4" id="awbAccounting" disabled></textarea>
+                                </fieldset>
+
+                                <fieldset class="tms-awb-box">
+                                    <legend>Shipment Reference Information</legend>
+                                    <div class="tms-input-row" style="gap: 5px;">
+                                        <input type="text" class="tms-ws-input tms-locked-field" placeholder="Ref No." disabled>
+                                        <input type="text" class="tms-ws-input tms-locked-field" placeholder="Optional" disabled>
+                                        <input type="text" class="tms-ws-input tms-locked-field" placeholder="Optional" disabled>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="tms-awb-box">
+                                    <legend>Charges Declaration</legend>
+                                    <div class="tms-awb-charges-decl-grid">
+                                        <div class="tms-cell"><label>Currency</label><input type="text" value="EUR" class="tms-ws-input tms-locked-field" disabled></div>
+                                        <div class="tms-cell"><label>CHGS Code</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
+                                        <div class="tms-cell"><label>WT/VAL</label>
+                                            <select class="tms-ws-input tms-locked-field" disabled><option>PPD</option><option>COLL</option></select>
+                                        </div>
+                                        <div class="tms-cell"><label>Other</label>
+                                            <select class="tms-ws-input tms-locked-field" disabled><option>PPD</option><option>COLL</option></select>
+                                        </div>
+                                    </div>
+                                    <div class="tms-form-row" style="margin-top: 5px;">
+                                        <div style="flex: 1;"><label>Declared Value Carriage</label><input type="text" value="NVD" class="tms-ws-input tms-locked-field" disabled></div>
+                                        <div style="flex: 1;"><label>Declared Value Customs</label><input type="text" value="NCV" class="tms-ws-input tms-locked-field" disabled></div>
+                                    </div>
+                                </fieldset>
+
+                                <fieldset class="tms-awb-box">
+                                    <legend>Amount of Insurance</legend>
+                                    <div class="tms-form-row" style="align-items: center;">
+                                        <input type="text" value="XXX" class="tms-ws-input tms-locked-field" style="width: 80px;" disabled>
+                                        <div class="tms-text-sub" style="font-size: 8px; line-height: 1.1; margin-left: 5px;">
+                                            INSURANCE - If carrier offers insurance, and such insurance is requested in accordance with the conditions...
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div> </div> <fieldset class="tms-awb-box tms-handling-box" style="margin-top: -1px;">
+                            <legend>Handling Information</legend>
+                            <textarea id="awbHandling" class="tms-awb-textarea tms-locked-field" rows="3" placeholder="Handling Instructions..." disabled></textarea>
+                            
+                            <div class="tms-sci-corner">
+                                <div class="tms-sci-title">SCI</div>
+                                <input type="text" class="tms-ws-input tms-locked-field tms-sci-input" placeholder="X" disabled>
+                            </div>
+                        </fieldset>
+
+                    </div> <div style="text-align: right; margin-top: 20px;">
+                        <button id="btnNextToCharges" class="tms-btn-ar" style="padding: 10px 24px;">Далее: Характеристики груза ➔</button>
+                    </div>
+
+                </div> 
+
+                <div id="docPage2" style="display: none;">
+                    <div style="margin-bottom: 15px;">
+                        <button id="btnBackToCargo" class="tms-btn-edit">⬅ Назад к параметрам груза</button>
+                    </div>
+
+                    <div class="tms-awb-grid">
+                        <fieldset class="tms-fieldset tms-col-span-2">
+                            <legend>Other Charges List</legend>
+                            <div style="margin-bottom: 10px;">
+                                <button id="btnAddChargeRow" class="tms-qj-btn tms-locked-field" disabled>+ Добавить строку услуги</button>
+                            </div>
+                            <table class="tms-grid-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40px; text-align: center;">№</th>
+                                        <th style="width: 100px;">Код услуги</th>
+                                        <th>Полное название услуги</th>
+                                        <th style="width: 120px;">Короткий текст</th>
+                                        <th style="width: 130px;">P / C</th>
+                                        <th style="width: 140px; text-align: right;">Цена закупки (EUR)</th>
+                                        <th style="width: 50px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="chargesTableBody">
+                                    <tr>
+                                        <td style="text-align: center; font-weight: 700;">1</td>
+                                        <td><input type="text" class="tms-ws-input tms-locked-field" value="MYC" disabled></td>
+                                        <td><input type="text" class="tms-ws-input tms-locked-field" value="Fuel Surcharge" disabled></td>
+                                        <td><input type="text" class="tms-ws-input tms-locked-field" value="Fuel" disabled></td>
+                                        <td>
+                                            <select class="tms-ws-input tms-locked-field" disabled>
+                                                <option value="P">Prepaid (P)</option>
+                                                <option value="C">Collect (C)</option>
+                                            </select>
+                                        </td>
+                                        <td><input type="number" class="tms-ws-input tms-locked-field" value="150.00" style="text-align: right;" disabled></td>
+                                        <td style="text-align: center;"><button class="tms-btn-search tms-locked-field" style="color: #ef4444;" disabled>🗑</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </fieldset>
+
+                        <fieldset class="tms-fieldset">
+                            <legend>Shipper's certification</legend>
+                            <label>Signature of shipper or his agent</label>
+                            <input type="text" id="awbShipperSign" class="tms-ws-input tms-locked-field" disabled placeholder="ФИО / Штамп агента">
+                        </fieldset>
+
+                        <fieldset class="tms-fieldset">
+                            <legend>Carrier's execution</legend>
+                            <div class="tms-form-row">
+                                <div><label>Executed on (Date)</label><input type="date" id="awbExecDate" class="tms-ws-input tms-locked-field" disabled></div>
+                                <div><label>At (Place)</label><input type="text" id="awbExecPlace" class="tms-ws-input tms-locked-field" disabled></div>
+                            </div>
+                            <div style="margin-top: 8px;">
+                                <label>Signature of issuing Carrier or its Agent</label>
+                                <input type="text" id="awbCarrierSign" class="tms-ws-input tms-locked-field" disabled>
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+                
+                <table class="tms-vault-table">
+                    <thead>
+                        <tr>
+                            <th>Имя файла</th>
+                            <th>Тип документа</th>
+                            <th>Дата загрузки</th>
+                            <th>Менеджер</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vaultTableBody">
+                        <tr class="tms-vault-row" data-file-url="system_quote.pdf">
+                            <td class="tms-file-name">📄 System_Quote_Export.pdf</td>
+                            <td><span class="tms-badge tms-badge-sys">Смета (КП)</span></td>
+                            <td>21.06.2026</td>
+                            <td>Система</td>
+                        </tr>
+                        <tr class="tms-vault-row" data-file-url="dummy_pod.pdf">
+                            <td class="tms-file-name">📄 Signed_CMR_Ivanov.pdf</td>
+                            <td><span class="tms-badge tms-badge-pod">POD</span></td>
+                            <td>22.06.2026</td>
+                            <td>A. Manager</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tms-tab-content" id="tabTracking" style="display: none;">
+                <p style="color:#94a3b8;">Журнал загружается...</p>
+            </div>
+        </main>
+    </div>
+
+        <div id="tmsGlobalSearchModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 10000; display: none; align-items: center; justify-content: center;">
+            <div style="background: #ffffff; width: 600px; padding: 20px; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #1e293b;">Поиск контрагента</h3>
+                    <button type="button" id="btnCloseSearchModal" style="background: none; border: none; font-size: 16px; cursor: pointer; color: #64748b;">✖</button>
+                </div>
+                <input type="text" id="tmsGlobalSearchInput" placeholder="Введите название или TMS ID (мин. 2 символа)..." style="width: 100%; height: 40px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 12px; font-size: 14px; box-sizing: border-box; outline: none;">
+                <div id="tmsGlobalSearchResults" style="max-height: 300px; overflow-y: auto; border: 1px solid #f1f5f9; border-radius: 6px; display: flex; flex-direction: column;">
+                    <div style="padding: 15px; text-align: center; color: #94a3b8; font-size: 12px;">Введите запрос для поиска...</div>
+                </div>
+            </div>
         </div>
     </div>
-<script type="module" src="js/pages/page-order.js"></script>
+    
+
+    <script type="module" src="../frontend/js/pages/page-order.js"></script>
 </body>
 </html>

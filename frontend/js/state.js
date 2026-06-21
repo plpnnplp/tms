@@ -55,8 +55,8 @@ const initialState = {
     meta: {
         quoteNumber: '',
         validUntilDate: '',
-        managerName: 'Stanislav',
-        managerEmail: 's.professional@tms.de'
+        managerName: 'Manager',
+        managerEmail: 'm.professional@tms.de'
     }
 };
 
