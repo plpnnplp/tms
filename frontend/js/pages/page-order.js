@@ -90,12 +90,9 @@ function populatePassportData() {
         safeSetVal('awbSerial', numPart);
     }
 
-    // Эти поля пока закомментированы, так как мы будем верстать эту таблицу на следующем шаге
-    /*
     safeSetVal('awbGridPieces', pkgs);
     safeSetVal('awbGridGw', gw);
     safeSetVal('awbGridCw', cw);
-    */
 }
 
 

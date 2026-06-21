@@ -1027,6 +1027,7 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 .tms-awb-col {
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .tms-awb-box {
@@ -1075,17 +1076,43 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
     font-size: 12px;
 }
 
+/* Жесткий контроль текста (Фиксируем межстрочный интервал) */
 .tms-awb-textarea {
     width: 100%;
+    box-sizing: border-box;
     border: 1px solid transparent;
     background: transparent;
     font-family: 'Courier New', Courier, monospace;
     font-size: 13px;
+    line-height: 1.2; /* Фиксируем высоту строки (ок. 15px) */
     font-weight: 700;
     color: #1e293b;
     resize: none;
     outline: none;
-    padding: 0;
+    padding: 2px;
+    overflow: hidden;
+}
+.tms-awb-textarea:focus {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+/* SCI угол (Парит сверху справа) */
+.tms-handling-box {
+    position: relative;
+}
+.tms-sci-corner {
+    position: absolute;
+    top: 0; /* Было bottom: 0 */
+    right: 0;
+    width: 60px;
+    height: 45px;
+    border-bottom: 1px solid #cbd5e1; /* Рамка теперь снизу */
+    border-left: 1px solid #cbd5e1;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    z-index: 2; /* Защита от перекрытия текстом */
 }
 
 .tms-awb-textarea:focus {
@@ -1145,13 +1172,6 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
     box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }
 
-.tms-awb-box {
-    border: 0.5px solid #cbd5e1;
-    margin: 0;
-    padding: 4px 8px; /* Уменьшили отступы */
-    background: #fff;
-    border-radius: 0;
-}
 
 /* --- AWB УЛУЧШЕНИЯ UI --- */
 .tms-legend-actions {
@@ -1175,18 +1195,22 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 /* Handling & SCI */
 .tms-handling-box {
     position: relative;
-    padding-right: 70px; /* Оставляем место для SCI, чтобы текст под него не залезал */
 }
+
 .tms-sci-corner {
     position: absolute;
-    top: 0;
+    top: 0; /* Было bottom: 0 */
     right: 0;
     width: 60px;
-    height: 100%;
-    border-left: 0.5px solid #cbd5e1;
+    height: 45px;
+    border-bottom: 1px solid #cbd5e1; /* Рамка теперь снизу */
+    border-left: 1px solid #cbd5e1;
+    background: #ffffff;
     display: flex;
     flex-direction: column;
+    z-index: 2; /* Защита от перекрытия текстом */
 }
+
 .tms-sci-title {
     text-align: center;
     font-size: 10px;

@@ -117,7 +117,6 @@
             <div class="tms-tab-content active" id="tabDocBuilder">
                 
                 <div id="docPage1">
-                    
                     <div class="tms-awb-canvas">
                         
                         <div class="tms-awb-header-row">
@@ -134,7 +133,7 @@
                         <div class="tms-awb-main-grid">
                             
                             <div class="tms-awb-col">
-                                <fieldset class="tms-awb-box" style="height: 105px; box-sizing: border-box;">
+                                <fieldset class="tms-awb-box">
                                     <legend>
                                         <span>Shipper's Name and Address</span>
                                         <div class="tms-legend-actions">
@@ -146,10 +145,10 @@
                                         <span>Shipper's Account Number</span>
                                         <input type="text" id="awbShipperAcc" class="tms-ws-input tms-locked-field" disabled>
                                     </div>
-                                    <textarea id="awbShipperAddress" class="tms-awb-textarea tms-locked-field" rows="3" disabled></textarea>
+                                    <textarea id="awbShipperAddress" class="tms-awb-textarea tms-locked-field" style="height: 60px;" disabled></textarea>
                                 </fieldset>
 
-                                <fieldset class="tms-awb-box" style="height: 105px; box-sizing: border-box;">
+                                <fieldset class="tms-awb-box">
                                     <legend>
                                         <span>Consignee's Name and Address</span>
                                         <div class="tms-legend-actions">
@@ -161,18 +160,18 @@
                                         <span>Consignee's Account Number</span>
                                         <input type="text" id="awbConsigneeAcc" class="tms-ws-input tms-locked-field" disabled>
                                     </div>
-                                    <textarea id="awbConsigneeAddress" class="tms-awb-textarea tms-locked-field" rows="3" disabled></textarea>
+                                    <textarea id="awbConsigneeAddress" class="tms-awb-textarea tms-locked-field" style="height: 60px;" disabled></textarea>
                                 </fieldset>
 
                                 <fieldset class="tms-awb-box">
                                     <legend>
-                                        <span>Issuing Carrier's Agent</span>
+                                        <span>Issuing Carrier's Agent Name and City</span>
                                         <div class="tms-legend-actions">
                                             <input type="text" id="lkAgentId" class="tms-lookup-input tms-locked-field" placeholder="ID..." disabled>
                                             <button class="tms-btn-lookup tms-locked-field" id="lkAgent" disabled>🔍</button>
                                         </div>
                                     </legend>
-                                    <textarea id="awbAgentInfo" class="tms-awb-textarea tms-locked-field" rows="2" disabled></textarea>
+                                    <textarea id="awbAgentInfo" class="tms-awb-textarea tms-locked-field" style="height: 45px;" disabled></textarea>
                                     <div class="tms-form-row" style="margin-top: 2px;">
                                         <div><label>Agent's IATA Code</label><input type="text" id="awbAgentIata" class="tms-ws-input tms-locked-field" disabled></div>
                                         <div><label>Account No.</label><input type="text" id="awbAgentAcc" class="tms-ws-input tms-locked-field" disabled></div>
@@ -180,10 +179,8 @@
                                 </fieldset>
 
                                 <fieldset class="tms-awb-box">
-                                    <legend>Routing and Destination</legend>
-                                    <div class="tms-form-row">
-                                        <div style="flex: 2;"><label>Airport of Departure</label><input type="text" id="awbDept" class="tms-ws-input tms-locked-field" disabled></div>
-                                    </div>
+                                    <legend>Airport of Departure (Addr. of First Carrier) and Requested Routing</legend>
+                                    <input type="text" id="awbDept" class="tms-ws-input tms-locked-field" disabled>
                                     <div class="tms-awb-routing-row" style="margin-top: 5px;">
                                         <div style="width: 40px;"><label>To</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
                                         <div style="flex: 1;"><label>By First Carrier</label><input type="text" class="tms-ws-input tms-locked-field" disabled></div>
@@ -198,7 +195,7 @@
                                     </div>
                                 </fieldset>
                             </div> <div class="tms-awb-col">
-                                <fieldset class="tms-awb-box" style="height: 90px; box-sizing: border-box;">
+                                <fieldset class="tms-awb-box">
                                     <legend>
                                         <span>Issued by</span>
                                         <div class="tms-legend-actions">
@@ -206,19 +203,18 @@
                                             <button class="tms-btn-lookup tms-locked-field" id="lkAirline" disabled>🔍</button>
                                         </div>
                                     </legend>
-                                    <textarea id="awbAirlineName" class="tms-awb-textarea tms-locked-field" rows="2" disabled placeholder="Название авиалинии и адрес"></textarea>
-                                </fieldset>
+                                    <textarea id="awbAirlineName" class="tms-awb-textarea tms-locked-field" style="height: 60px;" disabled></textarea>
 
-                                <div class="tms-awb-static-text" style="height: 120px; box-sizing: border-box;">
+                                <div class="tms-awb-static-text">
                                     <span style="font-weight: 800; color: #1e293b;">Not Negotiable. Air Waybill.</span><br>
                                     Copies 1, 2 and 3 of this Air Waybill are originals and have the same validity.
                                     <br><br>
-                                    It is agreed that the goods described herein are accepted in apparent good order and condition (except as noted) for carriage SUBJECT TO THE CONDITIONS OF CONTRACT ON THE REVERSE HEREOF...
+                                    It is agreed that the goods described herein are accepted in apparent good order and condition (except a noted) for carriage subject to the conditions of contract on the reverse hereof. All goods may be carried by any other means including road or any other carrier unless specific contrary instructions are given hereon by the shipper, and shipper agrees that the shipment may be carried via intermediate stopping places which the carrier deems appropriate. The shipper's attention is drawn to the notice concerning carrier's limitation of liability. Shipper may increase such limitation of liability by declaring a higher value for carriage and paying a supplemental charge if required.
                                 </div>
 
                                 <fieldset class="tms-awb-box">
                                     <legend>Accounting Information</legend>
-                                    <textarea class="tms-awb-textarea tms-locked-field" rows="4" id="awbAccounting" disabled></textarea>
+                                    <textarea class="tms-awb-textarea tms-locked-field" style="height: 60px;" disabled></textarea>
                                 </fieldset>
 
                                 <fieldset class="tms-awb-box">
@@ -253,13 +249,13 @@
                                     <div class="tms-form-row" style="align-items: center;">
                                         <input type="text" value="XXX" class="tms-ws-input tms-locked-field" style="width: 80px;" disabled>
                                         <div class="tms-text-sub" style="font-size: 8px; line-height: 1.1; margin-left: 5px;">
-                                            INSURANCE - If carrier offers insurance, and such insurance is requested in accordance with the conditions...
+                                            INSURANCE – If carrier offers insurance, and such insurance is requested in accordance with the conditions thereof, indicate amount to be insured in figures in field “Amount of Insurance”
                                         </div>
                                     </div>
                                 </fieldset>
                             </div> </div> <fieldset class="tms-awb-box tms-handling-box" style="margin-top: -1px;">
                             <legend>Handling Information</legend>
-                            <textarea id="awbHandling" class="tms-awb-textarea tms-locked-field" rows="3" placeholder="Handling Instructions..." disabled></textarea>
+                            <textarea id="awbHandling" class="tms-awb-textarea tms-locked-field" style="height: 45px; padding-right: 70px;" placeholder="Handling Instructions..." disabled></textarea>
                             
                             <div class="tms-sci-corner">
                                 <div class="tms-sci-title">SCI</div>
@@ -267,11 +263,42 @@
                             </div>
                         </fieldset>
 
+                        <fieldset class="tms-awb-box" style="margin-top: -1px; padding: 0;">
+                            <table class="tms-grid-table" style="margin: 0;">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">Pieces</th>
+                                        <th style="width: 80px;">Gross w.</th>
+                                        <th style="width: 30px;">k/l</th>
+                                        <th style="width: 30px;">RC</th>
+                                        <th style="width: 80px;">Item no.</th>
+                                        <th style="width: 80px;">Charg. w.</th>
+                                        <th style="width: 80px;">Rate/Charge</th>
+                                        <th style="width: 80px;">Total</th>
+                                        <th>Nature and quantity of goods</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><input type="number" id="awbGridPieces" class="tms-ws-input" disabled style="text-align: center; font-weight: 700;"></td>
+                                        <td><input type="number" id="awbGridGw" class="tms-ws-input" disabled style="text-align: right; font-weight: 700;"></td>
+                                        <td><input type="text" value="K" class="tms-ws-input" disabled style="text-align: center;"></td>
+                                        <td><input type="text" id="awbGridRc" class="tms-ws-input tms-locked-field" maxlength="1" style="text-align: center;" disabled></td>
+                                        <td><input type="text" id="awbGridItemNo" class="tms-ws-input tms-locked-field" disabled></td>
+                                        <td><input type="number" id="awbGridCw" class="tms-ws-input" disabled style="text-align: right; font-weight: 700;"></td>
+                                        <td><input type="number" id="awbGridRate" class="tms-ws-input tms-locked-field" step="0.01" style="text-align: right;" disabled></td>
+                                        <td><input type="number" id="awbGridTotal" class="tms-ws-input" disabled style="text-align: right; font-weight: 700; background: #f8fafc;"></td>
+                                        <td><textarea id="awbGridNature" class="tms-awb-textarea tms-locked-field" rows="2" disabled></textarea></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </fieldset>
+
                     </div> <div style="text-align: right; margin-top: 20px;">
-                        <button id="btnNextToCharges" class="tms-btn-ar" style="padding: 10px 24px;">Далее: Характеристики груза ➔</button>
+                        <button id="btnNextToCharges" class="tms-btn-ar" style="padding: 10px 24px;">Далее: Финансы и Сборы ➔</button>
                     </div>
 
-                </div> 
+                </div>
 
                 <div id="docPage2" style="display: none;">
                     <div style="margin-bottom: 15px;">
