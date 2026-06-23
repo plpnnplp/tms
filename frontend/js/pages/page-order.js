@@ -47,7 +47,7 @@ async function loadOrderContext(orderId) {
         initTabs();
         initLookups();
         initAwbCalculator();
-        initIataValidation();
+        initIataValidation(); // Запускаем единственный глобальный валидатор IATA
         initPdfGeneration();
         
     } catch (error) {
@@ -106,7 +106,7 @@ function populatePassportData() {
 
     if (currentOrder.order_number && currentOrder.order_number.includes('-')) {
         const numPart = currentOrder.order_number.split('-')[1];
-        safeSetVal('awbPrefix', "020"); // Заглушка, в будущем брать из справочника
+        safeSetVal('awbPrefix', "020"); // Заглушка
         safeSetVal('awbSerial', numPart);
     }
 
@@ -146,6 +146,10 @@ function initLookups() {
         if (config.type === 'airline' && itemData.prefix) {
             safeSetVal('awbPrefix', itemData.prefix);
         }
+        
+        // Триггерим input, чтобы валидатор отформатировал вставленный из БД текст
+        const docFieldEl = document.getElementById(config.docField);
+        if (docFieldEl) docFieldEl.dispatchEvent(new Event('input'));
     };
 
     const openModalWithSearch = (config, initialQuery = '') => {
@@ -161,7 +165,6 @@ function initLookups() {
         }
     };
 
-    // Привязка событий кнопок и инпутов
     lookupsConfig.forEach(config => {
         const btn = document.getElementById(config.btnId);
         const inputEl = document.getElementById(config.inputId);
@@ -188,7 +191,6 @@ function initLookups() {
         }
     });
 
-    // Обработчик живого поиска
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
@@ -250,7 +252,6 @@ function initAwbCalculator() {
     const calculate = () => {
         const rate = parseFloat(rateInput.value) || 0;
         const cw = parseFloat(cwInput.value) || 0;
-        
         totalInput.value = (rate > 0 && cw > 0) ? (rate * cw).toFixed(2) : '';
     };
 
@@ -258,126 +259,229 @@ function initAwbCalculator() {
     cwInput.addEventListener('input', calculate);
 }
 
-/**
- * ГЛОБАЛЬНЫЙ ВАЛИДАТОР IATA CARGO-IMP (Версия 2.0: Auto-Wrap + Ripple Effect)
- * Жестко контролирует матрицы (5x35 и др.), автоматически перенося текст на новые строки.
- */
+// =========================================================================
+// СИСТЕМА УВЕДОМЛЕНИЙ IATA
+// =========================================================================
+const IataWarning = {
+    el: null,
+    timeout: null,
+    init() {
+        this.el = document.createElement('div');
+        this.el.className = 'tms-iata-warning';
+        this.el.innerHTML = '💡<span class="tms-iata-tooltip"></span>';
+        document.body.appendChild(this.el);
+    },
+    show(targetNode, msg) {
+        if (!this.el) this.init();
+        
+        const tooltip = this.el.querySelector('.tms-iata-tooltip');
+        tooltip.innerText = msg;
+        
+        const rect = targetNode.getBoundingClientRect();
+        this.el.style.top = (rect.top + window.scrollY - 10) + 'px';
+        this.el.style.left = (rect.right + window.scrollX - 25) + 'px';
+        this.el.style.display = 'block';
+        
+        clearTimeout(this.timeout);
+        this.timeout = setTimeout(() => { this.hide(); }, 3000);
+    },
+    hide() {
+        if (this.el) {
+            this.el.style.display = 'none';
+            clearTimeout(this.timeout);
+        }
+    }
+};
+
+// =========================================================================
+// ГЛОБАЛЬНЫЙ ВАЛИДАТОР IATA CARGO-IMP
+// =========================================================================
 function initIataValidation() {
-    // 1. Конфигурация матриц для многострочных полей (Textarea)
-    const areaLimits = {
-        'awbShipperAddress': { lines: 5, chars: 35 },
-        'awbConsigneeAddress': { lines: 5, chars: 35 },
-        'awbAgentInfo': { lines: 2, chars: 35 },
+    const fieldConfigs = {
+        'awbShipperAddress': { lines: 4, chars: 35 },
+        'awbConsigneeAddress': { lines: 4, chars: 35 },
+        'awbAgentInfo': { lines: 4, chars: 35 },
         'awbHandling': { lines: 4, chars: 65 },
         'awbGridNature': { lines: 10, chars: 20 },
         'awbAirlineName': { lines: 2, chars: 35 },
         'awbAccounting': { lines: 4, chars: 35 }
     };
 
-    // 2. Лимиты для однострочных инпутов
     const exactLimits = {
         'awbPrefix': 3, 'awbSerial': 8, 'awbDept': 3, 'awbDest': 3,
         'awbGridPieces': 4, 'awbGridGw': 7, 'awbGridCw': 7, 'awbGridRc': 1,
-        'awbGridItemNo': 4, 'awbGridRate': 8, 'awbGridTotal': 12, 'awbAgentIata': 7,
-        'awbAgentAcc': 15, 'awbShipperAcc': 15, 'awbConsigneeAcc': 15
+        'awbGridItemNo': 4, 'awbGridRate': 8, 'awbGridTotal': 12, 'awbAgentIata': 7
     };
 
-    // Утилита: очистка по стандартам IATA (Только A-Z, 0-9, пробел, Enter и пунктуация)
     const cleanIata = (str) => str.toUpperCase().replace(/[^A-Z0-9 \n.,\-\/]/g, '');
 
     const allFields = document.querySelectorAll('.tms-ws-input, .tms-locked-field, .tms-awb-textarea');
 
     allFields.forEach(field => {
+        const tagName = field.tagName.toLowerCase();
+        if (tagName === 'select' || tagName === 'button' || field.type === 'checkbox' || field.type === 'radio') {
+            return; 
+        }
         
-        // ==========================================
-        // БЛОК 1: БЕЗОПАСНАЯ ВСТАВКА (CTRL+V)
-        // ==========================================
+        // 1. ПЕРЕХВАТ ВСТАВКИ
         field.addEventListener('paste', function(e) {
-            e.preventDefault(); 
-            let pastedText = (e.clipboardData || window.clipboardData).getData('text');
-            pastedText = cleanIata(pastedText);
-
-            // Если это обычный инпут - убираем переносы строк перед вставкой
-            if (this.tagName.toLowerCase() !== 'textarea') {
-                pastedText = pastedText.replace(/\n/g, '');
+            e.preventDefault();
+            IataWarning.hide(); 
+            
+            let rawPasted = (e.clipboardData || window.clipboardData).getData('text');
+            let cleanPasted = cleanIata(rawPasted);
+            
+            let hasError = rawPasted.toUpperCase() !== cleanPasted;
+            if (hasError) {
+                IataWarning.show(this, 'Спецсимволы удалены. Разрешены только A-Z, 0-9 и знаки . , - /');
             }
 
-            let start = this.selectionStart;
-            let end = this.selectionEnd;
-            this.value = this.value.slice(0, start) + pastedText + this.value.slice(end);
+            if (tagName !== 'textarea') {
+                cleanPasted = cleanPasted.replace(/\n/g, ''); 
+            }
+
+            let start = this.selectionStart || 0;
+            let end = this.selectionEnd || 0;
+            this.value = this.value.slice(0, start) + cleanPasted + this.value.slice(end);
             
-            // Ставим курсор в конец вставленного текста
-            let newPos = start + pastedText.length;
-            this.setSelectionRange(newPos, newPos);
+            let newPos = start + cleanPasted.length;
+            if (typeof this.setSelectionRange === 'function') {
+                this.setSelectionRange(newPos, newPos);
+            }
             
-            // Запускаем событие input, чтобы сработал авто-перенос (Auto-Wrap) и калькуляторы
-            this.dispatchEvent(new Event('input'));
+            this.dispatchEvent(new CustomEvent('input', { detail: { isPaste: true, hasError: hasError } })); 
         });
 
-        // ==========================================
-        // БЛОК 2: АВТОМАТИЧЕСКИЙ ПЕРЕНОС СТРОК (AUTO-WRAP)
-        // ==========================================
+        // 2. ЖЕСТКАЯ БЛОКИРОВКА ПЕЧАТИ
+        field.addEventListener('keydown', function(e) {
+            IataWarning.hide();
+
+            if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'].includes(e.key) || e.ctrlKey || e.metaKey) return;
+
+            if (tagName === 'textarea' && fieldConfigs[this.id]) {
+                const config = fieldConfigs[this.id];
+                let lines = this.value.split('\n');
+                
+                if (e.key === 'Enter') {
+                    if (lines.length >= config.lines) {
+                        e.preventDefault();
+                        IataWarning.show(this, `Лимит исчерпан: максимум ${config.lines} строк(и).`);
+                    }
+                    return;
+                }
+
+                if (lines.length >= config.lines && 
+                    lines[config.lines - 1].length >= config.chars && 
+                    this.selectionStart === this.selectionEnd) {
+                    e.preventDefault();
+                    IataWarning.show(this, `Достигнут лимит блока: ${config.lines} строк по ${config.chars} символов.`);
+                }
+                
+            } else if (exactLimits[this.id]) {
+                if (this.value.length >= exactLimits[this.id] && this.selectionStart === this.selectionEnd) {
+                    e.preventDefault();
+                    IataWarning.show(this, `Максимальная длина поля: ${exactLimits[this.id]} симв.`);
+                }
+            }
+        });
+
+        // 3. УМНЫЙ ПЕРЕНОС СЛОВ И ФИЛЬТР
         field.addEventListener('input', function(e) {
-            let cursorOrig = this.selectionStart;
+            let cursorOrig = this.selectionStart || 0;
             let rawVal = this.value;
             let val = cleanIata(rawVal);
 
-            if (this.tagName.toLowerCase() === 'textarea' && areaLimits[this.id]) {
-            const limit = areaLimits[this.id];
-            let rawLines = val.split('\n');
-            let processedLines = [];
+            if (rawVal.toUpperCase() !== val && rawVal.length > 0 && (!e.detail || !e.detail.isPaste)) {
+                IataWarning.show(this, 'Недопустимый символ. Стандарт FWB разрешает только (A-Z) и цифры.');
+            }
 
-            // 1. Проходим по каждой строке и применяем авто-перенос (Ripple)
-            for (let i = 0; i < rawLines.length; i++) {
-                let line = rawLines[i];
+            if (tagName === 'textarea' && fieldConfigs[this.id]) {
+                const config = fieldConfigs[this.id];
+                let rawLines = val.split('\n');
+                let processedLines = [];
+
+                for (let i = 0; i < rawLines.length; i++) {
+                    let words = rawLines[i].split(' ');
+                    let currentLine = "";
+
+                    for (let j = 0; j < words.length; j++) {
+                        let word = words[j];
+
+                        while (word.length > config.chars) {
+                            if (currentLine) {
+                                processedLines.push(currentLine);
+                                if (processedLines.length >= config.lines) break;
+                                currentLine = "";
+                            }
+                            processedLines.push(word.substring(0, config.chars));
+                            if (processedLines.length >= config.lines) break;
+                            word = word.substring(config.chars);
+                        }
+                        if (processedLines.length >= config.lines) break;
+
+                        if (word === "") {
+                            if (currentLine.length + 1 <= config.chars && currentLine !== "") currentLine += " ";
+                            continue;
+                        }
+
+                        if (currentLine === "") {
+                            currentLine = word;
+                        } else if (currentLine.length + 1 + word.length <= config.chars) {
+                            currentLine += " " + word;
+                        } else {
+                            processedLines.push(currentLine);
+                            if (processedLines.length >= config.lines) break;
+                            currentLine = word;
+                        }
+                    }
+                    if (processedLines.length >= config.lines) break;
+                    if (currentLine !== "") processedLines.push(currentLine);
+                    if (processedLines.length >= config.lines) break;
+                }
+
+                val = processedLines.join('\n');
                 
-                // Пока строка длиннее лимита - режем и кидаем остаток в следующую строку
-                while (line.length > limit.chars) {
-                    processedLines.push(line.substring(0, limit.chars));
-                    line = line.substring(limit.chars);
-                    
-                    // Если достигли лимита строк - прекращаем "водопад"
-                    if (processedLines.length >= limit.lines) break;
-                }
-
-                // Добавляем остаток или нормальную строку
-                if (processedLines.length < limit.lines) {
-                    processedLines.push(line);
-                } else {
-                    break; // Лимит строк исчерпан
+            } else if (exactLimits[this.id]) {
+                if (val.length > exactLimits[this.id]) {
+                    val = val.substring(0, exactLimits[this.id]);
                 }
             }
 
-            // 2. Финальная проверка: обрезаем массив до лимита строк (на всякий случай)
-            val = processedLines.slice(0, limit.lines).join('\n');
-            
-        } else if (exactLimits[this.id]) {
-            // Для обычных инпутов
-            if (val.length > exactLimits[this.id]) {
-                val = val.substring(0, exactLimits[this.id]);
-            }
-        }
-
-            // ==========================================
-            // БЛОК 3: УМНЫЙ КОНТРОЛЬ КУРСОРОВ
-            // ==========================================
+            // ==========================================================
+            // ИСПРАВЛЕНИЕ: Умный Diff-алгоритм для стабилизации курсора
+            // ==========================================================
             if (this.value !== val) {
-                // Чтобы курсор не улетал при авто-переносе, вычисляем его реальную позицию
-                let charsBeforeCursor = rawVal.substring(0, cursorOrig).replace(/\n/g, '').length;
-                let charsCounted = 0;
+                let textBeforeCursorOrig = cleanIata(rawVal.substring(0, cursorOrig));
                 let newCursor = 0;
-                
-                for (let i = 0; i < val.length; i++) {
-                    if (charsCounted === charsBeforeCursor) {
-                        newCursor = i;
+                let origIdx = 0;
+
+                for (let k = 0; k < val.length; k++) {
+                    if (origIdx >= textBeforeCursorOrig.length) {
                         break;
                     }
-                    if (val[i] !== '\n') charsCounted++;
+                    
+                    // Символы полностью совпадают
+                    if (val[k] === textBeforeCursorOrig[origIdx]) {
+                        origIdx++;
+                    } 
+                    // Скрипт превратил пробел в перенос строки (Auto-Wrap)
+                    else if (val[k] === '\n' && textBeforeCursorOrig[origIdx] === ' ') {
+                        origIdx++; 
+                    } 
+                    // Скрипт "съел" лишний пробел, который ввел пользователь
+                    else if (textBeforeCursorOrig[origIdx] === ' ') {
+                        origIdx++; 
+                        k--; // Возвращаемся на шаг назад, чтобы сверить тот же символ
+                    }
+                    
+                    newCursor = k + 1;
                 }
-                if (charsCounted < charsBeforeCursor) newCursor = val.length;
 
                 this.value = val;
-                this.setSelectionRange(newCursor, newCursor);
+                
+                if (typeof this.setSelectionRange === 'function') {
+                    this.setSelectionRange(newCursor, newCursor);
+                }
             }
         });
     });
