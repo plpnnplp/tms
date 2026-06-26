@@ -1550,3 +1550,152 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
     0% { transform: scale(0.8); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
 }
+
+/* ==========================================================================
+   ФИНАНСОВЫЙ БЛОК AWB (Страница 2)
+   ========================================================================== */
+
+/* Специфичная матрица для финансов: 40% лево, 60% право */
+.tms-awb-matrix-finance {
+    display: grid;
+    grid-template-columns: 40% 60%;
+    gap: 1px;
+    background-color: #cbd5e1;
+}
+
+/* Внутренние сетки для Prepaid/Collect и Destination Charges */
+.tms-finance-grid {
+    display: grid;
+    grid-template-columns: 1fr 75px 75px; /* Лейбл + 2 колонки PPD/COLL */
+    gap: 1px;
+    background-color: #cbd5e1;
+    border-bottom: 1px solid #cbd5e1;
+}
+
+.tms-dest-grid {
+    display: grid;
+    grid-template-columns: 1fr 150px; /* Лейбл + 1 колонка ввода */
+    gap: 1px;
+    background-color: #cbd5e1;
+}
+
+/* Обнуление паддингов для идеального прилегания инпутов */
+.tms-p-0 {
+    padding: 0 !important;
+}
+
+/* Специфичный лейбл финансовой сетки */
+.tms-finance-label {
+    font-size: 9px;
+    color: #475569;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+}
+
+
+/* ==========================================================================
+   ERP DASHBOARD LAYOUT (DOC PAGE 2)
+   ========================================================================== */
+.tms-erp-dashboard {
+    display: flex;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    align-items: flex-start;
+}
+
+.tms-erp-col-left {
+    width: 35%; /* Левая колонка со сводками */
+    display: flex;
+    flex-direction: column;
+}
+
+.tms-erp-col-right {
+    width: 65%; /* Правая рабочая колонка */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Оформление ERP Панелей (Fieldsets) */
+.tms-erp-panel {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 15px;
+}
+.tms-erp-panel legend {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    padding: 0 5px;
+}
+
+/* Сетка Charges Summary (Имитация Excel внутри панели) */
+.tms-summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 80px 80px;
+    gap: 4px;
+    align-items: center;
+}
+.tms-sum-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+}
+.tms-sum-label {
+    font-size: 11px;
+    color: #334155;
+    font-weight: 600;
+}
+.tms-sum-input {
+    width: 100%;
+    height: 26px;
+    border: 1px solid #cbd5e1;
+    background: #f1f5f9;
+    border-radius: 3px;
+    text-align: right;
+    padding: 0 6px;
+    box-sizing: border-box;
+    font-family: 'Courier New', monospace;
+    color: #0f172a;
+    font-size: 12px;
+}
+
+/* Вспомогательные классы */
+.tms-form-row-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.tms-flex-row-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Таблица услуг внутри панели */
+.tms-services-table th {
+    font-size: 10px;
+    padding: 6px;
+    border-bottom: 1px solid #cbd5e1;
+}
+.tms-services-table td {
+    padding: 2px 4px;
+    border-bottom: 1px solid #f1f5f9;
+}
+.tms-grid-input {
+    width: 100%;
+    height: 24px;
+    border: 1px solid transparent;
+    background: transparent;
+    font-size: 11px;
+    color: #1e293b;
+    box-sizing: border-box;
+    outline: none;
+    border-radius: 3px;
+}
+.tms-grid-input:focus {
+    border: 1px solid #3b82f6;
+    background: #ffffff;
+}
