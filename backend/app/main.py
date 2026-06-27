@@ -86,6 +86,16 @@ def read_root():
         "docs": "Go to /docs to see the interactive API documentation"
     }
 
+@lru_cache(maxsize=2)
+def load_json_file(filename: str):
+    filepath = os.path.join("json", filename)
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading {filepath}: {e}")
+        return {}
+
 @app.get("/api/prices")
 def get_prices():
     return load_json_file("prices.json")
@@ -113,7 +123,7 @@ def create_counterparty(cp: CounterpartySchema, db: Session = Depends(get_db)):
 
 @app.get("/api/counterparties")
 def get_counterparties(db: Session = Depends(get_db)):
-    results = db.query(CounterpartyDB).options(joinedload(CounterpartyDB.contacts)).order_by(CounterpartyDB.name).all()
+    results = db.query(CounterpartyDB).options(joinedload(CounterpartyDB.contacts)).order_by(CounterpartyDB.name).limit(200).all()
     return results
 
 @app.get("/api/counterparties/search")
@@ -184,7 +194,7 @@ def save_quote(payload: QuoteCreatePayload, db: Session = Depends(get_db)):
 
 @app.get("/api/quotes")
 def get_all_quotes(db: Session = Depends(get_db)):
-    quotes = db.query(QuoteDB).order_by(QuoteDB.created_at.desc()).all()
+    quotes = db.query(QuoteDB).order_by(QuoteDB.created_at.desc()).limit(200).all()
     result = []
     for q in quotes:
         result.append({
@@ -334,7 +344,7 @@ def update_quote_status(quote_id: str, payload: QuoteStatusUpdate, db: Session =
 @app.get("/api/bookings")
 def get_all_bookings(db: Session = Depends(get_db)):
     try:
-        bookings = db.query(ActiveBookingDB).order_by(ActiveBookingDB.created_at.desc()).all()
+        bookings = db.query(ActiveBookingDB).order_by(ActiveBookingDB.created_at.desc()).limit(200).all()
         return bookings
     except Exception as e:
         print(f"❌ [TMS ERROR] Ошибка загрузки списка заказов: {str(e)}")
