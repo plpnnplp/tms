@@ -16,12 +16,14 @@ const UIController = {
     initReactivity() {
         if (!window.appStore) return;
         window.appStore.subscribe((newState) => {
-            console.log("State обновился, рендерим:", newState); // ДОБАВЬТЕ ЭТОТ ЛОГ
             this.renderStateToDOM(newState);
         });
     },
 
     initCityAutocomplete() {
+        if (this._cityAutocompleteInitialized) return;
+        this._cityAutocompleteInitialized = true;
+
         const setupAutocomplete = (inputId, routeKey) => {
             const inputEl = document.getElementById(inputId);
             if (!inputEl) return;
@@ -898,9 +900,6 @@ const UIController = {
             const configLang = document.getElementById('configLanguage');
             lang = configLang ? configLang.getAttribute('data-selected') : 'en';
         }
-
-        console.log("--- Вызов перевода бланка ---", lang);
-
         const dict = tmsTitleTemplates[lang];
         if (!dict) return;
 

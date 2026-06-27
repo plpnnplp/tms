@@ -1,8 +1,10 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session, joinedload
-from pydantic import BaseModel
-from typing import List, Optional
+from pydantic import BaseModel, Field
+from functools import lru_cache
+from pathlib import Path
+from typing import List
 import json
 import os
 import datetime
@@ -48,7 +50,7 @@ class CounterpartySchema(BaseModel):
     currency: str = "EUR"
     credit_limit: float = 0.0
     payment_terms: str = ""
-    contacts: List[ContactSchema] = []
+    contacts: List[ContactSchema] = Field(default_factory=list)
 
 class QuoteCreatePayload(BaseModel):
     quote_id: str
@@ -57,19 +59,6 @@ class QuoteCreatePayload(BaseModel):
 class QuoteStatusUpdate(BaseModel):
     status: str
 
-class ContactCreate(BaseModel):
-    first_name: str = ""
-    last_name: str = ""
-    email: str = ""
-    phone: str = ""
-
-class CounterpartyCreate(BaseModel):
-    name: str
-    short_name: str = ""
-    role: str = "client"
-    country: str = ""
-    payment_terms: str = ""
-    contacts: List[ContactCreate] = []
 
 # --- CORS ---
 app.add_middleware(
@@ -99,21 +88,11 @@ def read_root():
 
 @app.get("/api/prices")
 def get_prices():
-    file_path = os.path.join(os.path.dirname(__file__), "../prices.json")
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="prices.json не найден на сервере")
+    return load_json_file("prices.json")
 
 @app.get("/api/cities")
 def get_cities():
-    file_path = os.path.join(os.path.dirname(__file__), "../cities.json")
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="cities.json не найден")
+    return load_json_file("cities.json")
 
 
 # --- ЭНДПОИНТЫ КОНТРАГЕНТОВ ---

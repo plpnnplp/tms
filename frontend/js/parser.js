@@ -47,9 +47,6 @@ export const ParserEngine = {
             pickupRaw = potentialCities[0] || "";
             deliveryRaw = potentialCities[1] || "";
         }
-
-        console.log("-> Результат грубой очистки маршрута:", { pickupRaw, deliveryRaw });
-
         let loadType = 'Full Load (FTL)';
         if (transportMode === 'air') loadType = 'Passenger Aircraft (PAX)';
         if (transportMode === 'sea') loadType = 'Less Container Load (LCL)';

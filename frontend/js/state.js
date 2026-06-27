@@ -65,11 +65,17 @@ function generateId() {
     return Math.random().toString(36).substr(2, 9);
 }
 
+function cloneState(value) {
+    return typeof structuredClone === 'function'
+        ? structuredClone(value)
+        : JSON.parse(JSON.stringify(value));
+}
+
 // 2. ЯДРО УПРАВЛЕНИЯ СОСТОЯНИЕМ (Store & Pub/Sub)
 class TMSStore {
     constructor() {
         // Глубокое клонирование стартового состояния
-        this.state = JSON.parse(JSON.stringify(initialState));
+        this.state = cloneState(initialState);
         this.listeners = [];
         
         // Встроенный менеджер истории (Undo/Redo)
@@ -97,7 +103,7 @@ class TMSStore {
 
     // ПОЛУЧЕНИЕ ДАННЫХ
     getState() {
-        return JSON.parse(JSON.stringify(this.state));
+        return cloneState(this.state);
     }
 
     // 3. МЕТОДЫ МУТАЦИИ ДАННЫХ (Actions)

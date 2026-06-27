@@ -13,7 +13,6 @@ import { tmsTitleTemplates } from '../translations.js';
 
 // --- 1. ИНИЦИАЛИЗАЦИЯ ---
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("🚀 [TMS] Шаг 1: Запуск скрипта бланка...");
 
     // БЛОК А: Инициализация UI (Строго синхронно)
     try {
@@ -33,9 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (typeof UIController.initReactivity === 'function') {
             UIController.initReactivity();
         }
-        UIController.initCityAutocomplete();
 
-        console.log("✅ [TMS] Шаг 2: Интерфейс успешно активирован.");
     } catch (err) {
         console.error("❌ [TMS ОШИБКА UI] Логика интерфейса нарушена:", err);
     }
@@ -43,9 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // БЛОК Б: Асинхронные сетевые запросы (В фоновом режиме)
     (async () => {
         try {
-            console.log("⏳ [TMS] Шаг 3: Запрос справочников с сервера...");
             await loadTmsPrices();
-            console.log("✅ [TMS] Шаг 4: Справочники загружены, селекты обновлены!");
         } catch (err) {
             console.error("❌ [TMS ОШИБКА СЕТИ] Бэкенд не отдал справочники:", err);
             // Здесь в будущем нужно добавить вывод уведомления пользователю (Toast/Alert)
@@ -66,6 +61,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initEventListeners() {
+    initSmartClientSearch();
+
     // 1. Статические кнопки интерфейса
     document.getElementById('btn-parse-data')?.addEventListener('click', executeTmsTextParser);
     document.getElementById('btnTmsFinalize')?.addEventListener('click', executeApplyChangesAndValidate);
@@ -170,8 +167,6 @@ function initEventListeners() {
             }
         }
 
-    initSmartClientSearch();
-
 });
 
     // 5. РЕАКТИВНЫЙ ВВОД (Защита каретки: сохраняем состояние только при выходе из поля)
@@ -209,7 +204,6 @@ async function loadTmsPrices() {
         
         window.tmsPricesData = prices;
         window.tmsCitiesData = cities;
-        console.log("TMS: Справочники с бэкенда загружены успешно");
     } catch (error) {
         console.warn("TMS: Бэкенд недоступен. Переход на автономный режим (фолбэк).");
         window.tmsPricesData = null;
@@ -311,7 +305,6 @@ async function processUrlRouting() {
     const action = params.get('action');
     
     if (id) {
-        console.log(`[TMS] Загрузка КП ${id} для режима ${action}`);
         try {
             // 1. Ищем КП в базе сервера
             const allQuotes = await api.getQuotes();
@@ -415,7 +408,6 @@ async function finalizeQuotationToBooking() {
 
     try {
         // Меняем интерфейс на режим загрузки
-        console.log("[TMS] Отправка КП на бэкенд...", payload);
         
         // 3. Вызываем наш асинхронный fetch из api.js
         const response = await api.saveQuoteToBackend(payload);
@@ -548,6 +540,9 @@ function initCounterpartyAutocomplete() {
 }
 
 function initSmartClientSearch() {
+    if (initSmartClientSearch.initialized) return;
+    initSmartClientSearch.initialized = true;
+
     const fastIdInput = document.getElementById('tmsFastClientId');
     const btnSearch = document.getElementById('btnOpenClientSearch');
     const modal = document.getElementById('tmsGlobalSearchModal');
