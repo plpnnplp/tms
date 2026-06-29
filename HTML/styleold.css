@@ -59,7 +59,14 @@ input[type="number"] {
 }
 
 .tms-container { max-width: 1600px; margin: 0 auto; }
-.tms-workspace { display: grid; grid-template-columns: 280px 1fr; gap: 20px; padding: 20px 24px; max-width: 1600px; margin: 0 auto; height: calc(100vh - 110px); }
+.tms-workspace {
+    display: grid;
+     grid-template-columns: 280px 1fr; 
+     gap: 20px; 
+     padding: 20px 24px; 
+     max-width: 1600px; 
+     margin: 0 auto; 
+     height: calc(100vh - 110px); }
 
 #tms-screen-1.tms-screen {
     display: grid !important;
@@ -152,6 +159,7 @@ input[type="number"] {
     font-size: 13px !important; font-weight: 600 !important; gap: 8px !important;
 }
 .tms-pdf-btn:hover { background: #e2e8f0 !important; }
+
 .tms-pdf-btn svg { stroke: currentColor !important; width: 16px !important; height: 16px !important; }
 
 /* Тулбар бланка (Undo/Redo) */
@@ -266,7 +274,8 @@ input[type="number"] {
 
 /* Исключения плейсхолдеров подвала */
 #blankTransitTime:empty::before, #blankSpecialNotes:empty::before {
-    white-space: normal !important; width: 100% !important; max-width: 100% !important; word-break: break-word !important;
+    white-space: normal !important;
+    width: 100% !important; max-width: 100% !important; word-break: break-word !important;
 }
 #blankDeliveryCity:empty::before, #blankDeliveryAddress:empty::before { left: auto !important; right: 0 !important; text-align: right !important; }
 
@@ -586,37 +595,17 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
         .messenger-btn.active { opacity: 1; background: #3b82f6; color: white; border-color: #3b82f6; }
         body.tms-preview-mode .tms-action-bar, body.tms-preview-mode .tms-search-trigger-block { display: none !important; }
 
-        /* === НОВЫЕ СТИЛИ ДЛЯ ГОРИЗОНТАЛЬНЫХ ВКЛАДОК === */
-        
-        .tms-tabs-header { display: flex; gap: 4px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; border-radius: 6px 6px 0 0; padding: 0 10px; margin-bottom: 0; }
-        .tms-tab-btn { 
-            padding: 12px 20px; 
-            background: #f1f5f9; 
-            border: 1px solid #cbd5e1; 
-            border-bottom: none; 
-            border-radius: 8px 8px 0 0; 
-            font-weight: 800; 
-            font-size: 13px; 
-            color: #64748b; 
-            cursor: pointer; 
-            margin-bottom: -2px; /* Наезжает на нижнюю рамку */
-            transition: all 0.2s;
-        }
-        .tms-tab-btn:hover { background: #e2e8f0; color: #1e293b; }
-        .tms-tab-btn.active { background: #ffffff; color: #2563eb; border-color: #cbd5e1; border-top: 3px solid #2563eb; border-bottom: 2px solid #ffffff; }
-        
-        .tms-tab-content { 
-            display: none; /* Прячет все вкладки по умолчанию */
-            padding: 20px; 
-            background: #ffffff; 
-            border: 1px solid #cbd5e1; 
-            border-top: none; 
-            border-radius: 0 0 8px 8px; 
-        }
-        .tms-tab-content.active { 
-            display: block; /* Показывает только активную */
-        }
+        .tms-doc-page {
+    background: #ffffff;
+    width: 100%;
+    max-width: 850px; /* Как у тебя задано для .tms-awb-canvas */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border: 1px solid #cbd5e1;
+}
 
+@media print {
+    .tms-page-break { page-break-after: always; }
+}
         /* --- ТЕМЫ ТРАНСПОРТА (Акцентные цвета) --- */
 
 .theme-air {
@@ -634,25 +623,6 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 .theme-delays {
     --theme-color: #dc2626;      /* Красный */
     --theme-bg: #fef2f2;
-}
-
-/* --- САБ-ВКЛАДКИ (Экспорт/Импорт) --- */
-.tms-sub-tab-btn {
-    padding: 6px 14px;
-    background: #f1f5f9;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px; /* Круглые таблетки */
-    font-size: 11px;
-    font-weight: 700;
-    color: #64748b;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.tms-sub-tab-btn.active {
-    background: var(--theme-color);
-    color: white;
-    border-color: var(--theme-color);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /* =========================================
@@ -834,12 +804,29 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 .tms-btn-save:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
 
 /* Layout */
-.tms-workspace-layout { display: flex; gap: 20px; padding: 20px; align-items: flex-start; }
+.tms-workspace-layout {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr) 320px; /* Жесткие боковые, резиновый центр */
+    gap: 20px;
+    padding: 20px;
+    align-items: flex-start;
+    height: calc(100vh - 70px); /* Чтобы колонки скроллились независимо */
+    overflow: hidden;
+}
 
-/* Левая панель (Внутряк) */
-.tms-left-sidebar { 
-    width: 320px; flex-shrink: 0; background: #ffffff; 
-    border: 1px solid #cbd5e1; border-radius: 6px; padding: 20px; 
+/* Настройки независимого скролла */
+.tms-left-sidebar, .tms-center-content, .tms-right-sidebar {
+    height: 100%;
+    overflow-y: auto;
+    /* Убираем дефолтные скроллбары для чистоты (опционально) */
+    scrollbar-width: thin;
+}
+
+.tms-center-content {
+    display: flex;
+    flex-direction: column;
+    gap: 40px; /* Разрыв между слитыми страницами */
+    align-items: center;
 }
 .tms-status-select { 
     width: 100%; padding: 8px; border: 2px solid #3b82f6; border-radius: 6px; 

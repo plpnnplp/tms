@@ -34,6 +34,10 @@
         </div>
     </div>
 
+    <button id="btn-toggle-right-sidebar" class="tms-mobile-trigger">
+        Файлы и Трекинг 📁
+    </button>
+
     <div class="tms-workspace-layout">
         
         <aside class="tms-left-sidebar">
@@ -108,17 +112,10 @@
             </div>
         </aside>
 
-        <main class="tms-right-content">
-            <div class="tms-tabs-header" id="wsTabs">
-                <button class="tms-tab-btn active" data-target="tabDocBuilder">📝 Document Builder</button>
-                <button class="tms-tab-btn" data-target="tabVault">📁 Files (Vault)</button>
-                <button class="tms-tab-btn" data-target="tabTracking">⏱️ Tracking & Notes</button>
-            </div>
-
-            <div class="tms-tab-content active" id="tabDocBuilder">
-                
-            <div id="docPage1">
-                <div class="tms-awb-canvas" style="background: #ffffff; padding: 20px; box-sizing: border-box; width: 100%; max-width: 900px; margin: 0 auto;">
+        <main class="tms-center-content">
+            
+            <div id="docPage1" class="tms-doc-page">
+                <div class="tms-awb-canvas" style="background: #ffffff; padding: 20px; box-sizing: border-box; width: 100%; margin: 0 auto;">
 
                     <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
                         <div style="display: flex; flex-direction: column; align-items: flex-start;">
@@ -344,11 +341,8 @@
                             </div>
                         </div>
 
-                    </div> </div> 
-
-                <div style="text-align: right; margin-top: 20px; max-width: 900px; margin-left: auto; margin-right: auto;">
-                    <button type="button" id="btnNextToCharges" class="tms-btn-ar" style="padding: 10px 24px; background: #2563eb; color: #ffffff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">Далее: Финансы и Сборы ➔</button>
-                </div>
+                    </div>
+                </div> 
 
                 <div class="tms-modal-overlay" id="dbLookupModal" style="display: none; z-index: 2000;">
                     <div class="tms-modal-content" style="width: 600px; height: auto; max-height: 80vh;">
@@ -369,98 +363,115 @@
                 </div>
             </div>
 
-                    <div id="docPage2" style="display: none;">
-                        <div style="margin-bottom: 15px;">
-                            <button id="btnBackToCargo" class="tms-btn-edit">⬅ Назад к параметрам груза</button>
+            <div class="tms-page-break"></div>
+
+            <div id="docPage2" class="tms-doc-page">
+                <div class="tms-awb-grid">
+                    <fieldset class="tms-fieldset tms-col-span-2">
+                        <legend>Other Charges List</legend>
+                        <div style="margin-bottom: 10px;">
+                            <button id="btnAddChargeRow" class="tms-qj-btn tms-locked-field" disabled>+ Добавить строку услуги</button>
                         </div>
-
-                        <div class="tms-awb-grid">
-                            <fieldset class="tms-fieldset tms-col-span-2">
-                                <legend>Other Charges List</legend>
-                                <div style="margin-bottom: 10px;">
-                                    <button id="btnAddChargeRow" class="tms-qj-btn tms-locked-field" disabled>+ Добавить строку услуги</button>
-                                </div>
-                                <table class="tms-grid-table">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 40px; text-align: center;">№</th>
-                                            <th style="width: 100px;">Код услуги</th>
-                                            <th>Полное название услуги</th>
-                                            <th style="width: 120px;">Короткий текст</th>
-                                            <th style="width: 130px;">P / C</th>
-                                            <th style="width: 140px; text-align: right;">Цена закупки (EUR)</th>
-                                            <th style="width: 50px;"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="chargesTableBody">
-                                        <tr>
-                                            <td style="text-align: center; font-weight: 700;">1</td>
-                                            <td><input type="text" class="tms-ws-input tms-locked-field" value="MYC" disabled></td>
-                                            <td><input type="text" class="tms-ws-input tms-locked-field" value="Fuel Surcharge" disabled></td>
-                                            <td><input type="text" class="tms-ws-input tms-locked-field" value="Fuel" disabled></td>
-                                            <td>
-                                                <select class="tms-ws-input tms-locked-field" disabled>
-                                                    <option value="P">Prepaid (P)</option>
-                                                    <option value="C">Collect (C)</option>
-                                                </select>
-                                            </td>
-                                            <td><input type="number" class="tms-ws-input tms-locked-field" value="150.00" style="text-align: right;" disabled></td>
-                                            <td style="text-align: center;"><button class="tms-btn-search tms-locked-field" style="color: #ef4444;" disabled>🗑</button></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </fieldset>
-
-                            <fieldset class="tms-fieldset">
-                                <legend>Shipper's certification</legend>
-                                <label>Signature of shipper or his agent</label>
-                                <input type="text" id="awbShipperSign" class="tms-ws-input tms-locked-field" disabled placeholder="ФИО / Штамп агента">
-                            </fieldset>
-
-                            <fieldset class="tms-fieldset">
-                                <legend>Carrier's execution</legend>
-                                <div class="tms-form-row">
-                                    <div><label>Executed on (Date)</label><input type="date" id="awbExecDate" class="tms-ws-input tms-locked-field" disabled></div>
-                                    <div><label>At (Place)</label><input type="text" id="awbExecPlace" class="tms-ws-input tms-locked-field" disabled></div>
-                                </div>
-                                <div style="margin-top: 8px;">
-                                    <label>Signature of issuing Carrier or its Agent</label>
-                                    <input type="text" id="awbCarrierSign" class="tms-ws-input tms-locked-field" disabled>
-                                </div>
-                            </fieldset>
-                        </div>
-
-                        <table class="tms-vault-table">
+                        <table class="tms-grid-table">
                             <thead>
                                 <tr>
-                                    <th>Имя файла</th>
-                                    <th>Тип документа</th>
-                                    <th>Дата загрузки</th>
-                                    <th>Менеджер</th>
+                                    <th style="width: 40px; text-align: center;">№</th>
+                                    <th style="width: 100px;">Код услуги</th>
+                                    <th>Полное название услуги</th>
+                                    <th style="width: 120px;">Короткий текст</th>
+                                    <th style="width: 130px;">P / C</th>
+                                    <th style="width: 140px; text-align: right;">Цена закупки (EUR)</th>
+                                    <th style="width: 50px;"></th>
                                 </tr>
                             </thead>
-                            <tbody id="vaultTableBody">
-                                <tr class="tms-vault-row" data-file-url="system_quote.pdf">
-                                    <td class="tms-file-name">📄 System_Quote_Export.pdf</td>
-                                    <td><span class="tms-badge tms-badge-sys">Смета (КП)</span></td>
-                                    <td>21.06.2026</td>
-                                    <td>Система</td>
-                                </tr>
-                                <tr class="tms-vault-row" data-file-url="dummy_pod.pdf">
-                                    <td class="tms-file-name">📄 Signed_CMR_Ivanov.pdf</td>
-                                    <td><span class="tms-badge tms-badge-pod">POD</span></td>
-                                    <td>22.06.2026</td>
-                                    <td>A. Manager</td>
+                            <tbody id="chargesTableBody">
+                                <tr>
+                                    <td style="text-align: center; font-weight: 700;">1</td>
+                                    <td><input type="text" class="tms-ws-input tms-locked-field" value="MYC" disabled></td>
+                                    <td><input type="text" class="tms-ws-input tms-locked-field" value="Fuel Surcharge" disabled></td>
+                                    <td><input type="text" class="tms-ws-input tms-locked-field" value="Fuel" disabled></td>
+                                    <td>
+                                        <select class="tms-ws-input tms-locked-field" disabled>
+                                            <option value="P">Prepaid (P)</option>
+                                            <option value="C">Collect (C)</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="number" class="tms-ws-input tms-locked-field" value="150.00" style="text-align: right;" disabled></td>
+                                    <td style="text-align: center;"><button class="tms-btn-search tms-locked-field" style="color: #ef4444;" disabled>🗑</button></td>
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
+                    </fieldset>
+
+                    <fieldset class="tms-fieldset">
+                        <legend>Shipper's certification</legend>
+                        <label>Signature of shipper or his agent</label>
+                        <input type="text" id="awbShipperSign" class="tms-ws-input tms-locked-field" disabled placeholder="ФИО / Штамп агента">
+                    </fieldset>
+
+                    <fieldset class="tms-fieldset">
+                        <legend>Carrier's execution</legend>
+                        <div class="tms-form-row">
+                            <div><label>Executed on (Date)</label><input type="date" id="awbExecDate" class="tms-ws-input tms-locked-field" disabled></div>
+                            <div><label>At (Place)</label><input type="text" id="awbExecPlace" class="tms-ws-input tms-locked-field" disabled></div>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <label>Signature of issuing Carrier or its Agent</label>
+                            <input type="text" id="awbCarrierSign" class="tms-ws-input tms-locked-field" disabled>
+                        </div>
+                    </fieldset>
+                </div>
             </div>
             
-            <div class="tms-tab-content" id="tabTracking" style="display: none;">
-                <p style="color:#94a3b8;">Журнал загружается...</p>
-            </div>
         </main>
+
+        <aside class="tms-right-sidebar" id="rightSidebar">
+            
+            <div class="tms-accordion">
+                <div class="tms-accordion-header" onclick="toggleAccordion(this)">
+                    Vault (Files) <span>▼</span>
+                </div>
+                <div class="tms-accordion-content is-open">
+                    <table class="tms-vault-table">
+                        <thead>
+                            <tr>
+                                <th>Имя файла</th>
+                                <th>Тип документа</th>
+                                <th>Дата загрузки</th>
+                                <th>Менеджер</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vaultTableBody">
+                            <tr class="tms-vault-row" data-file-url="system_quote.pdf">
+                                <td class="tms-file-name">📄 System_Quote_Export.pdf</td>
+                                <td><span class="tms-badge tms-badge-sys">Смета (КП)</span></td>
+                                <td>21.06.2026</td>
+                                <td>Система</td>
+                            </tr>
+                            <tr class="tms-vault-row" data-file-url="dummy_pod.pdf">
+                                <td class="tms-file-name">📄 Signed_CMR_Ivanov.pdf</td>
+                                <td><span class="tms-badge tms-badge-pod">POD</span></td>
+                                <td>22.06.2026</td>
+                                <td>A. Manager</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tms-accordion">
+                <div class="tms-accordion-header" onclick="toggleAccordion(this)">
+                    Tracking & Notes <span>▼</span>
+                </div>
+                <div class="tms-accordion-content is-open" id="tabTracking">
+                    <p style="color:#94a3b8;">Журнал загружается...</p>
+                </div>
+            </div>
+
+        </aside>
+
+        <div class="tms-sidebar-overlay" id="sidebarOverlay"></div>
+
     </div>
 
         <div id="tmsGlobalSearchModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 10000; display: none; align-items: center; justify-content: center;">
