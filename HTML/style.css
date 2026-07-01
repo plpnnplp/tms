@@ -1922,18 +1922,13 @@ body.tms-preview-mode .tms-action-bar, body.tms-preview-mode .tms-search-trigger
    ORDER WORKSPACE
    ========================================= */
 
-/* Top Bar */
-.tms-order-topbar { 
-    display: flex;
-    justify-content: space-between; 
-    align-items: center; 
-    background: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
-    padding: 12px 20px; 
+/* --- Закрепленный хедер (убедись, что он ВНЕ .tms-workspace-layout) --- */
+.tms-order-topbar {
     position: sticky;
-    top: 0; 
-    z-index: 100;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    top: 0;
+    z-index: 1000;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
 /* Quick Jump */
@@ -2032,25 +2027,81 @@ body.tms-preview-mode .tms-action-bar, body.tms-preview-mode .tms-search-trigger
     cursor: not-allowed;
 }
 
-/* Layout */
-
+/* --- Сетка Layout --- */
 .tms-workspace-layout {
-    display: flex; 
-    gap: 20px; 
-    padding: 20px; 
-    align-items: flex-start; 
+    display: grid !important; 
+    /* Гарантируем, что центр не сожмется меньше ширины бланка AWB (850px) */
+    grid-template-columns: minmax(260px, 20%) minmax(850px, 1fr) minmax(260px, 20%) !important; 
+    gap: 15px;
+    padding: 15px;
+    align-items: start;
+    height: auto !important;
+    overflow: visible !important;
 }
 
+.tms-left-sidebar,
+.tms-center-content,
+.tms-right-sidebar {
+    height: auto !important;
+    overflow-y: visible !important;
+}
 
-/* Левая панель (Внутряк) */
+/* --- Центральная часть (Документы) --- */
+.tms-center-content {
+    background: #e2e8f0;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    min-width: 0 !important; 
+}
 
-.tms-left-sidebar { 
-    width: 320px;
-    flex-shrink: 0; 
-    background: #ffffff; 
-    border: 1px solid #cbd5e1; 
-    border-radius: 6px; 
-    padding: 20px; 
+.tms-doc-block {
+    background: #ffffff;
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-radius: 4px;
+    padding: 20px;
+    box-sizing: border-box;
+    /* overflow-x: auto; - УДАЛЕНО, чтобы блок не скроллился отдельно от страницы */
+}
+
+@media (max-width: 1400px) {
+    .tms-workspace-layout {
+        grid-template-columns: 280px minmax(850px, 1fr) !important; 
+    }
+}
+
+/* --- Компактные поля (Оптимизация для менеджера) --- */
+.tms-compact-field {
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    overflow: hidden;
+}
+.tms-compact-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+    padding: 4px 8px;
+    background: #f1f5f9;
+    border-right: 1px solid #cbd5e1;
+    min-width: 60px;
+    text-transform: uppercase;
+}
+.tms-compact-field input {
+    flex: 1;
+    border: none;
+    padding: 4px 8px;
+    font-size: 12px;
+    background: transparent;
+    outline: none;
+    min-width: 0; /* Чтобы не вылазило за flex-контейнер */
 }
 
 .tms-status-select {
@@ -2115,6 +2166,43 @@ body.tms-preview-mode .tms-action-bar, body.tms-preview-mode .tms-search-trigger
     border-color: transparent;
     color: #475569;
     cursor: not-allowed;
+}
+
+/* --- Нативные Аккордеоны (HTML <details>) --- */
+.tms-details {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+.tms-summary {
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #f8fafc;
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+    list-style: none; /* Убираем дефолтный треугольник в старых браузерах */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+/* Кастомный треугольник */
+.tms-summary::after {
+    content: "▼";
+    font-size: 10px;
+    transition: transform 0.2s ease;
+}
+.tms-details[open] .tms-summary::after {
+    transform: rotate(180deg);
+}
+.tms-summary::-webkit-details-marker {
+    display: none; /* Для Safari */
+}
+.tms-details-content {
+    padding: 12px;
+    border-top: 1px solid #cbd5e1;
 }
 
 .tms-btn-search {
@@ -2712,37 +2800,66 @@ body.tms-preview-mode .tms-action-bar, body.tms-preview-mode .tms-search-trigger
    ПЕЧАТЬ (Print Media)
    ========================================= */
 
-@media print {
-    /* Скрываем интерфейс */
-    .tms-order-topbar, .tms-left-sidebar, .tms-tabs-header, 
-    .tms-legend-actions, button, #btnNextToCharges {
-        display: none !important;
-    }
-    
-    /* Разворачиваем контент */
-    .tms-workspace-layout, .tms-right-content, .tms-tab-content {
-        padding: 0 !important;
-        margin: 0 !important;
-        border: none !important;
-        background: #ffffff !important;
-    }
-    
-    /* Убираем стилизацию полей ввода */
-    input, textarea {
-        background: transparent !important;
-        border-color: transparent !important;
-        box-shadow: none !important;
-        color: #000 !important;
-    }
+/* --- Адаптивность и Off-canvas --- */
+.tms-mobile-trigger {
+    display: none;
+}
+.tms-sidebar-overlay {
+    display: none;
+}
 
-    /* Фокусируем печать только на бланке */
-    .tms-awb-canvas {
-        max-width: 100%;
-        box-shadow: none;
-        border: none;
-        margin: 0;
-        padding: 0;
+@media (max-width: 1400px) {
+    .tms-workspace-layout {
+        grid-template-columns: 280px minmax(0, 1fr); /* Правая колонка уходит */
     }
+    .tms-mobile-trigger {
+        display: block;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        z-index: 999;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .tms-right-sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 320px;
+        height: 100vh;
+        background: #e2e8f0;
+        padding: 15px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+        box-shadow: -5px 0 25px rgba(0,0,0,0.1);
+    }
+    .tms-right-sidebar.is-open {
+        transform: translateX(0);
+    }
+    .tms-sidebar-overlay.is-visible {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.4);
+        z-index: 990;
+    }
+}
+
+/* --- Логика печати --- */
+@media print {
+    .tms-workspace-layout { display: block; height: auto; padding: 0; overflow: visible; }
+    .tms-left-sidebar, .tms-right-sidebar, .tms-order-topbar, .tms-mobile-trigger { display: none !important; }
+    .tms-center-content { background: none; border: none; padding: 0; gap: 0; }
+    .tms-doc-block { box-shadow: none; padding: 0; border: none; margin-bottom: 0; }
+    .tms-page-break { page-break-after: always; height: 0; }
 }
 
 /* Модификаторы поведения контейнера */
