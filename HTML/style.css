@@ -1927,9 +1927,28 @@ body.tms-preview-mode .tms-action-bar, body.tms-preview-mode .tms-search-trigger
     position: sticky;
     top: 0;
     z-index: 1000;
-    background: #fff;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    background: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    flex-wrap: nowrap; /* Не дает кнопкам уехать вниз */
 }
+
+/* Карточка метаданных в правой колонке */
+.tms-meta-card {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.tms-meta-label { font-size: 11px; color: #64748b; font-weight: 700; }
+.tms-meta-value { font-size: 12px; color: #1e293b; font-weight: 800; }
 
 /* Quick Jump */
 
@@ -1991,40 +2010,87 @@ body.tms-preview-mode .tms-action-bar, body.tms-preview-mode .tms-search-trigger
 
 .tms-topbar-controls {
     display: flex;
-    gap: 10px;
+    align-items: center;
+    gap: 12px;
 }
 
-.tms-btn-edit, .tms-btn-save {
-    border: none;
+.tms-controls-divider {
+    width: 1px;
+    height: 24px;
+    background-color: #e2e8f0;
+    margin: 0 4px;
+}
+
+/* Базовый класс для кнопок хедера */
+.tms-topbar-controls button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     border-radius: 6px;
-    padding: 6px 14px;
+    padding: 8px 16px;
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 700;
     cursor: pointer;
-    transition: 0.2s;
+    transition: all 0.2s ease;
+    height: 36px;
+    box-sizing: border-box;
 }
 
-.tms-btn-edit {
+.tms-topbar-controls button svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+/* Primary - Главное действие (Сохранить) */
+.tms-btn-primary {
+    background: #2563eb;
+    color: #ffffff;
+    border: 1px solid #2563eb;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+.tms-btn-primary:not(:disabled):hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+}
+.tms-btn-primary:disabled {
     background: #f1f5f9;
-    color: #475569;
-}
-
-.tms-btn-edit.active {
-    background: #fee2e2;
-    color: #ef4444;
-    border: 1px solid #fca5a5;
-}
-
-.tms-btn-save {
-    background: #16a34a;
-    color: #fff;
-    opacity: 1;
-}
-
-.tms-btn-save:disabled {
-    background: #e2e8f0;
     color: #94a3b8;
+    border-color: #e2e8f0;
+    box-shadow: none;
     cursor: not-allowed;
+}
+
+/* Secondary - Второстепенное (Редактировать) */
+.tms-btn-secondary {
+    background: #f8fafc;
+    color: #1e293b;
+    border: 1px solid #cbd5e1;
+}
+.tms-btn-secondary:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+/* Состояние, когда режим редактирования активен (Отмена) */
+.tms-btn-secondary.is-active {
+    background: #fef2f2;
+    color: #ef4444;
+    border-color: #fca5a5;
+}
+.tms-btn-secondary.is-active:hover {
+    background: #fee2e2;
+}
+
+/* Outline - Дополнительно (PDF) */
+.tms-btn-outline {
+    background: transparent;
+    color: #475569;
+    border: 1px solid transparent;
+}
+.tms-btn-outline:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+    border-color: #cbd5e1;
 }
 
 /* --- Сетка Layout --- */
@@ -2622,6 +2688,62 @@ body.tms-preview-mode .tms-action-bar, body.tms-preview-mode .tms-search-trigger
     background: #ffffff;
     padding: 10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+/* Идеальная таблица груза для AWB */
+.tms-awb-cargo-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* Жестко фиксирует ширину колонок по th */
+}
+.tms-awb-cargo-table th, 
+.tms-awb-cargo-table td {
+    border: 1px solid #cbd5e1;
+    border-top: none; /* Чтобы не двоилась линия с верхним блоком */
+    padding: 0;
+}
+.tms-awb-cargo-table th {
+    background: #f1f5f9;
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #475569;
+    text-align: center;
+    padding: 4px;
+    border-top: 1px solid #cbd5e1;
+}
+.tms-awb-cargo-table input,
+.tms-awb-cargo-table textarea {
+    width: 100%;
+    height: 30px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 4px;
+    box-sizing: border-box;
+}
+.tms-awb-cargo-table textarea {
+    height: 30px !important; 
+    resize: none; 
+    padding-top: 6px;
+}
+.tms-text-right { text-align: right; }
+.tms-text-center { text-align: center; }
+.tms-bg-gray { background: #f8fafc; }
+
+/* Утилита для печати: скрываем UI */
+body.tms-preview-active .tms-left-sidebar,
+body.tms-preview-active .tms-right-sidebar,
+body.tms-preview-active .tms-order-topbar,
+body.tms-preview-active .tms-mobile-trigger {
+    display: none !important;
+}
+body.tms-preview-active .tms-center-content {
+    background: none; border: none; padding: 0; gap: 0;
+}
+body.tms-preview-active .tms-doc-block {
+    box-shadow: none; border: none; padding: 0;
 }
 
 /* --- AWB УЛУЧШЕНИЯ UI --- */

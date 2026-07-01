@@ -11,11 +11,6 @@
         <div class="tms-quick-jump">
             <span class="tms-qj-label">Прыжок:</span>
             <input type="text" id="qjCategory" list="qjCategories" class="tms-qj-input" placeholder="AE" maxlength="2" style="width: 45px;">
-            <datalist id="qjCategories">
-                <option value="AE"></option><option value="AI"></option><option value="AD"></option>
-                <option value="SE"></option><option value="SI"></option><option value="SD"></option>
-                <option value="RE"></option><option value="RI"></option><option value="RD"></option>
-            </datalist>
             <span class="tms-qj-dash">-</span>
             <input type="text" id="qjYear" class="tms-qj-input" disabled style="width: 35px; text-align: center;">
             <input type="text" id="qjNumber" class="tms-qj-input" placeholder="0001" maxlength="4" style="width: 55px;">
@@ -23,23 +18,28 @@
         </div>
 
         <div class="tms-topbar-controls">
-        <button id="btnGeneratePdf" class="tms-btn-edit" style="background: #e0e7ff; color: #4f46e5;">📄 PDF / Печать</button>
-        <button id="btnEditOrder" class="tms-btn-edit">🔓 Редактировать</button>
-        <button id="btnSaveOrder" class="tms-btn-save" disabled>💾 Сохранить</button>
-    </div>
-
-        <div class="tms-topbar-date">
-            <span style="color: #94a3b8; font-size: 11px;">Создан:</span>
-            <span id="orderCreationDate" style="font-weight: 700; color: #1e293b;">--.--.----</span>
+            <button id="btnGeneratePdf" class="tms-btn-outline">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                PDF / Печать
+            </button>
+            <div class="tms-controls-divider"></div>
+            <button id="btnEditOrder" class="tms-btn-secondary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <span id="labelEditOrder">Редактировать</span>
+            </button>
+            <button id="btnSaveOrder" class="tms-btn-primary" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Сохранить
+            </button>
         </div>
     </div>
 
-<!-- Кнопка вызова боковой панели (скрыта на десктопе) -->
-<button id="btn-toggle-right-sidebar" class="tms-mobile-trigger">
-    Файлы и Трекинг 📁
-</button>
+    <!-- Кнопка вызова боковой панели (скрыта на десктопе) -->
+    <button id="btn-toggle-right-sidebar" class="tms-mobile-trigger">
+        Файлы и Трекинг 📁
+    </button>
 
-<div class="tms-workspace-layout">
+    <div class="tms-workspace-layout">
     
     <!-- ==========================================
          ЛЕВАЯ КОЛОНКА (Участники, Маршрут, Сроки)
@@ -301,30 +301,59 @@
                             </div>
                         </div>
 
-                        <div style="grid-column: span 2; display: flex; flex-direction: column;">
-                            <div style="display: flex; width: 100%; background: #f1f5f9; text-align: center;">
-                                <div style="width: 55px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; padding: 4px; font-size: 8.5px; font-weight: 700; color: #475569;">Pieces</div>
-                                <div style="width: 85px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; padding: 4px; font-size: 8.5px; font-weight: 700; color: #475569;">Gross Weight</div>
-                                <div style="width: 35px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; padding: 4px; font-size: 8.5px; font-weight: 700; color: #475569;">Kg/Lb</div>
-                                <div style="width: 35px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; padding: 4px; font-size: 8.5px; font-weight: 700; color: #475569;">R.C.</div>
-                                <div style="width: 85px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; padding: 4px; font-size: 8.5px; font-weight: 700; color: #475569;">Item No.</div>
-                                <div style="width: 85px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; padding: 4px; font-size: 8.5px; font-weight: 700; color: #475569;">Chargeable W.</div>
-                                <div style="width: 90px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; padding: 4px; font-size: 8.5px; font-weight: 700; color: #475569;">Rate / Charge</div>
-                                <div style="width: 95px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; padding: 4px; font-size: 8.5px; font-weight: 700; color: #475569;">Total</div>
-                                <div style="flex: 1; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; padding: 4px; font-size: 8.5px; font-weight: 700; color: #475569;">Nature and Quantity of Goods</div>
-                            </div>
-                            <div style="display: flex; width: 100%; height: 35px; background: #ffffff;">
-                                <div style="width: 55px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1;"><input type="number" id="awbGridPieces" style="width: 100%; height: 100%; border: none; outline: none; text-align: center; font-size: 12px; font-weight: 700; background: transparent;" disabled></div>
-                                <div style="width: 85px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1;"><input type="number" id="awbGridGw" style="width: 100%; height: 100%; border: none; outline: none; text-align: right; padding-right: 6px; font-size: 12px; font-weight: 700; background: transparent;" disabled></div>
-                                <div style="width: 35px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1;"><input type="text" value="K" style="width: 100%; height: 100%; border: none; outline: none; text-align: center; font-size: 12px; background: transparent;" disabled></div>
-                                <div style="width: 35px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1;"><input type="text" id="awbGridRc" class="tms-locked-field" maxlength="1" style="width: 100%; height: 100%; border: none; outline: none; text-align: center; font-size: 12px; background: transparent;" disabled></div>
-                                <div style="width: 85px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1;"><input type="text" id="awbGridItemNo" class="tms-locked-field" style="width: 100%; height: 100%; border: none; outline: none; padding-left: 6px; font-size: 12px; background: transparent;" disabled></div>
-                                <div style="width: 85px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1;"><input type="number" id="awbGridCw" style="width: 100%; height: 100%; border: none; outline: none; text-align: right; padding-right: 6px; font-size: 12px; font-weight: 700; background: transparent;" disabled></div>
-                                <div style="width: 90px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1;"><input type="number" id="awbGridRate" class="tms-locked-field" step="0.01" style="width: 100%; height: 100%; border: none; outline: none; text-align: right; padding-right: 6px; font-size: 12px; background: transparent;" disabled></div>
-                                <div style="width: 95px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; background: #f8fafc;"><input type="number" id="awbGridTotal" style="width: 100%; height: 100%; border: none; outline: none; text-align: right; padding-right: 6px; font-size: 12px; font-weight: 700; background: transparent;" disabled></div>
-                                <div style="flex: 1; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; padding: 2px;"><textarea id="awbGridNature" class="tms-awb-textarea tms-locked-field" rows="2" style="width: 100%; height: 100%; border: none; outline: none; resize: none; font-size: 11px; background: transparent; line-height: 1.1;" disabled></textarea></div>
-                            </div>
+                        <div style="grid-column: span 2;">
+                            <table class="tms-awb-cargo-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">Pieces</th>
+                                        <th style="width: 75px;">Gross Weight</th>
+                                        <th style="width: 35px;">Kg/Lb</th>
+                                        <th style="width: 35px;">R.C.</th>
+                                        <th style="width: 75px;">Item No.</th>
+                                        <th style="width: 80px;">Ch. Weight</th>
+                                        <th style="width: 80px;">Rate / Charge</th>
+                                        <th style="width: 85px;">Total</th>
+                                        <th>Nature and Quantity of Goods</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="awbCargoBody">
+                                    <tr>
+                                        <td><input type="number" class="tms-locked-field" disabled></td>
+                                        <td><input type="number" class="tms-locked-field tms-text-right" disabled></td>
+                                        <td><input type="text" class="tms-locked-field tms-text-center" value="K" disabled></td>
+                                        <td><input type="text" class="tms-locked-field tms-text-center" maxlength="1" disabled></td>
+                                        <td><input type="text" class="tms-locked-field" disabled></td>
+                                        <td><input type="number" class="tms-locked-field tms-text-right" disabled></td>
+                                        <td><input type="number" class="tms-locked-field tms-text-right" step="0.01" disabled></td>
+                                        <td class="tms-bg-gray"><input type="number" class="tms-locked-field tms-text-right" disabled></td>
+                                        <td><textarea class="tms-locked-field tms-awb-textarea" rows="2" disabled></textarea></td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="number" class="tms-locked-field" disabled></td>
+                                        <td><input type="number" class="tms-locked-field tms-text-right" disabled></td>
+                                        <td><input type="text" class="tms-locked-field tms-text-center" disabled></td>
+                                        <td><input type="text" class="tms-locked-field tms-text-center" maxlength="1" disabled></td>
+                                        <td><input type="text" class="tms-locked-field" disabled></td>
+                                        <td><input type="number" class="tms-locked-field tms-text-right" disabled></td>
+                                        <td><input type="number" class="tms-locked-field tms-text-right" step="0.01" disabled></td>
+                                        <td class="tms-bg-gray"><input type="number" class="tms-locked-field tms-text-right" disabled></td>
+                                        <td><textarea class="tms-locked-field tms-awb-textarea" rows="2" disabled></textarea></td>
+                                    </tr>
+                                    <tr>
+                                        <td><input type="number" class="tms-locked-field" disabled></td>
+                                        <td><input type="number" class="tms-locked-field tms-text-right" disabled></td>
+                                        <td><input type="text" class="tms-locked-field tms-text-center" disabled></td>
+                                        <td><input type="text" class="tms-locked-field tms-text-center" maxlength="1" disabled></td>
+                                        <td><input type="text" class="tms-locked-field" disabled></td>
+                                        <td><input type="number" class="tms-locked-field tms-text-right" disabled></td>
+                                        <td><input type="number" class="tms-locked-field tms-text-right" step="0.01" disabled></td>
+                                        <td class="tms-bg-gray"><input type="number" class="tms-locked-field tms-text-right" disabled></td>
+                                        <td><textarea class="tms-locked-field tms-awb-textarea" rows="2" disabled></textarea></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
+
                     </div>
                 </div> <div class="tms-modal-overlay" id="dbLookupModal" style="display: none; z-index: 2000;">
                     <div class="tms-modal-content" style="width: 600px; height: auto; max-height: 80vh;">
@@ -391,6 +420,11 @@
          ПРАВАЯ КОЛОНКА (Files & Tracking)
          ========================================== -->
         <aside class="tms-right-sidebar" id="rightSidebar">
+
+            <div class="tms-meta-card">
+                <span class="tms-meta-label">Дата создания:</span>
+                <span id="orderCreationDate" class="tms-meta-value">21.06.2026 14:30</span>
+            </div>
             
             <details class="tms-details" open>
                 <summary class="tms-summary">Vault (Files)</summary>
