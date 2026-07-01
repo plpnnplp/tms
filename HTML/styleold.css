@@ -1,25 +1,50 @@
 :root {
+    /* === ЦВЕТОВАЯ ПАЛИТРА (THEME) === */
+    /* 1. Основные цвета */
     --primary: #2563eb;
     --primary-hover: #1d4ed8;
+    --primary-bg: #eff6ff;
+
+    /* 2. Семантические цвета */
     --success: #16a34a;
+    --success-bg: #f0fdf4;
+    --success-border: #bbf7d0;
     --danger: #dc2626;
+    --danger-alt: #ef4444;
+    --danger-bg: #fef2f2;
+    --danger-border: #fca5a5;
     --warning: #ca8a04;
-    --bg: #f8fafc;
-    --card: #ffffff;
-    --text: #1e293b;
-    --border: #cbd5e1;
+    --warning-bg: #fef08a;
+    --warning-border: #eab308;
+
+    /* 3. Нейтральная палитра (Grayscale) */
+    --slate-50: #f8fafc;   /* Светлый фон */
+    --slate-100: #f1f5f9;  /* Фон при наведении */
+    --slate-200: #e2e8f0;  /* Светлая рамка */
+    --slate-300: #cbd5e1;  /* Основная рамка */
+    --slate-400: #94a3b8;  /* Плейсхолдеры, иконки */
+    --slate-500: #64748b;  /* Приглушенный текст */
+    --slate-600: #475569;  /* Вторичный текст */
+    --slate-700: #334155;  /* Полу-основной текст */
+    --slate-800: #1e293b;  /* Основной текст */
+    --slate-900: #0f172a;  /* Самый темный текст */
+    --white: #ffffff;
+
+    /* 4. Тени и эффекты */
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --theme-color: #2563eb;
-    --theme-bg: #eff6ff;
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
 }
+
+/* ==========================================================================
+
 
 /* ==========================================================================
    1. ГЛОБАЛЬНЫЕ СТИЛИ И СБРОС
    ========================================================================== */
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: var(--bg);
-    color: var(--text);
+    background-color: var(--slate-50);
+    color: var(--slate-800);
     margin: 0;
     padding: 20px;
     box-sizing: border-box;
@@ -29,7 +54,7 @@ textarea {
     width: 100%;
     height: 140px;
     padding: 12px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--slate-300);
     border-radius: 8px;
     font-size: 14px;
     resize: none;
@@ -39,18 +64,24 @@ textarea {
 }
 
 /* Скрытие дефолтных стрелочек у числовых полей */
+
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none !important;
-    margin: 0 !important;
+    -webkit-appearance: none;
+    margin: 0;
 }
 input[type="number"] {
-    moz-appearance: textfield !important;
+    -moz-appearance: textfield; /* Для Firefox */
+    appearance: textfield;      /* Стандартное свойство */
 }
+
+/* ==========================================================================
+
 
 /* ==========================================================================
    2. СТРУКТУРА ПРИЛОЖЕНИЯ И НАВИГАЦИЯ
    ========================================================================== */
+
 .tms-app-container {
     max-width: 1280px;
     margin: 0 auto;
@@ -58,24 +89,29 @@ input[type="number"] {
     box-sizing: border-box;
 }
 
-.tms-container { max-width: 1600px; margin: 0 auto; }
+   .tms-container {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
 .tms-workspace {
     display: grid;
-     grid-template-columns: 280px 1fr; 
-     gap: 20px; 
-     padding: 20px 24px; 
-     max-width: 1600px; 
-     margin: 0 auto; 
-     height: calc(100vh - 110px); }
+    grid-template-columns: 280px 1fr;
+    gap: 20px;
+    padding: 20px 24px;
+    max-width: 1600px;
+    margin: 0 auto;
+    height: calc(100vh - 110px);
+}
 
 #tms-screen-1.tms-screen {
-    display: grid !important;
-    grid-template-columns: 420px 1fr !important;
-    gap: 25px !important;
-    align-items: start !important;
-    width: 100% !important;
-    max-width: 1280px !important;
-    margin: 0 auto !important;
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 25px;
+    align-items: start;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
 }
 
 .tms-global-header {
@@ -84,8 +120,8 @@ input[type="number"] {
     left: 0;
     width: 100%;
     height: 60px;
-    background-color: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
+    background-color: var(--white);
+    border-bottom: 1px solid var(--slate-200);
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     z-index: 9999;
     display: flex;
@@ -96,321 +132,668 @@ input[type="number"] {
 }
 
 /* Меню навигации */
-.tms-nav-menu { display: flex; align-items: center; gap: 8px; height: 100%; margin: 0; padding: 0; list-style: none; }
-.tms-nav-item { position: relative; height: 100%; display: flex; align-items: center; }
-.tms-nav-link { color: #475569; font-size: 13px; font-weight: 700; text-decoration: none; padding: 8px 16px; border-radius: 6px; transition: all 0.2s; display: flex; align-items: center; gap: 6px; cursor: pointer; }
-.tms-nav-link:hover, .tms-nav-item:hover .tms-nav-link { background-color: #f1f5f9; color: #2563eb; }
 
-/* Подменю */
-.tms-sub-menu {
-    position: absolute; top: 100%; left: 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px;
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); min-width: 200px; padding: 8px 0; display: none; flex-direction: column; z-index: 10000;
+.tms-nav-menu {
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    height: 100%; 
+    margin: 0; 
+    padding: 0; 
+    list-style: none;
 }
-.tms-nav-item:hover .tms-sub-menu { display: flex; animation: fadeInDown 0.2s ease-out forwards; }
-.tms-sub-menu a { padding: 8px 16px; color: #1e293b; font-size: 13px; font-weight: 600; text-decoration: none; transition: background 0.15s; }
-.tms-sub-menu a:hover { background-color: #f8fafc; color: #2563eb; }
 
-.tms-header-actions { display: flex; align-items: center; gap: 16px; }
-.tms-user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
-.tms-user-profile:hover { background: #f1f5f9; }
+
+.tms-nav-item {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.tms-nav-link {
+    color: var(--slate-600);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.tms-nav-link:hover, .tms-nav-item:hover .tms-nav-link {
+
+    background-color: var(--slate-100);
+    color: var(--primary);
+}
+/* Подменю */
+
+.tms-sub-menu {
+    position: absolute;
+    top: 100%; left: 0;
+    background: var(--white);
+    border: 1px solid var(--slate-300);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    min-width: 200px; 
+    padding: 8px 0; 
+    display: none; 
+    flex-direction: column; 
+    z-index: 10000;
+}
+
+.tms-nav-item:hover .tms-sub-menu {
+    display: flex;
+    animation: fadeInDown 0.2s ease-out forwards;
+}
+
+.tms-sub-menu a {
+    padding: 8px 16px;
+    color: var(--slate-800);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s;
+}
+
+.tms-sub-menu a:hover {
+    background-color: var(--slate-50);
+    color: var(--primary);
+}
+
+.tms-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.tms-user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.tms-user-profile:hover {
+    background: var(--slate-100);
+}
 
 @keyframes fadeInDown {
     from { opacity: 0; transform: translateY(-5px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
+from {
+    opacity: 0;
+    transform: translateY(-5px);
+}
+
+to {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 /* ==========================================================================
    3. КОМПОНЕНТЫ И КНОПКИ
    ========================================================================== */
+
 .tms-component {
-    background: var(--card);
+    background: var(--white);
     padding: 24px;
     border-radius: 12px;
     box-shadow: var(--shadow);
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--slate-200);
 }
+
 .tms-component h2, .tms-block h3 {
-    font-size: 18px; 
-    font-weight: 600; 
-    margin-top: 0; 
-    margin-bottom: 15px; 
-    color: var(--text);
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--slate-800);
 }
 
 /* Базовые кнопки */
-.tms-btn, .tms-btn-secondary, .tms-pdf-btn {
-    border-radius: 6px; cursor: pointer; border: none; box-sizing: border-box;
-    display: flex; align-items: center; justify-content: center; text-align: center;
-    transition: all 0.2s ease; outline: none;
-}
 
 .tms-btn {
-    font-size: 14px; font-weight: 600; background-color: var(--primary); color: white; padding: 12px 20px; width: 100%;
+    font-size: 14px;
+    font-weight: 600;
+    background-color: var(--primary);
+    color: var(--white);
+    padding: 12px 20px;
+    width: 100%;
 }
-.tms-btn:hover { background-color: var(--primary-hover); }
+
+.tms-btn:hover {
+    background-color: var(--primary-hover);
+}
 
 .tms-btn-secondary {
-    font-size: 13px; font-weight: 700; background: #f1f5f9; border: 1px solid var(--border); color: #334155; padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    background: var(--white);
+    border: 1px solid var(--slate-300);
+    color: var(--slate-700);
+    padding: 8px 14px;
 }
-.tms-btn-secondary:hover { background: #e2e8f0; }
+
+.tms-btn-secondary:hover {
+    background: var(--slate-200);
+}
 
 .tms-pdf-btn {
-    padding: 8px 12px; background: #f8fafc !important; color: #475569 !important; border: 1px solid #cbd5e1 !important;
-    font-size: 13px !important; font-weight: 600 !important; gap: 8px !important;
+    padding: 8px 12px;
+    background: var(--slate-50);
+    color: var(--slate-600);
+    border: 1px solid var(--slate-300);
+    font-size: 13px;
+    font-weight: 600;
+    gap: 8px;
 }
-.tms-pdf-btn:hover { background: #e2e8f0 !important; }
 
-.tms-pdf-btn svg { stroke: currentColor !important; width: 16px !important; height: 16px !important; }
+.tms-pdf-btn:hover {
+    background: var(--slate-200);
+}
+
+.tms-pdf-btn svg {
+    stroke: currentColor;
+    width: 16px;
+    height: 16px;
+}
 
 /* Тулбар бланка (Undo/Redo) */
+
 .tms-history-toolbar {
-    display: flex !important; align-items: center !important; gap: 10px !important; padding: 10px 15px !important;
-    background: #ffffff !important; border: 1px solid #e2e8f0 !important; border-radius: 8px !important;
-    margin-bottom: 20px !important; box-sizing: border-box !important; width: 100% !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    width: 100%;
 }
+
 .tms-history-toolbar button {
-    display: inline-flex !important; align-items: center !important; justify-content: center !important;
-    width: 34px !important; height: 34px !important; background: #f8fafc !important; border: 1px solid #cbd5e1 !important;
-    border-radius: 6px !important; cursor: pointer !important; padding: 0 !important; margin: 0 !important; color: #334155;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    background: var(--slate-50);
+    border: 1px solid var(--slate-300);
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    color: var(--slate-700);
 }
-.tms-history-toolbar button svg { width: 16px !important; height: 16px !important; flex-shrink: 0; }
-#btnTmsToggleVisibility { color: #475569; margin-left: 5px; }
-#btnTmsFinalize { color: #16a34a; }
+
+.tms-history-toolbar button svg {
+    width: 16px !important;
+    height: 16px !important;
+    flex-shrink: 0;
+}
+
+#btnTmsToggleVisibility {
+    color: var(--slate-600);
+    margin-left: 5px;
+}
+
+#btnTmsFinalize {
+    color: var(--success);
+}
 
 /* Системные состояния */
-.disabled, #services-control-component.disabled { pointer-events: none; opacity: 0.5; filter: grayscale(1); }
+.disabled, #services-control-component.disabled {
+    pointer-events: none; 
+    opacity: 0.5;
+    filter: grayscale(1); 
+}
 
 /* ==========================================================================
    4. ВЫПАДАЮЩИЕ СПИСКИ (DROPDOWNS)
    ========================================================================== */
-.tms-select-options-dropdown, .tms-panel-dropdown, .tms-package-dropdown, 
-.tms-loading-dropdown, .tms-cargo-type-dropdown, .tms-load-type-dropdown, .tms-payment-dropdown {
-    position: absolute; z-index: 9999 !important; display: none; flex-direction: column;
-    background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
 
-.tms-payment-dropdown { box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.15) !important; }
+.tms-payment-dropdown {
+    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.15);
+}
 
 /* Активация списков */
 .tms-select-options-dropdown.tms-active, .tms-panel-dropdown.tms-active, .tms-package-dropdown.tms-active,
 .tms-loading-dropdown.tms-active, .tms-load-type-dropdown.tms-active, .tms-cargo-type-dropdown.tms-active,
 .tms-payment-dropdown.tms-active {
-    pointer-events: auto !important; display: flex !important;
+    pointer-events: auto;
+    display: flex;
 }
 
 /* Опции списков */
 .tms-option:hover, .tms-package-option:hover, .tms-loading-option:hover, .tms-cargo-option:hover,
 .tms-load-option:hover, .tms-payment-option:hover {
-    pointer-events: auto !important; background: #f1f5f9 !important; color: #2563eb !important;
+    pointer-events: auto; 
+    background: var(--slate-100); 
+    color: var(--primary);
 }
-
 /* Стрелочки триггеров */
+
 .tms-select-trigger::after, .tms-stack-trigger::after, .tms-package-trigger::after,
 .tms-loading-trigger::after, .tms-cargo-type-trigger::after, .tms-payment-select-wrapper .tms-select-trigger::after {
-    content: "" !important; position: absolute !important; right: 8px !important; top: 50% !important;
-    transform: translateY(-50%) !important; border-left: 3px solid transparent !important;
-    border-right: 3px solid transparent !important; border-top: 4px solid #64748b !important; pointer-events: none !important;
+    content: ""; position: absolute; right: 8px; top: 50%;
+    transform: translateY(-50%); border-left: 3px solid transparent;
+    border-right: 3px solid transparent; border-top: 4px solid var(--slate-500); pointer-events: none;
 }
 
 .tms-select-trigger:hover, .tms-package-trigger:hover, .tms-loading-trigger:hover, .tms-cargo-type-trigger:hover {
-    border-color: #cbd5e1 !important; background: #f1f5f9 !important;
+    border-color: var(--slate-300);
+    background: var(--slate-100);
 }
 
 /* ==========================================================================
    5. ПЕЧАТНЫЙ БЛАНК (A4) И ЕГО СЕКЦИИ
    ========================================================================== */
+
 .a4-preview-blank {
-    background: #ffffff; width: 794px; max-width: 794px; min-height: 1123px; margin: 0 auto;
+    background: var(--white); width: 794px; max-width: 794px; min-height: 1123px; margin: 0 auto;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-    border: 1px solid var(--border); border-radius: 8px; padding: 40px; box-sizing: border-box; display: flex; flex-direction: column;
+    border: 1px solid var(--slate-300); border-radius: 8px; padding: 40px; box-sizing: border-box; display: flex; flex-direction: column;
 }
 
 .a4-preview-blank section, .blank-route-section, .tms-cargo-section, .blank-financial-section {
-    margin: 0 !important; padding: 0 !important; position: relative !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative !important;
 }
 
 .tms-blank-section-title {
-    font-size: 9px !important; font-weight: 700 !important; text-transform: uppercase !important;
-    color: #64748b !important; letter-spacing: 0.5px !important; margin-top: 0 !important; margin-bottom: 8px !important;
-    line-height: 1 !important; display: block !important; width: 100% !important;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--slate-500);
+    letter-spacing: 0.5px;
+    margin-top: 0;
+    margin-bottom: 8px;
+    line-height: 1;
+    display: block;
+    width: 100%;
 }
 
 .tms-blank-section-block {
-    background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 15px; box-sizing: border-box;
-    display: flex; flex-direction: column; gap: 8px; width: 100%; margin-bottom: 15px;
+    background: var(--white);
+    border: 1px solid var(--slate-300);
+    border-radius: 8px;
+    padding: 12px 15px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 15px;
 }
 
 .tms-route-box-wrapper, 
 .tms-cargo-box-wrapper, 
 .tms-blank-section-block {
-    margin-bottom: 8px !important;
+    margin-bottom: 8px ;
 }
 
 .route-conditions-bar {
-    display: grid; grid-template-columns: 35% 30% 35%; align-items: start; width: 100%;
-    min-height: 45px; padding-top: 12px; box-sizing: border-box; /* border-top убрали */
-}
+    display: grid;
+    grid-template-columns: 35% 30% 35%;
+    align-items: start;
+    width: 100%;
+    min-height: 45px;
+    padding-top: 12px;
+    box-sizing: border-box;}
 
 /* Плейсхолдеры редактируемых полей */
 [contenteditable="true"] { position: relative; }
 [contenteditable="true"]:empty::before {
-    content: attr(placeholder); color: #94a3b8 !important; font-weight: 400 !important; font-size: inherit;
-    position: absolute; left: 0; top: 0; white-space: nowrap !important; pointer-events: none; opacity: 0.7; display: block;
+    content: attr(placeholder);
+    color: var(--slate-400);
+    font-weight: 400;
+    font-size: inherit;
+    position: absolute;
+    left: 0;
+    top: 0;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0.7;
+    display: block;
 }
 
 #validUntilDate {
     min-width: auto !important;
-    width: auto !important;
-    margin-left: 2px !important;
-    display: inline-block !important;
+    width: auto;
+    margin-left: 2px;
+    display: inline-block;
 }
 
 #validUntilDate:empty::before {
-    left: 0 !important;
-    right: auto !important;
-    text-align: left !important;
-    white-space: nowrap !important;
+    left: 0;
+    right: auto;
+    text-align: left;
+    white-space: nowrap;
 }
 
 /* Исключения плейсхолдеров подвала */
-#blankTransitTime:empty::before, #blankSpecialNotes:empty::before {
-    white-space: normal !important;
-    width: 100% !important; max-width: 100% !important; word-break: break-word !important;
+
+#blankDeliveryCity:empty::before, #blankDeliveryAddress:empty::before {
+    left: auto;
+    right: 0;
+    text-align: right;
 }
-#blankDeliveryCity:empty::before, #blankDeliveryAddress:empty::before { left: auto !important; right: 0 !important; text-align: right !important; }
 
 /* Гарантия видимости полей */
-#blankPickupAddress,
-#blankDeliveryAddress { 
-    display: block !important; 
-    min-width: 200px !important; 
-    min-height: 14px !important; 
-    border-bottom: 1px dashed #cbd5e1 !important;
-}
 
 #blankIncotermsPlace, 
 #blankTruckType, 
 #blankCustomsPoints {
-    display: inline-block !important; 
-    min-width: auto !important;
-    width: auto !important;
-    min-height: 16px; 
-    margin-left: 4px !important;
-    line-height: 1.4; 
-    border-bottom: 1px dashed #cbd5e1; 
-    vertical-align: bottom; }
-#tmsCustomsWrapper { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; text-align: right; }
+    display: inline-block;
+    min-width: auto;
+    width: auto;
+    min-height: 16px;
+    margin-left: 4px;
+    line-height: 1.4;
+    border-bottom: 1px dashed var(--slate-300);
+    vertical-align: bottom;
+}
+
+#tmsCustomsWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-end;
+    text-align: right;
+}
 
 #blankPaymentTerms, #blankTransitTime, #blankSpecialNotes {
-    display: inline-block !important; word-break: break-word !important; white-space: pre-wrap !important;
-    min-height: 26px !important; padding: 2px 6px !important; box-sizing: border-box !important;
-}
-#blankPaymentTerms:empty::before, 
-#blankTransitTime:empty::before, 
-#blankSpecialNotes:empty::before { 
-    left: 6px !important; 
-    top: 2px !important;
+    display: inline-block;
+    word-break: break-word;
+    white-space: pre-wrap;
+    min-height: 26px;
+    padding: 2px 6px;
+    box-sizing: border-box;
 }
 
+#blankPaymentTerms:empty::before, 
+#blankTransitTime:empty::before, 
+#blankSpecialNotes:empty::before{
+    left: 6px;
+    top: 2px;
+}
 /* Переносим плейсхолдер таможни к правому краю, чтобы текст расширялся влево */
 #blankCustomsPoints:empty::before {
-    left: auto !important;
-    right: 0 !important;
-    text-align: right !important;
+    left: auto;
+    right: 0;
+    text-align: right;
 }
+
 
 /* ==========================================================================
    6. ТАБЛИЦЫ (ГРУЗЫ И ФИНАНСЫ)
    ========================================================================== */
+
 .tms-financial-table {
-    width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; margin-bottom: 0 !important;
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin-bottom: 0;
 }
 
 /* Унифицированная шапка */
 .tms-financial-table thead tr, #tmsCargoTable thead tr {
-    background: #f8fafc !important; border-bottom: 1px solid #e2e8f0 !important; height: 30px !important;
+    background: var(--slate-50);
+    border-bottom: 1px solid var(--slate-200);
+    height: 30px;
 }
+
 .tms-financial-table th, #tmsCargoTable th {
-    color: #94a3b8 !important; font-size: 11px !important; font-weight: 700 !important; text-transform: uppercase !important;
-    padding: 0 10px !important; vertical-align: middle !important; box-sizing: border-box !important;
+    color: var(--slate-400);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0 10px;
+    vertical-align: middle;
+    box-sizing: border-box;
 }
 
 /* Колонки финансов */
-.tms-financial-table .col-desc   { width: 44% !important; text-align: left !important; }
-.tms-financial-table .col-rate   { width: 18% !important; text-align: right !important; }
-.tms-financial-table .col-qty    { width: 22% !important; text-align: center !important; }
-.tms-financial-table .col-amount { width: 16% !important; text-align: right !important; }
+.tms-financial-table .col-desc {
+    width: 44%;
+    text-align: left;
+}
+
+
+.tms-financial-table .col-rate {
+    width: 18%;
+    text-align: right;
+}
+
+.tms-financial-table .col-qty {
+    width: 22%;
+    text-align: center;
+}
+
+.tms-financial-table .col-amount {
+    width: 16%;
+    text-align: right;
+}
 
 .tms-financial-table td, #tmsCargoTable td {
-    padding: 4px 6px !important; height: 32px !important; vertical-align: middle !important; box-sizing: border-box !important;
+    padding: 4px 6px;
+    height: 32px;
+    vertical-align: middle;
+    box-sizing: border-box;
 }
 
 /* Категории и строки финансов */
-.tms-financial-table .tms-fin-category-row td {
-    background: #f8fafc !important; font-size: 11px !important; font-weight: 800 !important; color: #2563eb !important;
-    text-transform: uppercase !important; letter-spacing: 0.5px !important; border-bottom: 1px solid #e2e8f0 !important;
-}
-.tms-financial-table .tms-fin-row, .tms-cargo-row { border-bottom: 1px dashed #f1f5f9 !important; transition: background-color 0.15s ease !important; }
-.tms-financial-table .tms-fin-row:hover, .tms-cargo-row:hover { background-color: #f8fafc !important; }
-.tms-cargo-row td { overflow: visible !important; } /* Для дропдаунов */
 
-.fin-row-desc { white-space: nowrap; font-size: 12px; display: flex !important; flex-direction: column !important; justify-content: center !important; height: 42px !important; }
-.fin-row-desc .title-en { color: #1e293b !important; font-weight: 700 !important; font-size: 12px !important; line-height: 1.2 !important; }
-.fin-row-desc .title-ru { color: #64748b !important; font-weight: 500 !important; font-size: 10.5px !important; margin-top: 2px !important; }
+.tms-financial-table .tms-fin-category-row td {
+    background: var(--slate-50);
+    font-size: 11px;
+     font-weight: 800;
+     color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--slate-200);
+}
+
+.tms-financial-table .tms-fin-row, .tms-cargo-row {
+    border-bottom: 1px dashed var(--slate-100);
+    transition: background-color 0.15s ease;
+}
+
+.tms-financial-table .tms-fin-row:hover, .tms-cargo-row:hover {
+    background-color: var(--slate-50);
+}
+
+.tms-cargo-row td {
+    overflow: visible;
+}
+
+/* Для дропдаунов */
+
+.fin-row-desc {
+    white-space: nowrap; 
+    font-size: 12px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 42px;
+}
+
+/*порверть нужность .title-ru и .title-en*/
+
+.fin-row-desc .title-en {
+    color: var(--slate-800);
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+
+.fin-row-desc .title-ru {
+    color: var(--slate-500);
+    font-weight: 500;
+    font-size: 10.5px;
+    margin-top: 2px;
+}
 
 /* Инпуты таблиц */
 .tms-fin-input {
-    border: none !important; background: #f8fafc !important; border-radius: 4px !important; padding: 3px 6px !important;
-    font-weight: 700 !important; font-size: 12px !important; color: #1e293b !important; outline: none !important;
-    height: 26px !important; box-sizing: border-box !important; transition: all 0.15s ease !important;
+    border: none;
+    background: var(--slate-50);
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--slate-800);
+    outline: none;
+    height: 26px;
+    box-sizing: border-box;
+    transition: all 0.15s ease;
 }
-.tms-fin-input:hover { background: #f1f5f9 !important; }
-.tms-fin-input:focus { background: #ffffff !important; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1) !important; }
-.tms-financial-table .fin-row-input-cell.cell-rate { text-align: right !important; }
-.tms-financial-table .fin-row-input-cell.cell-qty { text-align: center !important; }
-.tms-financial-table .fin-rate { width: 85px !important; text-align: right !important; }
-.tms-financial-table .fin-qty { width: 75px !important; text-align: center !important; }
-.tms-financial-table .fin-row-amount-cell { font-size: 13px !important; font-weight: 800 !important; color: #2563eb !important; text-align: right !important; }
+
+.tms-fin-input:hover {
+    background: var(--slate-100);
+}
+
+.tms-fin-input:focus {
+    background: var(--white);
+    box-shadow: 0 0 0 2px var(--primary-bg);
+}
+
+.tms-financial-table .fin-row-input-cell.cell-rate {
+    text-align: right;
+}
+
+.tms-financial-table .fin-row-input-cell.cell-qty {
+    text-align: center;
+}
+
+.tms-financial-table .fin-rate {
+    width: 85px;
+    text-align: right;
+}
+
+.tms-financial-table .fin-qty {
+    width: 75px;
+    text-align: center;
+}
+
+.tms-financial-table .fin-row-amount-cell {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--primary);
+    text-align: right;
+}
 
 /* ==========================================================================
    7. АБСОЛЮТНЫЕ ЯЧЕЙКИ И КНОПКИ ДЕЙСТВИЙ (+/-)
    ========================================================================== */
-/* Консолидированный класс для всех технических крайних ячеек */
+
 .tms-financial-table td.tms-action-cell-absolute,
 .tms-financial-table th.tms-action-cell-absolute,
 td.tms-action-cell-absolute,
 th.tms-action-cell-absolute,
 .tms-fin-row td.tms-action-cell-absolute,
 #blankServicesTable tr td:last-child {
-    display: table-cell !important; position: relative !important; width: 0px !important; max-width: 0px !important; min-width: 0px !important;
-    padding: 0 !important; border: none !important; background: transparent !important; vertical-align: middle !important;
+    display: table-cell;
+    position: relative;
+    width: 0px;
+    max-width: 0px;
+    min-width: 0px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    vertical-align: middle;
 }
 
-.tms-cargo-first-cell { position: relative !important; }
+.tms-cargo-first-cell {
+    position: relative;
+}
 
 /* Обертки кнопок */
+
 .tms-cargo-action-wrapper {
-    position: absolute !important; top: 50% !important; transform: translateY(-50%) !important; left: calc(100% + 625px) !important;
-    display: flex !important; flex-direction: row !important; align-items: center !important; gap: 6px !important; z-index: 100 !important;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: calc(100% + 625px);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    z-index: 100;
 }
+
 .tms-service-action-wrapper {
-    position: absolute !important; top: 50% !important; transform: translateY(-50%) !important; right: -35px !important; left: auto !important;
-    display: inline-flex !important; flex-direction: row !important; align-items: center !important; gap: 6px !important; z-index: 10 !important;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: -35px;
+    left: auto;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    z-index: 10;
 }
 
 /* Дизайн самих кнопок */
-.tms-row-action-btn.btn-plus, .tms-row-action-btn.btn-minus, .btn-fin-minus {
-    display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 22px !important; height: 22px !important;
-    cursor: pointer !important; border-radius: 4px !important; outline: none !important; transition: all 0.2s ease !important; flex-shrink: 0 !important; padding: 0 !important;
-}
-.tms-row-action-btn.btn-plus { background: #f0fdf4 !important; border: 1px solid #bbf7d0 !important; color: #16a34a !important; }
-.tms-row-action-btn.btn-plus:hover { background: #dcfce7 !important; border-color: #86efac !important; }
 
-.tms-row-action-btn.btn-minus, .btn-fin-minus { background: #fef2f2 !important; border: 1px solid #fee2e2 !important; color: #ef4444 !important; }
-.tms-row-action-btn.btn-minus:hover, .btn-fin-minus:hover { background: #fee2e2 !important; border-color: #fca5a5 !important; }
+.tms-row-action-btn.btn-plus, .tms-row-action-btn.btn-minus, .btn-fin-minus {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    border-radius: 4px;
+    outline: none;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    padding: 0;
+    background: var(--success-bg);
+}
+
+.tms-row-action-btn.btn-plus {
+    border: 1px solid var(--success-border);
+    color: var(--success);
+}
+
+.tms-row-action-btn.btn-plus:hover {
+    background: #f0fdf4 !important;
+    border-color: #86efac !important;
+}
+
+.tms-row-action-btn.btn-minus, .btn-fin-minus {
+    border: 1px solid var(--danger-border);
+    color: var(--danger-alt);
+}
+
+.tms-row-action-btn.btn-minus:hover, .btn-fin-minus:hover {
+    background: var(--danger-bg);
+    border-color: var(--danger-border);
+}
 
 /* Валидация */
-.tms-invalid-field { border-color: #ef4444 !important; background-color: #fef2f2 !important; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15) !important; transition: all 0.2s ease; }
+.tms-invalid-field {
+    border-color: var(--danger-alt);
+    background-color: var(--danger-bg);
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
+    transition: all 0.2s ease;
+}
 
 /* ==========================================================================
    8. РЕЖИМ ПРЕДПРОСМОТРА И ПЕЧАТИ (.tms-preview-mode & @media print)
@@ -431,7 +814,7 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-dropdown,
 .tms-preview-mode #blankDeliveryAddress,
 .tms-preview-mode .tms-component,
 .tms-preview-mode .tms-search-tools{
-    display: none !important; width: 0 !important; padding: 0 !important; pointer-events: none !important;
+    display: none; width: 0; padding: 0; pointer-events: none;
 }
 
 /* Удаление фонов, рамок и стрелочек триггеров */
@@ -450,8 +833,8 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-cargo-type-trigger,
 .tms-preview-mode #configClientRole,
 .tms-preview-mode #tmsInternalProfitIndicator,
 .tms-preview-mode .tms-pnl-indicators {
-    background-image: none !important; border-color: transparent !important; background: transparent !important;
-    padding-right: 0 !important; padding-left: 0 !important; box-shadow: none !important; pointer-events: none;
+    background-image: none; border-color: transparent; background: transparent;
+    padding-right: 0; padding-left: 0; box-shadow: none; pointer-events: none;
 }
 
 /* Удаление ::after стрелочек */
@@ -464,220 +847,863 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 .tms-preview-mode .tms-select-trigger::after,
 .tms-preview-mode .tms-custom-select-wrapper .tms-select-trigger::after,
 .tms-preview-mode .tms-load-type-select-wrapper .tms-select-trigger::after {
-    display: none !important; content: none !important;
+    display: none; content: none;
 }
 
 /* Очистка инпутов и текста */
-.tms-preview-mode [contenteditable="true"] { border-bottom-color: transparent !important; }
+
 .tms-preview-mode input.cargo-qty, .tms-preview-mode input.cargo-dim-l, .tms-preview-mode input.cargo-dim-w,
 .tms-preview-mode input.cargo-dim-h, .tms-preview-mode input.cargo-weight, .tms-preview-mode input.tms-fin-input,
 .tms-preview-mode input.fin-rate, .tms-preview-mode input.fin-qty {
-    border: none !important; background: transparent !important; box-shadow: none !important; outline: none !important;
-}
+    border: none !important;
+    background: transparent;
+    box-shadow: none;
+    outline: none;
 
 /* Компактный Инкотермс: Схлопываем ширину и убираем лишние зазоры */
 .tms-preview-mode .route-conditions-bar > div:first-child {
-    gap: 4px !important; /* Делает расстояние между FCA, дефисом и городом как обычный пробел */
+    gap: 4px;
 }
 
 /* Убиваем жесткую ширину у обертки и самого кода, чтобы они сжались под текст */
 .tms-preview-mode .route-conditions-bar .tms-custom-select-wrapper,
 .tms-preview-mode #blankIncotermsCode {
-    width: auto !important;
-    min-width: 0 !important;
-    display: inline-block !important;
+    width: auto;
+    min-width: 0;
+    display: inline-block;
 }
 
 /* Убираем лишние отступы вокруг дефиса */
 .tms-preview-mode .route-conditions-bar > div:first-child span {
-    margin: 0 !important;
-    padding: 0 !important;
+    margin: 0;
+    padding: 0;
 }
 
 /* Очищаем фон, рамки и ширину у поля города */
 .tms-preview-mode #blankIncotermsPlace {
-    margin: 0 !important;
-    padding: 0 !important;
-    background: transparent !important;
-    border: none !important;
-    width: auto !important;
-    min-width: 0 !important;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    width: auto;
+    min-width: 0;
 }
 
 @media print {
     .tms-history-toolbar, .tms-action-toolbar, #services-control-component, .tms-cargo-action-wrapper,
     button, input, .tms-select-trigger, .tms-package-trigger, .tms-load-type-trigger, .tms-loading-trigger, .tms-cargo-type-trigger, #tmsInternalProfitIndicator,
     .tms-pnl-indicators {
-        display: none !important;
+        display: none;
     }
-    [contenteditable="true"], input { border: none !important; background: transparent !important; outline: none !important; }
+    [contenteditable="true"], input { border: none; background: transparent; outline: none; }
 }
 
-/* ==========================================================================
-   9. КОМПОНЕНТЫ ДРУГИХ СТРАНИЦ (TMS ACTIVE ORDERS / HTMLPage3)
-   ========================================================================== */
-.tms-data-table-container { width: 100%; overflow-x: auto; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: var(--shadow); }
-.tms-data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-.tms-data-table thead { background-color: #f8fafc; border-bottom: 2px solid #e2e8f0; }
-.tms-data-table th { padding: 14px 16px; color: #64748b; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; white-space: nowrap; }
-.tms-data-table td { padding: 14px 16px; color: #1e293b; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
-.tms-data-table tbody tr { transition: background-color 0.15s ease; }
-.tms-data-table tbody tr:hover { background-color: #f8fafc; }
-.tms-badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-.tms-badge.booked { background: #dcfce7; color: #16a34a; }
-.tms-badge.draft { background: #f1f5f9; color: #475569; }
-.tms-badge.canceled { background: #fef2f2; color: #dc2626; }
-.tms-action-icon-btn { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 6px; border-radius: 6px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; }
-.tms-action-icon-btn:hover { background: #e2e8f0; color: #2563eb; }
-.tms-action-icon-btn.danger:hover { background: #fef2f2; color: #dc2626; }
-.tms-tabs { display: flex; gap: 8px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; padding-bottom: 8px; }
-.tms-tab { padding: 8px 16px; font-size: 13px; font-weight: 700; color: #64748b; background: none; border: none; cursor: pointer; border-radius: 6px; transition: all 0.15s ease-in-out; }
-.tms-tab:hover { background: #f1f5f9; color: #334155; }
-.tms-tab.active { background: #2563eb; color: #ffffff; }
-.tms-tab .badge { background: rgba(0, 0, 0, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-size: 11px; }
-.tms-tab.active .badge { background: rgba(255, 255, 255, 0.2); }
-.tms-tab.danger .badge { background: #fef2f2; color: #ef4444; }
-.tms-search-bar { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; }
-.tms-search-label { font-size: 13px; font-weight: 700; color: #64748b; white-space: nowrap; }
-.tms-search-input { flex-grow: 1; padding: 6px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; color: #1e293b; transition: border-color 0.15s; }
-.tms-search-input:focus { border-color: #2563eb; }
-.tms-table-wrapper { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
-.tms-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-.tms-table th { background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 12px 16px; font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-.tms-table td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
-.tms-table tr:hover { background-color: #f8fafc; }
-.tms-route-timeline { display: flex; flex-direction: column; gap: 2px; }
-.route-step { display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; }
-.route-step.passed { color: #16a34a; }
-.route-step.current { color: #2563eb; }
-.route-step.waiting { color: #94a3b8; }
-.tms-cell-details { background: #fafafa; border-left: 2px solid #e2e8f0; border-right: 2px solid #e2e8f0; }
-.tms-detail-title { font-weight: 700; color: #1e293b; }
-.tms-detail-row { font-size: 11px; color: #475569; margin-top: 2px; }
-.tms-doc-container { display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
-.doc-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; border: 1px solid #cbd5e1; color: #64748b; background: #f8fafc; cursor: pointer; user-select: none; transition: all 0.1s; }
-.doc-badge.active { background: #f0fdf4; border-color: #16a34a; color: #16a34a; }
-.tms-actions-stack { display: inline-flex; flex-direction: column; gap: 4px; }
-.btn-action { background: transparent; border: 1px solid #cbd5e1; border-radius: 6px; width: 28px; height: 28px; cursor: pointer; color: #475569; display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s; }
-.btn-action:hover { background: #f1f5f9; color: #1e293b; border-color: #94a3b8; }
-.tms-tab[data-filter="ae"], .tms-tab[data-filter="se"], .tms-tab[data-filter="re"] { position: relative; margin-left: 12px; padding-left: 16px; }
-.tms-tab[data-filter="ae"]::before, .tms-tab[data-filter="se"]::before, .tms-tab[data-filter="re"]::before { content: ""; position: absolute; left: 0; top: 20%; height: 60%; width: 2px; background-color: #cbd5e1; }
-.tms-top-bar { background: #1e293b; color: #fff; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
-.tms-btn-primary { background: #2563eb; color: #fff; border: none; padding: 6px 16px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-.tms-btn-primary:hover { background: #1d4ed8; }
-.tms-sub-bar { background: #fff; border-bottom: 1px solid #cbd5e1; padding: 8px 24px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
-.quick-jump-group { display: flex; align-items: center; gap: 4px; }
-.qj-select, .qj-input { border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px 8px; font-weight: 700; outline: none; }
-.qj-input { width: 70px; text-align: center; }
-.tms-sidebar { background: #fff; border-radius: 8px; border: 1px solid #cbd5e1; padding: 16px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow-y: auto; }
-.sidebar-block { border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; }
-.sidebar-title { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
-.sidebar-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
-.sidebar-value { font-weight: 700; color: #0f172a; }
-.tms-document-zone { background: #fff; border-radius: 8px; border: 1px solid #cbd5e1; padding: 0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); overflow-y: auto; position: relative; }
-.doc-form-air, .doc-form-sea, .doc-form-road { display: none; padding: 24px; }
-.doc-form-air.active, .doc-form-sea.active, .doc-form-road.active { display: block; }
-.mock-blank-header { text-align: center; font-size: 20px; font-weight: 800; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+.tms-data-table-container {
+    width: 100%; 
+    overflow-x: auto; 
+    background: #ffffff; 
+    border-radius: 12px;
+    border: 1px solid var(--slate-200);
+    box-shadow: var(--shadow);
+    }
+
+
+.tms-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 13px;
+}
+
+.tms-data-table thead {
+    background-color: var(--slate-50);
+    border-bottom: 2px solid var(--slate-200);
+}}
+
+.tms-data-table th {
+    padding: 14px 16px;
+    color: var(--slate-500);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.tms-data-table td {
+    padding: 14px 16px;
+    color: var(--slate-800);
+    border-bottom: 1px solid var(--slate-100);
+    vertical-align: middle;
+}
+
+.tms-data-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.tms-data-table tbody tr:hover {
+    background-color: var(--slate-50);
+}
+
+.tms-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tms-badge.booked {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.tms-badge.draft {
+    background: var(--slate-100);
+    color: var(--slate-600);
+}
+
+
+.tms-badge.canceled {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.tms-action-icon-btn {
+    background: none;
+    border: none;
+    color: var(--slate-400);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tms-action-icon-btn:hover {
+    background: var(--slate-200);
+    color: var(--primary);
+}
+
+.tms-action-icon-btn.danger:hover {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.tms-tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 2px solid var(--slate-200);
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+}
+
+.tms-tab {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--slate-500);
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.15s ease-in-out;
+}
+
+.tms-tab:hover {
+    background: var(--slate-100);
+    color: var(--slate-700);
+}
+
+.tms-tab.active {
+    background: var(--primary);
+    color: var(--white);
+}
+
+.tms-tab .badge {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    font-size: 11px;
+}
+
+.tms-tab.active .badge {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.tms-tab.danger .badge {
+    background: var(--danger-bg);
+    color: var(--danger-alt);
+}
+
+.tms-search-bar {
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.tms-search-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--slate-500);
+    white-space: nowrap;
+}
+
+.tms-search-input {
+    flex-grow: 1;
+    padding: 6px 12px;
+    border: 1px solid var(--slate-300);
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    color: var(--slate-800);
+    transition: border-color 0.15s;
+}
+
+.tms-search-input:focus {
+    border-color: var(--primary);
+}
+
+.tms-table-wrapper {
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.tms-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 13px;
+}
+
+.tms-table th {
+    background: var(--slate-50);
+    border-bottom: 1px solid var(--slate-200);
+    padding: 12px 16px;
+    font-size: 11px;
+    color: var(--slate-500);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tms-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--slate-100);
+    vertical-align: top;
+}
+
+.tms-table tr:hover {
+    background-color: var(--slate-50);
+}
+
+.tms-route-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.route-step {
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.route-step.passed {
+    color: var(--success);
+}
+
+.route-step.current {
+    color: var(--primary);
+}
+
+.route-step.waiting {
+    color: var(--slate-400);
+}
+
+.tms-cell-details {
+    background: #fafafa;
+    border-left: 2px solid var(--slate-200);
+    border-right: 2px solid var(--slate-200);
+}
+
+.tms-detail-title {
+    font-weight: 700;
+    color: var(--slate-800);
+}
+
+.tms-detail-row {
+    font-size: 11px;
+    color: var(--slate-600);
+    margin-top: 2px;
+}
+
+.tms-doc-container {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    align-items: flex-start;
+}
+
+.doc-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 800;
+    border: 1px solid var(--slate-300);
+    color: var(--slate-500);
+    background: var(--slate-50);
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.1s;
+}
+
+.doc-badge.active {
+    background: var(--success-bg);
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.tms-actions-stack {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.btn-action {
+    background: transparent;
+    border: 1px solid var(--slate-300);
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    color: var(--slate-600);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+
+.btn-action:hover {
+    background: var(--slate-100);
+    color: var(--slate-800);
+    border-color: var(--slate-400);
+}
+
+.tms-tab[data-filter="ae"], .tms-tab[data-filter="se"], .tms-tab[data-filter="re"] {
+
+
+.tms-tab[data-filter="ae"], .tms-tab[data-filter="se"], .tms-tab[data-filter="re"] {
+    position: relative;
+    margin-left: 12px;
+    padding-left: 16px;
+}
+
+.tms-tab[data-filter="ae"]::before, .tms-tab[data-filter="se"]::before, .tms-tab[data-filter="re"]::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 20%;
+    height: 60%;
+    width: 2px;
+    background-color: var(--slate-300);
+}
+
+.tms-top-bar {
+    background: var(--slate-800);
+    color: var(--white);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tms-btn-primary {
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    padding: 6px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.tms-btn-primary:hover {
+    background: var(--primary-hover);
+}
+
+.tms-sub-bar {
+    background: var(--white);
+    border-bottom: 1px solid var(--slate-300);
+    padding: 8px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+}
+
+.quick-jump-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.qj-select, .qj-input {
+    border: 1px solid var(--slate-300);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-weight: 700;
+    outline: none;
+}
+
+.qj-input {
+    width: 70px;
+    text-align: center;
+}
+
+.tms-sidebar {
+    background: var(--white);
+    border-radius: 8px;
+    border: 1px solid var(--slate-300);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    overflow-y: auto;
+}
+
+.sidebar-block {
+    border-bottom: 1px solid var(--slate-200);
+    padding-bottom: 12px;
+}
+
+.sidebar-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--slate-500);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.sidebar-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.sidebar-value {
+    font-weight: 700;
+    color: var(--slate-900);
+}
+
+.tms-document-zone {
+    background: var(--white);
+    border-radius: 8px;
+    border: 1px solid var(--slate-300);
+    padding: 0;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    overflow-y: auto;
+    position: relative;
+}
+
+.doc-form-air, .doc-form-sea, .doc-form-road {
+    display: none;
+    padding: 24px;
+}
+
+.doc-form-air.active, .doc-form-sea.active, .doc-form-road.active {
+    display: block;
+}
+
+.mock-blank-header {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 800;
+    border-bottom: 2px solid #000;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
 
 /* =========================================
    TMS: Вкладки (Tabs) для рабочих сред
    ========================================= */
 
-/* === БАЗОВЫЕ СТИЛИ (Твои) === */
-        .tms-action-bar { display: flex; gap: 12px; background: #ffffff; padding: 12px 20px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 16px; align-items: center; }
-        .tms-sum-row { display: grid; grid-template-columns: 80px 1fr 200px; gap: 15px; background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px 16px; border-radius: 6px; font-weight: 700; font-size: 14px; margin-bottom: 20px; }
-        .tms-grid-info { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .tms-field-group { display: flex; flex-direction: column; gap: 4px; }
-        .tms-field-group label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-        .tms-input { height: 34px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 10px; font-size: 13px; font-weight: 600; outline: none; background: #f8fafc; color: #1e293b; }
-        .tms-input:disabled { background: #f1f5f9 !important; color: #64748b; cursor: not-allowed; }
-        .messenger-btn { border: 1px solid #cbd5e1; background: #ffffff; padding: 4px 8px; font-size: 11px; border-radius: 4px; cursor: pointer; font-weight: 700; opacity: 0.4; transition: all 0.2s; }
-        .messenger-btn.active { opacity: 1; background: #3b82f6; color: white; border-color: #3b82f6; }
-        body.tms-preview-mode .tms-action-bar, body.tms-preview-mode .tms-search-trigger-block { display: none !important; }
-
-        .tms-doc-page {
-    background: #ffffff;
-    width: 100%;
-    max-width: 850px; /* Как у тебя задано для .tms-awb-canvas */
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    border: 1px solid #cbd5e1;
+.tms-action-bar {
+    display: flex;
+    gap: 12px;
+    background: var(--white);
+    padding: 12px 20px;
+    border: 1px solid var(--slate-300);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    align-items: center;
 }
 
-@media print {
-    .tms-page-break { page-break-after: always; }
+.tms-sum-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 200px;
+    gap: 15px;
+    background: var(--slate-50);
+    border: 1px solid var(--slate-300);
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 20px;
 }
-        /* --- ТЕМЫ ТРАНСПОРТА (Акцентные цвета) --- */
+
+.tms-grid-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.tms-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tms-field-group label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--slate-500);
+    text-transform: uppercase;
+}
+
+.tms-input {
+    height: 34px;
+    border: 1px solid var(--slate-300);
+    border-radius: 6px;
+    padding: 0 10px;
+    font-size: 13px;
+    font-weight: 600;
+    outline: none;
+    background: var(--slate-50);
+    color: var(--slate-800);
+}
+
+.tms-input:disabled {
+    background: var(--slate-100);
+    color: var(--slate-500);
+    cursor: not-allowed;
+}
+
+.messenger-btn {
+    border: 1px solid var(--slate-300);
+    background: var(--white);
+    padding: 4px 8px;
+    font-size: 11px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 700;
+    opacity: 0.4;
+    transition: all 0.2s;
+}
+
+
+.messenger-btn.active {
+    opacity: 1;
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+}
+
+body.tms-preview-mode .tms-action-bar, body.tms-preview-mode .tms-search-trigger-block {
+    display: none;
+}
+
+/* === НОВЫЕ СТИЛИ ДЛЯ ГОРИЗОНТАЛЬНЫХ ВКЛАДОК === */
+
+.tms-tabs-header {
+    display: flex; 
+    gap: 4px; 
+    background: var(--slate-50);
+    border-bottom: 1px solid var(--slate-200);
+    border-radius: 6px 6px 0 0; 
+    padding: 0 10px; 
+    margin-bottom: 0; 
+}
+
+
+.tms-tab-btn {
+    padding: 14px 24px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 8px 8px 0 0;
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--slate-500);
+    cursor: pointer;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    transition: 0.2s;
+    outline: none;
+}
+
+.tms-tab-btn:hover {
+    background: var(--slate-100);
+    color: var(--slate-800);
+}
+
+.tms-tab-btn.active {
+    background: var(--white);
+    color: var(--primary);
+    border-color: var(--slate-300);
+    border-top: 3px solid var(--primary);
+    border-bottom: 2px solid var(--white);
+    border-bottom-color: var(--primary);
+}
+
+.tms-tab-content {
+    display: none;
+    padding: 20px;
+    background: var(--slate-50);
+    border: 1px solid var(--slate-300);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 20px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.tms-tab-content.active {
+    display: block;
+}
+
+}
+
+/* --- ТЕМЫ ТРАНСПОРТА (Акцентные цвета) --- */
+/* Эти переменные переопределяются при клике на вкладку в JS */
+.tms-app-container.theme-air { --theme-color: #db2777; --theme-bg: #fdf2f8; }
+.tms-app-container.theme-sea { --theme-color: #0284c7; --theme-bg: #f0f9ff; }
+.tms-app-container.theme-road { --theme-color: #16a34a; --theme-bg: #f0fdf4; }
+.tms-app-container.theme-delays { --theme-color: #dc2626; --theme-bg: #fef2f2; }
 
 .theme-air {
-    --theme-color: #db2777;      /* Розоватый */
+    --theme-color: #db2777;
     --theme-bg: #fdf2f8;
 }
 .theme-sea {
-    --theme-color: #0284c7;      /* Голубоватый */
+    --theme-color: #0284c7;
     --theme-bg: #f0f9ff;
 }
 .theme-road {
-    --theme-color: #16a34a;      /* Зеленоватый */
+    --theme-color: #16a34a;
     --theme-bg: #f0fdf4;
 }
 .theme-delays {
-    --theme-color: #dc2626;      /* Красный */
+    --theme-color: #dc2626;
     --theme-bg: #fef2f2;
+}
+
+
+/* --- САБ-ВКЛАДКИ (Экспорт/Импорт) --- */
+
+.tms-sub-tab-btn {
+    padding: 6px 14px;
+    background: var(--slate-100);
+    border: 1px solid var(--slate-300);
+    border-radius: 20px; /* Круглые таблетки */
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--slate-500);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tms-sub-tab-btn.active {
+    background: var(--theme-color, var(--primary));
+    color: var(--white);
+    border-color: var(--theme-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 /* =========================================
    TMS ACTIVE BOOKINGS: НАТИВНЫЙ СТИЛЬ SAAS
    ========================================= */
-.tms-bookings-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-.tms-bookings-table th { 
-    padding: 12px 16px; background: #f8fafc; border-bottom: 2px solid #e2e8f0; 
-    color: #475569; font-weight: 800; text-transform: uppercase; font-size: 11px; 
-    cursor: pointer; user-select: none;
-}
-.tms-bookings-table td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; }
 
-/* Кликабельная строка как в QuotesDatabase */
+.tms-bookings-table {
+    width: 100%; 
+    border-collapse: collapse; 
+    text-align: left;
+    font-size: 13px; 
+}
+
+
+.tms-bookings-table th {
+    padding: 12px 16px;
+    background: var(--slate-50);
+    border-bottom: 2px solid var(--slate-200);
+    color: var(--slate-600);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 11px;
+    cursor: pointer;
+    user-select: none;
+}
+
+
+.tms-bookings-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--slate-100);
+}
+
+/* Кликабельная строка */
 .tms-row-clickable { cursor: pointer; transition: background 0.15s; }
-.tms-row-clickable:hover { background: #f8fafc; }
+.tms-row-clickable:hover { background: var(--slate-50); }
+
+.tms-row-clickable:hover {
+    background: var(--slate-50);
+}
 
 /* Типографика (Строго по палитре Slate) */
-.tms-text-id { font-weight: 700; color: #1e293b; font-size: 13px; }
-.tms-text-date { font-size: 10px; color: #94a3b8; font-weight: 700; margin-top: 2px; }
-.tms-text-main { font-weight: 600; color: #334155; }
-.tms-text-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+.tms-text-id { 
+    font-weight: 700;
+    color: var(--slate-800);
+    font-size: 13px; 
+}
+
+
+.tms-text-date {
+    font-size: 11px;
+    color: var(--slate-400);
+    margin-top: 2px;
+}
+
+.tms-text-main {
+    font-weight: 600;
+    color: var(--slate-700);
+}
+
+.tms-text-sub {
+    font-size: 11px;
+    color: var(--slate-500);
+    margin-top: 2px;
+}
 
 /* Участники */
-.tms-party-bill { font-weight: 700; color: #2563eb; margin-bottom: 2px; font-size: 12px; }
-.tms-party-sub { font-size: 11px; color: #64748b; }
+.tms-party-bill {
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 2px; 
+    font-size: 12px; 
+}
+
+
+.tms-party-sub {
+    font-size: 11px;
+    color: var(--slate-500);
+}
 
 /* Транспортный бейдж (Как в БД КП) */
-.tms-transport-badge { background: #f1f5f9; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; display: inline-block; }
+.tms-transport-badge {
+    background: var(--slate-100);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    display: inline-block; }
 
-/* Статусы (Угловатые, 6px радиус) */
-.tms-status-box { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block; border: 1px solid currentColor; }
-.tms-status-active { background: #f0fdf4; color: #16a34a; } /* Зеленоватый как accepted */
-.tms-status-delay { background: #fef2f2; color: #ef4444; } /* Красноватый как declined */
+/* Статусы */
+.tms-status-box { 
+    padding: 4px 8px; 
+    border-radius: 6px; 
+    font-size: 11px; 
+    font-weight: 700; 
+    display: inline-block; 
+    border: 1px solid currentColor; 
+}
 
-/* Health Bar (Здоровье Заказа) */
-.tms-health-box { display: flex; align-items: center; gap: 8px; }
-.tms-health-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-.tms-dot-good { background: #16a34a; }
-.tms-dot-bad { background: #ef4444; }
+.tms-status-active {
+    background: var(--success-bg);
+    color: var(--success);
+}
 
-.tms-doc-progress { font-size: 11px; font-weight: 700; color: #475569; }
-.tms-doc-progress.complete { color: #16a34a; }
+.tms-status-delay {
+    background: var(--danger-bg);
+    color: var(--danger-alt); }
+
+.tms-status
+.tms-health-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.tms-dot-good {
+    background: var(--success);
+}
+
+.tms-dot-bad {
+    background: var(--danger-alt);
+}
+
+.tms-doc-progress {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--slate-600);
+}
+
+.tms-doc-progress.complete {
+    color: var(--success);
+}
 
 /* Кнопки действий (Точные копии из QuotesDatabase) */
-.tms-btn-icon { background: transparent; border: none; font-size: 13px; cursor: pointer; padding: 4px; opacity: 0.7; transition: 0.2s; }
-.tms-btn-icon:hover { opacity: 1; }
-.tms-btn-delete { color: #ef4444; font-weight: 700; font-size: 11px; }
+
+.tms-btn-icon { 
+    background: transparent;
+    border: none; 
+    font-size: 13px;
+    cursor: pointer; 
+    padding: 4px; 
+    opacity: 0.7; 
+    transition: 0.2s;
+ }
+
+
+.tms-btn-icon:hover {
+    opacity: 1;
+}
+
+.tms-btn-delete {
+    color: var(--danger-alt);
+    font-weight: 700;
+    font-size: 11px;
+}
+
 
 /* Класс для многострочных ячеек (3 ряда в одной клетке) */
+
 .tms-multi-row {
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
+
 .tms-multi-row span {
     display: flex;
     justify-content: space-between;
@@ -687,277 +1713,851 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
    TMS ACTIVE BOOKINGS: СЕМАНТИЧЕСКИЕ КЛАССЫ
    ========================================= */
 
-/* Ячейки и выравнивание */
-.tms-cell { padding: 10px; }
-.tms-cell-center { text-align: center; }
-.tms-cell-right { text-align: right; }
+.tms-cell {
+    padding: 10px; 
+}
 
-.tms-text-dark { color: #1e293b; font-weight: 700; }
-.tms-text-bold { font-weight: 700; }
+
+.tms-cell-center {
+    text-align: center;
+}
+
+.tms-cell-right {
+    text-align: right;
+}
+
+/* Типографика таблицы */
+
+.tms-text-dark {
+    color: var(--slate-800);
+    font-weight: 700;
+}
+
+.tms-text-bold {
+    font-weight: 700;
+}
 
 /* Кнопки действий (иконки) */
-.tms-action-icon {
-    background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px;
+
+.tms-action-icon:hover {
+    opacity: 0.7;
 }
-.tms-action-icon:hover { opacity: 0.7; }
-.tms-icon-mt { margin-top: 4px; }
+
+.tms-icon-mt {
+    margin-top: 4px;
+}
 
 /* Статусные бейджи */
 .tms-status-badge {
-    padding: 4px 8px; border-radius: 12px; font-weight: 800; font-size: 9px; letter-spacing: 0.5px;
+    padding: 4px 8px; 
+    border-radius: 12px; 
+    font-weight: 800; 
+    font-size: 9px;
+    letter-spacing: 0.5px;
 }
-.tms-badge-default { background: #e2e8f0; color: #475569; }
-.tms-badge-error { background: #fef2f2; color: #ef4444; }
 
-/* Бейджи документов (DOC / INV) */
-.tms-docs-container { display: flex; gap: 4px; justify-content: center; }
-.tms-doc-badge {
-    border: 1px solid #cbd5e1; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 800;
+.tms-badge-default {
+    background: var(--slate-200);
+    color: var(--slate-600);
 }
-.tms-doc-on { opacity: 1; background: #f8fafc; }
-.tms-doc-off { opacity: 0.3; }
+
+.tms-badge-error {
+    background: var(--danger-bg);
+    color: var(--danger-alt);
+}
+
+/* Бейджи документов (DOC) */
+
+.tms-doc-badge {
+    border: 1px solid var(--slate-300);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.tms-doc-on {
+    opacity: 1;
+    background: var(--slate-50);
+}
+
+.tms-doc-off {
+    opacity: 1;
+    background: #f8fafc;
+}
+
+.tms-doc-off {
+    opacity: 0.3;
+}
 
 /* Цветовые маркеры (Финансы и Сроки) */
-.tms-margin-ok { color: #10b981; margin-top: 4px; }
-.tms-margin-bad { color: #ef4444; margin-top: 4px; }
-.tms-date-bad { color: #ef4444; font-weight: 800; }
+
+.tms-margin-ok {
+    color: var(--success);
+    margin-top: 4px;
+}
+
+.tms-margin-bad {
+    color: var(--danger-alt);
+    margin-top: 4px;
+}
+
+.tms-date-bad {
+    color: var(--danger-alt);
+    font-weight: 800;
+}
 
 /* =========================================
    TMS WORKSPACE (Среда заказа)
    ========================================= */
 
-/* Левая панель */
-.tms-ws-sidebar { width: 30%; min-width: 320px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 20px; }
-.tms-ws-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 15px; }
-.tms-ws-title { font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 6px 0; }
-.tms-ws-section { border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 15px; }
-.tms-ws-section:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
-.tms-ws-subtitle { font-size: 13px; font-weight: 800; color: #334155; margin: 0 0 10px 0; text-transform: uppercase; }
+.tms-ws-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.tms-ws-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 6px 0;
+}
+
+.tms-ws-section {
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.tms-ws-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.tms-ws-subtitle {
+    font-size: 13px;
+    font-weight: 800;
+    color: #334155;
+    margin: 0 0 10px 0;
+    text-transform: uppercase;
+}
 
 /* Элементы форм среды */
+
 .tms-ws-row { display: flex; gap: 10px; }
 .tms-ws-col { flex: 1; }
-.tms-ws-label { display: block; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 4px; text-transform: uppercase; }
-.tms-readonly-text { font-size: 13px; color: #1e293b; padding: 6px 0; min-height: 18px; }
-.tms-text-bold { font-weight: 700; }
-.tms-ws-input { width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; color: #1e293b; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
-.tms-ws-input:focus { border-color: #2563eb; }
+
+.tms-ws-col {
+    flex: 1;
+}
+
+.tms-ws-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.tms-readonly-text {
+    font-size: 13px;
+    color: #1e293b;
+    padding: 6px 0;
+    min-height: 18px;
+}
+
+.tms-ws-input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #1e293b;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.tms-ws-input:focus {
+    border-color: #2563eb;
+}
 
 /* Логика замка */
 .tms-btn-lock { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; padding: 4px 8px; cursor: pointer; transition: 0.2s; }
-.tms-btn-lock:hover { background: #e2e8f0; }
-.tms-ws-sidebar.is-locked .tms-hidden { display: none; }
-.tms-ws-sidebar:not(.is-locked) .tms-readonly-text { display: none; }
-.tms-ws-sidebar:not(.is-locked) .tms-hidden { display: block; }
-.tms-ws-sidebar:not(.is-locked) .tms-btn-lock { background: #fee2e2; border-color: #fca5a5; }
+
+.tms-btn-lock:hover {
+    background: #e2e8f0;
+}
+
+.tms-ws-sidebar.is-locked .tms-hidden {
+    display: none;
+}
+
+.tms-ws-sidebar:not(.is-locked) .tms-readonly-text {
+    display: none;
+}
+
+.tms-ws-sidebar:not(.is-locked) .tms-hidden {
+    display: block;
+}
+
+.tms-ws-sidebar:not(.is-locked) .tms-btn-lock {
+    background: #fee2e2;
+    border-color: #fca5a5;
+}
 
 /* Кнопки среды */
-.tms-btn-save { width: 100%; padding: 8px; background: #2563eb; color: #fff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; margin-top: 15px; }
-.tms-btn-save:hover { background: #1d4ed8; }
+
+.tms-btn-save:hover {
+    background: #1d4ed8;
+}
 
 /* Правая панель */
-.tms-ws-content { width: 70%; flex-grow: 1; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0; display: flex; flex-direction: column; min-height: 600px; }
-.tms-tab-content { padding: 20px; flex-grow: 1; }
+.tms-ws-content {
+    width: 70%; 
+    flex-grow: 1; 
+    background: #ffffff; 
+    border: 1px solid #cbd5e1; 
+    border-radius: 6px; 
+    padding: 0; 
+    display: flex; 
+    flex-direction: column; 
+    min-height: 600px; 
+}
+.tms-tab-content { 
+    padding: 20px; 
+    flex-grow: 1; 
+}
 
 /* Вкладка Doc Builder */
-.tms-doc-layout { display: flex; gap: 20px; height: 100%; }
-.tms-doc-form { width: 40%; border-right: 1px solid #e2e8f0; padding-right: 20px; }
-.tms-doc-preview { width: 60%; background: #f1f5f9; border-radius: 4px; border: 1px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; }
-.tms-preview-placeholder { color: #94a3b8; font-weight: 700; font-size: 14px; }
+
+.tms-doc-form {
+    width: 40%;
+    border-right: 1px solid #e2e8f0;
+    padding-right: 20px;
+}
+
+.tms-doc-preview {
+    width: 60%;
+    background: #f1f5f9;
+    border-radius: 4px;
+    border: 1px dashed #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tms-preview-placeholder {
+    color: #94a3b8;
+    font-weight: 700;
+    font-size: 14px;
+}
 
 /* Вкладка Vault */
-.tms-dropzone { border: 2px dashed #cbd5e1; border-radius: 6px; padding: 40px; text-align: center; background: #f8fafc; cursor: pointer; transition: 0.2s; }
-.tms-dropzone:hover { border-color: #2563eb; background: #eff6ff; }
+
+.tms-dropzone:hover {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
 
 /* =========================================
-   ORDER WORKSPACE (Шаг 1 и 2)
+   ORDER WORKSPACE
    ========================================= */
 
-/* Top Bar */
-.tms-order-topbar { 
-    display: flex; justify-content: space-between; align-items: center; 
-    background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 12px 20px; 
-    position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-/* Quick Jump */
-.tms-quick-jump { display: flex; align-items: center; gap: 6px; }
-.tms-qj-label { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; }
-.tms-qj-input { 
-    border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px 6px; font-size: 13px; 
-    font-weight: 700; color: #1e293b; text-transform: uppercase; outline: none;
-}
-.tms-qj-input:focus { border-color: #2563eb; }
-.tms-qj-input:disabled { background: #f8fafc; border-color: transparent; }
-.tms-qj-dash { color: #cbd5e1; font-weight: 800; }
-.tms-qj-btn { background: #1e293b; color: #fff; border: none; border-radius: 4px; padding: 4px 10px; font-weight: 800; font-size: 11px; cursor: pointer; }
-.tms-qj-btn:hover { background: #0f172a; }
-
-/* Управление (Замок) */
-.tms-topbar-controls { display: flex; gap: 10px; }
-.tms-btn-edit, .tms-btn-save { 
-    border: none; border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 800; cursor: pointer; transition: 0.2s;
-}
-.tms-btn-edit { background: #f1f5f9; color: #475569; }
-.tms-btn-edit.active { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; }
-.tms-btn-save { background: #16a34a; color: #fff; opacity: 1; }
-.tms-btn-save:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
-
-/* Layout */
-.tms-workspace-layout {
-    display: grid;
-    grid-template-columns: 320px minmax(0, 1fr) 320px; /* Жесткие боковые, резиновый центр */
-    gap: 20px;
-    padding: 20px;
-    align-items: flex-start;
-    height: calc(100vh - 70px); /* Чтобы колонки скроллились независимо */
-    overflow: hidden;
-}
-
-/* Настройки независимого скролла */
-.tms-left-sidebar, .tms-center-content, .tms-right-sidebar {
-    height: 100%;
-    overflow-y: auto;
-    /* Убираем дефолтные скроллбары для чистоты (опционально) */
-    scrollbar-width: thin;
-}
-
-.tms-center-content {
+/* --- Закрепленный хедер (убедись, что он ВНЕ .tms-workspace-layout) --- */
+.tms-order-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
     display: flex;
-    flex-direction: column;
-    gap: 40px; /* Разрыв между слитыми страницами */
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    flex-wrap: nowrap; /* Не дает кнопкам уехать вниз */
+}
+
+/* Карточка метаданных в правой колонке */
+.tms-meta-card {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
 }
-.tms-status-select { 
-    width: 100%; padding: 8px; border: 2px solid #3b82f6; border-radius: 6px; 
-    font-weight: 800; font-size: 13px; color: #1e293b; background: #eff6ff; outline: none; margin-bottom: 20px;
-}
-.tms-section-title { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin: 0 0 10px 0; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px; }
-.tms-sidebar-section { margin-bottom: 20px; }
-.tms-party-group { margin-bottom: 10px; }
-.tms-party-group label { display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; }
+.tms-meta-label { font-size: 11px; color: #64748b; font-weight: 700; }
+.tms-meta-value { font-size: 12px; color: #1e293b; font-weight: 800; }
 
-/* Инпуты левой панели */
-.tms-input-row { display: flex; gap: 8px; width: 100%; }
-.tms-left-sidebar input, .tms-left-sidebar select { 
-    width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 4px; 
-    font-size: 12px; font-weight: 600; color: #1e293b; box-sizing: border-box; outline: none;
-}
-.tms-left-sidebar input:disabled, .tms-left-sidebar select:disabled { 
-    background: #f8fafc; border-color: transparent; color: #475569; cursor: not-allowed;
-}
-.tms-btn-search { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; }
-.tms-btn-search:disabled { opacity: 0.5; cursor: not-allowed; border-color: transparent; }
-.tms-mb { margin-bottom: 8px; }
+/* Quick Jump */
 
-/* Оперативные кнопки */
-.tms-sidebar-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 30px; border-top: 2px dashed #e2e8f0; padding-top: 15px; }
-.tms-sidebar-actions button { 
-    padding: 10px; border: none; border-radius: 6px; font-weight: 800; font-size: 12px; cursor: pointer; text-align: left; transition: 0.2s; color: #fff;
+.tms-quick-jump {
+    display: flex;
+    align-items: center;
+    gap: 6px; 
 }
-.tms-btn-ar { background: #2563eb; }
-.tms-btn-ar:hover { background: #1d4ed8; }
-.tms-btn-transmit { background: #8b5cf6; }
-.tms-btn-transmit:hover { background: #7c3aed; }
-.tms-btn-master { background: #0f172a; }
-.tms-btn-master:hover { background: #000000; }
 
-/* =========================================
-   ORDER WORKSPACE (Шаг 3 и 4 - Правая панель)
-   ========================================= */
 
-/* Правая панель и Табы */
-.tms-right-content { 
-    flex-grow: 1; background: #ffffff; border: 1px solid #cbd5e1; 
-    border-radius: 6px; display: flex; flex-direction: column; min-height: 800px;
+.tms-qj-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
+.tms-qj-input {
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    text-transform: uppercase;
+    outline: none;
+}
+
+.tms-qj-input:focus {
+    border-color: #2563eb;
+}
+
+.tms-qj-input:disabled {
+    background: #f8fafc;
+    border-color: transparent;
+}
+
+.tms-qj-dash {
+    color: #cbd5e1;
+    font-weight: 800;
+}
+
+.tms-qj-btn {
+    background: #1e293b;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-weight: 800;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.tms-qj-btn:hover {
+    background: #0f172a;
+}
+
+/* Управление (Замок) */
+
+.tms-topbar-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tms-controls-divider {
+    width: 1px;
+    height: 24px;
+    background-color: #e2e8f0;
+    margin: 0 4px;
+}
+
+/* Базовый класс для кнопок хедера */
+.tms-topbar-controls button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    height: 36px;
+    box-sizing: border-box;
+}
+
+.tms-topbar-controls button svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+/* Primary - Главное действие (Сохранить) */
+.tms-btn-primary {
+    background: #2563eb;
+    color: #ffffff;
+    border: 1px solid #2563eb;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+.tms-btn-primary:not(:disabled):hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+}
+.tms-btn-primary:disabled {
+    background: #f1f5f9;
+    color: #94a3b8;
+    border-color: #e2e8f0;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+/* Secondary - Второстепенное (Редактировать) */
+.tms-btn-secondary {
+    background: #f8fafc;
+    color: #1e293b;
+    border: 1px solid #cbd5e1;
+}
+.tms-btn-secondary:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+/* Состояние, когда режим редактирования активен (Отмена) */
+.tms-btn-secondary.is-active {
+    background: #fef2f2;
+    color: #ef4444;
+    border-color: #fca5a5;
+}
+.tms-btn-secondary.is-active:hover {
+    background: #fee2e2;
+}
+
+/* Outline - Дополнительно (PDF) */
+.tms-btn-outline {
+    background: transparent;
+    color: #475569;
+    border: 1px solid transparent;
+}
+.tms-btn-outline:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+    border-color: #cbd5e1;
+}
+
+/* --- Сетка Layout --- */
+.tms-workspace-layout {
+    display: grid !important; 
+    /* Гарантируем, что центр не сожмется меньше ширины бланка AWB (850px) */
+    grid-template-columns: minmax(260px, 20%) minmax(850px, 1fr) minmax(260px, 20%) !important; 
+    gap: 15px;
+    padding: 15px;
+    align-items: start;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+.tms-left-sidebar,
+.tms-center-content,
+.tms-right-sidebar {
+    height: auto !important;
+    overflow-y: visible !important;
+}
+
+/* --- Центральная часть (Документы) --- */
+.tms-center-content {
+    background: #e2e8f0;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    min-width: 0 !important; 
+}
+
+.tms-doc-block {
+    background: #ffffff;
+    width: 100%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border-radius: 4px;
+    padding: 20px;
+    box-sizing: border-box;
+    /* overflow-x: auto; - УДАЛЕНО, чтобы блок не скроллился отдельно от страницы */
+}
+
+@media (max-width: 1400px) {
+    .tms-workspace-layout {
+        grid-template-columns: 280px minmax(850px, 1fr) !important; 
+    }
+}
+
+/* --- Компактные поля (Оптимизация для менеджера) --- */
+.tms-compact-field {
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    margin-bottom: 6px;
     overflow: hidden;
 }
-
-.tms-tab-btn { 
-    padding: 14px 24px; font-weight: 800; font-size: 13px; color: #64748b; 
-    background: transparent; border: none; border-bottom: 2px solid transparent; 
-    cursor: pointer; transition: 0.2s; outline: none;
+.tms-compact-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+    padding: 4px 8px;
+    background: #f1f5f9;
+    border-right: 1px solid #cbd5e1;
+    min-width: 60px;
+    text-transform: uppercase;
 }
-.tms-tab-btn:hover { color: #1e293b; background: #f1f5f9; }
-.tms-tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; background: #ffffff; }
-.tms-tab-content { padding: 20px; flex-grow: 1; overflow-y: auto; background: #f8fafc; }
+.tms-compact-field input {
+    flex: 1;
+    border: none;
+    padding: 4px 8px;
+    font-size: 12px;
+    background: transparent;
+    outline: none;
+    min-width: 0; /* Чтобы не вылазило за flex-контейнер */
+}
+
+.tms-status-select {
+    width: 100%;
+    padding: 8px;
+    border: 2px solid #3b82f6;
+    border-radius: 6px;
+    font-weight: 800;
+    font-size: 13px;
+    color: #1e293b;
+    background: #eff6ff;
+    outline: none;
+    margin-bottom: 20px;
+}
+
+.tms-section-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    margin: 0 0 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 4px;
+}
+
+.tms-sidebar-section {
+    margin-bottom: 20px;
+}
+
+.tms-party-group {
+    margin-bottom: 10px;
+}
+
+.tms-party-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 4px;
+}
+
+/* Инпуты левой панели */
+.tms-input-row {
+    display: flex;
+    gap: 8px;
+    width: 100%; }
+
+.tms-left-sidebar input, .tms-left-sidebar select {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1e293b;
+    box-sizing: border-box;
+    outline: none;
+}
+
+.tms-left-sidebar input:disabled, .tms-left-sidebar select:disabled {
+    background: #f8fafc;
+    border-color: transparent;
+    color: #475569;
+    cursor: not-allowed;
+}
+
+/* --- Нативные Аккордеоны (HTML <details>) --- */
+.tms-details {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+.tms-summary {
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #f8fafc;
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+    list-style: none; /* Убираем дефолтный треугольник в старых браузерах */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+/* Кастомный треугольник */
+.tms-summary::after {
+    content: "▼";
+    font-size: 10px;
+    transition: transform 0.2s ease;
+}
+.tms-details[open] .tms-summary::after {
+    transform: rotate(180deg);
+}
+.tms-summary::-webkit-details-marker {
+    display: none; /* Для Safari */
+}
+.tms-details-content {
+    padding: 12px;
+    border-top: 1px solid #cbd5e1;
+}
+
+.tms-btn-search {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.tms-btn-search:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: transparent;
+}
+
+.tms-mb {
+    margin-bottom: 8px;
+}
+
+/* Оперативные кнопки */
+
+.tms-sidebar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; 
+    margin-top: 30px; 
+    border-top: 2px dashed #e2e8f0; 
+    padding-top: 15px; 
+}
+
+.tms-sidebar-actions button {
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 800;
+    font-size: 12px;
+    cursor: pointer;
+    text-align: left;
+    transition: 0.2s;
+    color: #fff;
+}
+
+.tms-btn-ar {
+    background: #2563eb;
+}
+
+.tms-btn-ar:hover {
+    background: #1d4ed8;
+}
+
+.tms-btn-transmit {
+    background: #8b5cf6;
+}
+
+.tms-btn-transmit:hover {
+    background: #7c3aed;
+}
+
+.tms-btn-master {
+    background: #0f172a;
+}
+
+.tms-btn-master:hover {
+    background: #000000;
+}
+
+/* =========================================
+   ORDER WORKSPACE
+   ========================================= */
 
 /* 1. Document Builder (А4 Бланк) */
+
 .tms-a4-wrapper { 
-    width: 100%; display: flex; justify-content: center; padding: 20px 0;
+    width: 100%;
+    display: flex; 
+    justify-content:
+    center; padding: 20px 0;
 }
-.tms-a4-paper { 
-    width: 100%; max-width: 800px; aspect-ratio: 1 / 1.414; /* Строгая пропорция А4 */
-    background-color: #ffffff; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    position: relative; border: 1px solid #cbd5e1;
+
+.tms-a4-paper {
+    width: 100%;
+    max-width: 800px;
+    aspect-ratio: 1 / 1.414;
+    background-color: #ffffff;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    position: relative;
+    border: 1px solid #cbd5e1;
     /* background-image: url('путь_к_бланку'); background-size: cover; */
 }
-.tms-a4-placeholder { 
-    position: absolute; top: 50%; left: 0; width: 100%; text-align: center; 
-    color: #cbd5e1; font-weight: 800; font-size: 18px; transform: translateY(-50%); z-index: 0;
+
+.tms-a4-placeholder {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    color: #cbd5e1;
+    font-weight: 800;
+    font-size: 18px;
+    transform: translateY(-50%);
+    z-index: 0;
 }
+
 /* Прозрачные поля ввода поверх бланка */
+
 .tms-blank-input {
-    position: absolute; background: rgba(59, 130, 246, 0.05); /* Легкая подсветка для разработки */
-    border: 1px dashed #94a3b8; font-family: 'Courier New', monospace; font-size: 12px; font-weight: 700;
-    color: #1e293b; padding: 4px; resize: none; z-index: 10;
+    position: absolute;
+    background: rgba(59, 130, 246, 0.05); /* Легкая подсветка для разработки */
+    border: 1px dashed #94a3b8; 
+    font-family: 'Courier New', monospace; 
+    font-size: 12px; 
+    font-weight: 700;
+    color: #1e293b; 
+    padding: 4px; 
+    resize: none; 
+    z-index: 10;
 }
-.tms-blank-input:focus { background: rgba(255,255,255,0.9); border-color: #2563eb; outline: none; }
-.tms-blank-input:disabled { background: transparent; border-color: transparent; color: #1e293b; cursor: text; }
+
+.tms-blank-input:focus {
+    background: rgba(255,255,255,0.9);
+    border-color: #2563eb;
+    outline: none;
+}
+
+.tms-blank-input:disabled {
+    background: transparent;
+    border-color: transparent;
+    color: #1e293b;
+    cursor: text;
+}
 
 /* 2. Files (Vault) */
-.tms-dropzone { 
-    border: 2px dashed #cbd5e1; border-radius: 6px; padding: 30px; text-align: center; 
-    background: #ffffff; cursor: pointer; transition: 0.2s; margin-bottom: 20px;
+
+.tms-vault-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+    background: #ffffff;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
 }
-.tms-dropzone:hover { border-color: #2563eb; background: #eff6ff; }
-.tms-vault-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; background: #ffffff; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; }
-.tms-vault-table th { padding: 12px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; color: #64748b; font-weight: 800; text-transform: uppercase; font-size: 11px; }
-.tms-vault-table td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; }
-.tms-vault-row { cursor: pointer; transition: 0.15s; }
-.tms-vault-row:hover { background: #f1f5f9; }
-.tms-file-name { font-weight: 700; color: #0f172a; }
-.tms-badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
-.tms-badge-sys { background: #e0e7ff; color: #4f46e5; }
-.tms-badge-pod { background: #dcfce3; color: #16a34a; }
+
+.tms-vault-table th {
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    color: #64748b;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 11px;
+}
+
+.tms-vault-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.tms-vault-row {
+    cursor: pointer;
+    transition: 0.15s;
+}
+
+.tms-vault-row:hover {
+    background: #f1f5f9;
+}
+
+.tms-file-name {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.tms-badge-sys {
+    background: #e0e7ff;
+    color: #4f46e5;
+}
+
+.tms-badge-pod {
+    background: #dcfce3;
+    color: #16a34a;
+}
 
 /* Модальное окно просмотра файлов */
-.tms-modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px);
-    display: flex; justify-content: center; align-items: center; z-index: 1000;
-}
+
 .tms-modal-content {
-    background: #ffffff; width: 85%; max-width: 1200px; height: 90vh; 
-    border-radius: 8px; display: flex; flex-direction: column; overflow: hidden;
+    background: #ffffff;
+    width: 85%;
+    max-width: 1200px;
+    height: 90vh;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
 }
+
 .tms-modal-header {
-    padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
 }
+
 .tms-modal-close {
-    background: transparent; border: none; font-size: 18px; color: #64748b; cursor: pointer; transition: 0.2s;
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    color: #64748b;
+    cursor: pointer;
+    transition: 0.2s;
 }
-.tms-modal-close:hover { color: #ef4444; }
-.tms-modal-body { padding: 20px; flex-grow: 1; overflow: hidden; background: #e2e8f0; }
+
+.tms-modal-close:hover {
+    color: #ef4444;
+}
+
+.tms-modal-body {
+    padding: 20px;
+    flex-grow: 1;
+    overflow: hidden;
+    background: #e2e8f0;
+}
 
 /* =========================================
    MODULE DOCUMENT BUILDER (Блочная форма)
    ========================================= */
-.tms-awb-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-}
+
 .tms-col-span-2 {
     grid-column: span 2;
 }
+
 .tms-fieldset {
     border: 1px solid #cbd5e1;
     border-radius: 6px;
     padding: 15px;
     background: #ffffff;
 }
+
 .tms-fieldset legend {
     font-size: 11px;
     font-weight: 800;
@@ -965,13 +2565,16 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
     text-transform: uppercase;
     padding: 0 8px;
 }
+
 .tms-form-row {
     display: flex;
     gap: 12px;
 }
+
 .tms-form-row > div {
     flex: 1;
 }
+
 .tms-routing-chain {
     display: flex;
     gap: 8px;
@@ -979,11 +2582,7 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 }
 
 /* Специфические таблицы для ячеек бланков */
-.tms-grid-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 5px;
-}
+
 .tms-grid-table th {
     font-size: 10px;
     font-weight: 700;
@@ -992,12 +2591,14 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
     padding: 4px 6px;
     border-bottom: 2px solid #cbd5e1;
 }
+
 .tms-grid-table td {
     padding: 4px;
     vertical-align: top;
 }
 
 /* --- AWB HIGH-FIDELITY GRID --- */
+
 .tms-awb-main-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1012,7 +2613,8 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 }
 
 .tms-awb-box {
-    border: 0.5px solid #cbd5e1; /* Тонкие линии как в бланке */
+    border: 0.5px solid #cbd5e1;
+    /*__COMMENT_101__*/
     margin: 0;
     padding: 8px 12px;
     background: #fff;
@@ -1058,18 +2660,6 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 }
 
 /* Жесткий контроль текста (Фиксируем межстрочный интервал) */
-.tms-awb-textarea {
-    width: 100%;
-    height: 60px !important;      /* Фиксированная высота: 4 строки по 14-15px */
-    line-height: 14px;            /* Высота строки */
-    overflow: hidden !important;  /* Наглухо скрываем скроллбар */
-    resize: none !important;      /* Запрет растягивания мышкой */
-    white-space: pre-wrap;        /* Позволяет браузеру переносить текст */
-    padding: 2px;
-    box-sizing: border-box;
-    font-family: monospace;       /* Моноширинный шрифт помогает контролировать ширину */
-    font-size: 11px;
-}
 
 .tms-awb-textarea:focus {
     background: #f8fafc;
@@ -1077,26 +2667,21 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 }
 
 /* SCI угол (Парит сверху справа) */
-.tms-handling-box {
-    position: relative;
-}
+
 .tms-sci-corner {
     position: absolute;
-    top: 0; /* Было bottom: 0 */
+    top: 0;
     right: 0;
     width: 60px;
     height: 45px;
-    border-bottom: 1px solid #cbd5e1; /* Рамка теперь снизу */
+    border-bottom: 1px solid #cbd5e1;
     border-left: 1px solid #cbd5e1;
     background: #ffffff;
     display: flex;
     flex-direction: column;
-    z-index: 2; /* Защита от перекрытия текстом */
-}
-
-.tms-awb-textarea:focus {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+    z-index: 2;
+    right: 0;
+    border-left: 1px solid #cbd5e1;
 }
 
 .tms-awb-static-text {
@@ -1144,20 +2729,73 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 }
 
 .tms-awb-canvas {
-    max-width: 850px; /* Сужаем бланк до формата листа */
-    margin: 0 auto;   /* Центрируем на странице */
+    max-width: 850px;
+    /*__COMMENT_113__*/
+    margin: 0 auto;
+    /*__COMMENT_114__*/
     background: #ffffff;
     padding: 10px;
     box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }
 
+/* Идеальная таблица груза для AWB */
+.tms-awb-cargo-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* Жестко фиксирует ширину колонок по th */
+}
+.tms-awb-cargo-table th, 
+.tms-awb-cargo-table td {
+    border: 1px solid #cbd5e1;
+    border-top: none; /* Чтобы не двоилась линия с верхним блоком */
+    padding: 0;
+}
+.tms-awb-cargo-table th {
+    background: #f1f5f9;
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #475569;
+    text-align: center;
+    padding: 4px;
+    border-top: 1px solid #cbd5e1;
+}
+.tms-awb-cargo-table input,
+.tms-awb-cargo-table textarea {
+    width: 100%;
+    height: 30px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 4px;
+    box-sizing: border-box;
+}
+.tms-awb-cargo-table textarea {
+    height: 30px !important; 
+    resize: none; 
+    padding-top: 6px;
+}
+.tms-text-right { text-align: right; }
+.tms-text-center { text-align: center; }
+.tms-bg-gray { background: #f8fafc; }
+
+/* Утилита для печати: скрываем UI */
+body.tms-preview-active .tms-left-sidebar,
+body.tms-preview-active .tms-right-sidebar,
+body.tms-preview-active .tms-order-topbar,
+body.tms-preview-active .tms-mobile-trigger {
+    display: none !important;
+}
+body.tms-preview-active .tms-center-content {
+    background: none; border: none; padding: 0; gap: 0;
+}
+body.tms-preview-active .tms-doc-block {
+    box-shadow: none; border: none; padding: 0;
+}
 
 /* --- AWB УЛУЧШЕНИЯ UI --- */
-.tms-legend-actions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
+
 .tms-lookup-input {
     width: 60px;
     padding: 2px 4px;
@@ -1168,27 +2806,19 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
     outline: none;
     font-weight: 700;
 }
-.tms-lookup-input:focus { border-color: #3b82f6; }
-.tms-lookup-input:disabled { background: transparent; border-color: transparent; }
+
+.tms-lookup-input:focus {
+    border-color: #3b82f6;
+    background: #ffffff;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.06), 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.tms-lookup-input:disabled {
+    background: transparent;
+    border-color: transparent;
+}
 
 /* Handling & SCI */
-.tms-handling-box {
-    position: relative;
-}
-
-.tms-sci-corner {
-    position: absolute;
-    top: 0; /* Было bottom: 0 */
-    right: 0;
-    width: 60px;
-    height: 45px;
-    border-bottom: 1px solid #cbd5e1; /* Рамка теперь снизу */
-    border-left: 1px solid #cbd5e1;
-    background: #ffffff;
-    display: flex;
-    flex-direction: column;
-    z-index: 2; /* Защита от перекрытия текстом */
-}
 
 .tms-sci-title {
     text-align: center;
@@ -1198,6 +2828,7 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
     border-bottom: 0.5px solid #cbd5e1;
     padding: 2px 0;
 }
+
 .tms-sci-input {
     flex-grow: 1;
     border: none !important;
@@ -1207,40 +2838,44 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 }
 
 /* --- СТРОГАЯ ТАБЛИЧНАЯ ВЕРСТКА ДЛЯ AWB --- */
-.tms-strict-grid {
-    padding: 0 !important; /* Убираем padding у родительского box */
-    overflow: hidden;
-}
+
 .tms-strict-row {
     display: flex;
     width: 100%;
 }
+
 .tms-border-bottom {
     border-bottom: 1px solid #cbd5e1;
 }
+
 .tms-border-right {
     border-right: 1px solid #cbd5e1;
 }
+
 .tms-strict-cell {
     padding: 2px 4px;
     display: flex;
     flex-direction: column;
 }
+
 .tms-strict-cell label, .tms-strict-grid label {
     font-size: 9px;
     color: #475569;
     line-height: 1.1;
     margin-bottom: 1px;
 }
+
 .tms-strict-grid input.tms-ws-input {
     padding: 1px 0;
     height: auto;
     background: transparent !important;
-    border: none !important; /* Инпуты сливаются с фоном ячейки */
+    border: none !important;
 }
+
 .tms-text-center {
     text-align: center;
 }
+
 .tms-text-lg {
     font-size: 14px !important;
     font-weight: 700;
@@ -1249,18 +2884,13 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 /* =========================================
    AWB ИДЕАЛЬНАЯ СЕТКА (Grid Matrix)
    ========================================= */
-.tms-awb-matrix {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1px;
-    background-color: #cbd5e1; /* Тот самый цвет рамки */
-    border: 1px solid #cbd5e1;
-}
 
 .tms-awb-matrix > div, 
 .tms-awb-matrix > fieldset {
-    background-color: #ffffff; /* Белый фон ячеек */
-    border: none !important;   /* Отключаем дефолтные рамки */
+    background-color: #ffffff;
+    /*__COMMENT_125__*/
+    border: none !important;
+    /*__COMMENT_126__*/
     margin: 0;
     padding: 8px 12px;
     position: relative;
@@ -1268,20 +2898,17 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 }
 
 /* Расширение ячеек на 2 колонки */
-.tms-col-span-2 { grid-column: span 2; }
-
-/* Абсолютное позиционирование для Account Numbers */
-.tms-acc-absolute {
-    position: absolute;
-    top: 8px;
-    right: 12px;
-    width: 140px;
-    text-align: right;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+.tms-col-span-2 {
+    grid-column: span 2;
 }
-.tms-acc-absolute span { font-size: 9px; color: #94a3b8; text-transform: uppercase; }
+/* Абсолютное позиционирование для Account Numbers */
+
+.tms-acc-absolute span {
+    font-size: 9px;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
 .tms-acc-absolute input {
     border: none;
     border-bottom: 1px dashed #cbd5e1;
@@ -1291,31 +2918,14 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
     background: transparent;
 }
 
-/* Утопленные поля ID */
-.tms-lookup-input {
-    background: #f8fafc;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
-    border: 1px solid #e2e8f0;
-    border-radius: 4px;
-    padding: 3px 6px;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    transition: all 0.2s ease;
-    outline: none;
-}
-.tms-lookup-input:focus {
-    background: #ffffff;
-    border-color: #3b82f6;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.06), 0 0 0 2px rgba(59, 130, 246, 0.1);
-}
+/* таблица груза */
 
-/* Excel-таблица груза */
 .tms-excel-table {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
 }
+
 .tms-excel-table th {
     border: 1px solid #cbd5e1;
     font-size: 9px;
@@ -1323,11 +2933,14 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
     padding: 4px;
     text-align: left;
 }
+
 .tms-excel-table td {
     border: 1px solid #cbd5e1;
-    padding: 0; /* Убираем паддинги, инпут займет все место */
+    padding: 0;
+    /*__COMMENT_131__*/
     height: 24px;
 }
+
 .tms-excel-table input, .tms-excel-table textarea {
     width: 100%;
     height: 100%;
@@ -1338,10 +2951,13 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
     background: transparent;
     font-size: 12px;
 }
-.tms-excel-table input:focus, .tms-excel-table textarea:focus { background: #eff6ff; }
+
+.tms-excel-table input:focus, .tms-excel-table textarea:focus {
+    background: #eff6ff;
+}
 
 /* Жесткая блокировка переполнения для многострочных полей */
-/* Жесткая фиксация высоты для 4 рядов (14px * 4 = 56px + паддинги) */
+
 .tms-awb-textarea {
     height: 60px !important; /* Фиксированная высота */
     line-height: 14px;       /* Высота строки */
@@ -1353,126 +2969,113 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 /* =========================================
    ПЕЧАТЬ (Print Media)
    ========================================= */
-@media print {
-    /* Скрываем интерфейс */
-    .tms-order-topbar, .tms-left-sidebar, .tms-tabs-header, 
-    .tms-legend-actions, button, #btnNextToCharges {
-        display: none !important;
-    }
-    
-    /* Разворачиваем контент */
-    .tms-workspace-layout, .tms-right-content, .tms-tab-content {
-        padding: 0 !important;
-        margin: 0 !important;
-        border: none !important;
-        background: #ffffff !important;
-    }
-    
-    /* Убираем стилизацию полей ввода */
-    input, textarea {
-        background: transparent !important;
-        border-color: transparent !important;
-        box-shadow: none !important;
-        color: #000 !important;
-    }
 
-    /* Фокусируем печать только на бланке */
-    .tms-awb-canvas {
-        max-width: 100%;
-        box-shadow: none;
+/* --- Адаптивность и Off-canvas --- */
+.tms-mobile-trigger {
+    display: none;
+}
+.tms-sidebar-overlay {
+    display: none;
+}
+
+@media (max-width: 1400px) {
+    .tms-workspace-layout {
+        grid-template-columns: 280px minmax(0, 1fr); /* Правая колонка уходит */
+    }
+    .tms-mobile-trigger {
+        display: block;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #2563eb;
+        color: #fff;
         border: none;
-        margin: 0;
-        padding: 0;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        z-index: 999;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .tms-right-sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 320px;
+        height: 100vh;
+        background: #e2e8f0;
+        padding: 15px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+        box-shadow: -5px 0 25px rgba(0,0,0,0.1);
+    }
+    .tms-right-sidebar.is-open {
+        transform: translateX(0);
+    }
+    .tms-sidebar-overlay.is-visible {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.4);
+        z-index: 990;
     }
 }
 
-/* ==========================================================================
-   МЕТОД «ПРОСВЕЧИВАЮЩЕГО ГРИДА» (TRANSLUCENT MATRIX)
-   ========================================================================== */
-
-/* Контейнер, формирующий линии за счет своего фона */
-.tms-matrix-container {
-    background-color: #cbd5e1 !important; /* Цвет линий сетки */
-    gap: 1px !important;
-    border: 1px solid #cbd5e1; /* Внешний контур (чтобы рамка была и по краям) */
-    
-    /* КРИТИЧНО ДЛЯ ПЕЧАТИ: Принудительный рендер фона */
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+/* --- Логика печати --- */
+@media print {
+    .tms-workspace-layout { display: block; height: auto; padding: 0; overflow: visible; }
+    .tms-left-sidebar, .tms-right-sidebar, .tms-order-topbar, .tms-mobile-trigger { display: none !important; }
+    .tms-center-content { background: none; border: none; padding: 0; gap: 0; }
+    .tms-doc-block { box-shadow: none; padding: 0; border: none; margin-bottom: 0; }
+    .tms-page-break { page-break-after: always; height: 0; }
 }
 
 /* Модификаторы поведения контейнера */
-.tms-matrix-grid {
-    display: grid;
-}
+
 .tms-matrix-flex-col {
     display: flex;
     flex-direction: column;
 }
+
 .tms-matrix-flex-row {
     display: flex;
     flex-direction: row;
     width: 100%;
 }
 
-/* Все прямые потомки матрицы становятся "ячейками" с белым фоном */
-.tms-matrix-container > * {
-    background-color: #ffffff !important;
-    border: none !important; /* Принудительно убиваем старые рамки */
-    margin: 0 !important;
-    box-sizing: border-box;
-}
-
-/* Корректировка существующих классов бланка под матрицу */
-.tms-awb-box {
-    padding: 8px 12px;
-    border-radius: 0 !important; /* В матрице не должно быть скруглений */
-}
-
-/* Избавляемся от старых костылей с рамками в строгих сетках */
-.tms-border-bottom, .tms-border-right {
-    border: none !important; 
-}
-
-/* ==========================================================================
-   AWB МЕТОД «МОЗАИКИ» (Идеальные рамки для IATA бланка и печати)
-   ========================================================================== */
-
-/* Внешняя обертка всей матрицы (Верх и Лево) */
-.tms-mosaic-wrapper {
-    border-top: 1px solid #cbd5e1 !important;
-    border-left: 1px solid #cbd5e1 !important;
-    background-color: #ffffff;
-    box-sizing: border-box;
-    width: 100%;
-}
-
-/* Ячейки мозаики (Низ и Право) */
-.tms-mosaic-cell {
-    border-bottom: 1px solid #cbd5e1 !important;
-    border-right: 1px solid #cbd5e1 !important;
-    box-sizing: border-box;
-    position: relative;
-    padding: 6px 10px;
-    background: #ffffff;
-}
-
 /* Утилиты для Flex-структуры */
-.tms-flex-row { display: flex; width: 100%; }
-.tms-flex-col { display: flex; flex-direction: column; }
+
+.tms-flex-row {
+    display: flex;
+    width: 100%; 
+}
+
+.tms-flex-col {
+    display: flex;
+    flex-direction: column;
+}
 
 /* Убираем отступы браузера внутри ячеек */
-.tms-mosaic-cell label { margin: 0; padding: 0; }
+.tms-mosaic-cell label {
+    margin: 0;
+    padding: 0; }
 .tms-mosaic-cell input, 
-.tms-mosaic-cell textarea { background: transparent; border: none; outline: none; box-sizing: border-box; }
+.tms-mosaic-cell textarea {
+    background: transparent;
+    border: none;
+    outline: none;
+    box-sizing: border-box;
+}
 
 /* Специфичные инпуты для сетки */
-.tms-input-dashed { border-bottom: 1px dashed #cbd5e1 !important; width: 100%; }
 
 /* ==========================================================================
    SMART IATA WARNING (Индикатор блокировки ввода)
    ========================================================================== */
-.tms-iata-warning {
+
+   .tms-iata-warning {
     position: absolute;
     display: none;
     background: #fef08a; /* Желтый бокс */
@@ -1528,83 +3131,55 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 }
 
 @keyframes popIn {
-    0% { transform: scale(0.8); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 /* ==========================================================================
    ФИНАНСОВЫЙ БЛОК AWB (Страница 2)
    ========================================================================== */
 
-/* Специфичная матрица для финансов: 40% лево, 60% право */
-.tms-awb-matrix-finance {
-    display: grid;
-    grid-template-columns: 40% 60%;
-    gap: 1px;
-    background-color: #cbd5e1;
-}
-
-/* Внутренние сетки для Prepaid/Collect и Destination Charges */
-.tms-finance-grid {
-    display: grid;
-    grid-template-columns: 1fr 75px 75px; /* Лейбл + 2 колонки PPD/COLL */
-    gap: 1px;
-    background-color: #cbd5e1;
-    border-bottom: 1px solid #cbd5e1;
-}
-
 .tms-dest-grid {
     display: grid;
-    grid-template-columns: 1fr 150px; /* Лейбл + 1 колонка ввода */
+    grid-template-columns: 1fr 150px;
+    /*__COMMENT_169__*/
     gap: 1px;
     background-color: #cbd5e1;
 }
-
-/* Обнуление паддингов для идеального прилегания инпутов */
-.tms-p-0 {
-    padding: 0 !important;
-}
-
-/* Специфичный лейбл финансовой сетки */
-.tms-finance-label {
-    font-size: 9px;
-    color: #475569;
-    line-height: 1.2;
-    display: flex;
-    align-items: center;
-}
-
 
 /* ==========================================================================
    ERP DASHBOARD LAYOUT (DOC PAGE 2)
    ========================================================================== */
-.tms-erp-dashboard {
-    display: flex;
-    gap: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-    align-items: flex-start;
-}
 
 .tms-erp-col-left {
-    width: 35%; /* Левая колонка со сводками */
+    width: 35%;
+    /*__COMMENT_173__*/
     display: flex;
     flex-direction: column;
 }
 
 .tms-erp-col-right {
-    width: 65%; /* Правая рабочая колонка */
+    width: 65%;
+    /*__COMMENT_174__*/
     display: flex;
     flex-direction: column;
 }
 
 /* Оформление ERP Панелей (Fieldsets) */
+
 .tms-erp-panel {
     background: #ffffff;
     border: 1px solid #cbd5e1;
     border-radius: 4px;
     padding: 15px;
 }
+
 .tms-erp-panel legend {
     font-size: 13px;
     font-weight: 700;
@@ -1613,22 +3188,19 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 }
 
 /* Сетка Charges Summary (Имитация Excel внутри панели) */
-.tms-summary-grid {
-    display: grid;
-    grid-template-columns: 1fr 80px 80px;
-    gap: 4px;
-    align-items: center;
-}
+
 .tms-sum-header {
     font-size: 11px;
     font-weight: 700;
     color: #475569;
 }
+
 .tms-sum-label {
     font-size: 11px;
     color: #334155;
     font-weight: 600;
 }
+
 .tms-sum-input {
     width: 100%;
     height: 26px;
@@ -1644,11 +3216,7 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 }
 
 /* Вспомогательные классы */
-.tms-form-row-vertical {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
+
 .tms-flex-row-between {
     display: flex;
     justify-content: space-between;
@@ -1656,15 +3224,12 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
 }
 
 /* Таблица услуг внутри панели */
-.tms-services-table th {
-    font-size: 10px;
-    padding: 6px;
-    border-bottom: 1px solid #cbd5e1;
-}
+
 .tms-services-table td {
     padding: 2px 4px;
     border-bottom: 1px solid #f1f5f9;
 }
+
 .tms-grid-input {
     width: 100%;
     height: 24px;
@@ -1676,7 +3241,11 @@ body:has(#btnTmsToggleVisibility.tms-preview-active) .tms-payment-select-wrapper
     outline: none;
     border-radius: 3px;
 }
+
 .tms-grid-input:focus {
     border: 1px solid #3b82f6;
     background: #ffffff;
 }
+
+
+
